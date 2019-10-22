@@ -1,5 +1,5 @@
 
-var types = require('./Testprotocol_pb');
+var types = require('./testprotocol_pb');
 var ws = new WebSocket("ws://127.0.0.1:5678/");
 ws.binaryType = 'arraybuffer';
 
