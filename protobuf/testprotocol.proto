@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package testi;
+
+message Chatmessage {
+  required int32 senderID = 1;
+  required string senderName = 2;
+  required string msg = 3;
+}
+
+message Chatmessages {
+  repeated Chatmessage chatmsg = 1;
+}
