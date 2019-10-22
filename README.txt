@@ -9,3 +9,16 @@ npm start
 
 avaa selaimella http://localhost:1234
 
+python 3.6+:
+
+aja protobuf/makeprotos.bat
+pip install websockets
+pip install protobuf
+
+
+aja python scripti server.py
+
+kartta servu ei saa olla enää auki koska sama portti
+chat hakemistosta
+npm start
+avaa selaimella http://localhost:1234
