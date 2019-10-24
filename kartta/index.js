@@ -55,7 +55,7 @@ class WSHandler {
 	}
 
 }
-var wsh = new WSHandler("ws://4nxi.xyz:5678");
+var wsh = new WSHandler("ws://127.0.0.1:5678");
 
 // esim. chat eventtien lukeminen
 function test(msg) {
