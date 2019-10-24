@@ -1,0 +1,13 @@
+1.Puhelin ottaa yhteyden palvelimeen
+
+2.palvelin antaa puhelimelle ID:n
+
+3.Puhelin antaa palvelimelle k‰ytt‰j‰n valitseman k‰ytt‰j‰nimen
+
+4.K‰ytt‰j‰ voi luoda ryhm‰n jolloin h‰n saa ryhm‰n avaimen jonka h‰n voi jakaa muiden kanssa
+
+5.Tai h‰n voi liitty‰ jo luotuun ryhm‰‰n, t‰m‰n ryhm‰n luojalta saadulla avaimella
+
+6.Puhelin l‰hett‰‰ palvelimelle oman sijaintinsa
+
+7.Palvelin l‰hett‰‰ puhelimelle karttapohjan ja muiden sijoinnit + marhdolliset merkinn‰t kartalla
