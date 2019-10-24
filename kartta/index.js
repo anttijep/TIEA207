@@ -20,12 +20,15 @@ var capabilitiesUrl = 'https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts/
 
 
 // https://openlayers.org/en/latest/doc/faq.html#why-is-the-order-of-a-coordinate-lon-lat-and-not-lat-lon-
-var myPosition = transform([25.749498121, 62.241677684], "EPSG:4326", "EPSG:3067");
+var jyvaskyla = transform([25.749498121, 62.241677684], "EPSG:4326", "EPSG:3067");
 
 var parser = new WMTSCapabilities();
 var map;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of 9f7d1a0... Toiston poistoa
 var types = require('./testprotocol_pb');
 class WSHandler {
 	constructor(hostname) {
@@ -74,15 +77,15 @@ if (navigator.geolocation) {
         var latitude = position.coords.latitude;
         var longitude = position.coords.longitude;
         var accuracy = position.coords.accuracy;
+        var coords = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
         var debuginfo = document.getElementById("debuginfo");
         debuginfo.innerHTML = "latitude: " + latitude + ", longitude: " + longitude + ", accuracy: " + accuracy;
+<<<<<<< HEAD
         myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
   });
-} else {
-    alert("Geolocation API is not supported in your browser.");
-}
-
-fetch(capabilitiesUrl).then(function(response) {
+=======
+		
+		fetch(capabilitiesUrl).then(function(response) {
 			return response.text();
 		}).then(function(text) {
 		var result = parser.read(text);
@@ -102,13 +105,47 @@ fetch(capabilitiesUrl).then(function(response) {
 		target: 'map',
 		view: new View({
 			projection: projection,
-			center: myPosition,
+			center: coords,
 			zoom: 10
 			})
 		});
 		});
+	});
+>>>>>>> parent of 9f7d1a0... Toiston poistoa
+} else {
+    alert("Geolocation API is not supported in your browser.");
+	fetch(capabilitiesUrl).then(function(response) {
+			return response.text();
+		}).then(function(text) {
+		var result = parser.read(text);
+		var options = optionsFromCapabilities(result, {
+		layer: 'maastokartta',
+		matrixSet: 'EPSG:3067'
+		});
+
+		map = new Map({
+			controls: defaultControls().extend([mousePositionControl]),
+			layers: [
+				new TileLayer({
+				opacity: 1,
+				source: new WMTS(options)
+				})
+			],
+		target: 'map',
+		view: new View({
+			projection: projection,
+			center: jyvaskyla,
+			zoom: 10
+			})
+		});
+<<<<<<< HEAD
+		});
     
     
+=======
+	});
+}
+>>>>>>> parent of 9f7d1a0... Toiston poistoa
 // https://openlayers.org/en/latest/examples/mouse-position.html
 var mousePositionControl = new MousePosition({
   coordinateFormat: createStringXY(4),
