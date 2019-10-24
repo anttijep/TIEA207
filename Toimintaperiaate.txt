@@ -10,4 +10,4 @@
 
 6.Puhelin l‰hett‰‰ palvelimelle oman sijaintinsa
 
-7.Palvelin l‰hett‰‰ puhelimelle karttapohjan ja muiden sijainnit + marhdolliset merkinn‰t kartalla
+7.Palvelin l‰hett‰‰ puhelimelle karttapohjan ja muiden sijoinnit + marhdolliset merkinn‰t kartalla
