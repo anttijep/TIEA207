@@ -11,7 +11,7 @@ import sys
 
 clients = set()
 
-hostname = "127.0.0.1"
+hostname = "4nxi.xyz"
 port = 5678
 
 def counter():
