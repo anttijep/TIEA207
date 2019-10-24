@@ -68,32 +68,69 @@ wsh.addChatMessageListener(test);
 //wsh.removeChatMessageListener(test);
 // end
 
-fetch(capabilitiesUrl).then(function(response) {
-  return response.text();
-}).then(function(text) {
-  var result = parser.read(text);
-  var options = optionsFromCapabilities(result, {
-    layer: 'maastokartta',
-    matrixSet: 'EPSG:3067'
-  });
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+        var accuracy = position.coords.accuracy;
+        var coords = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
+        var debuginfo = document.getElementById("debuginfo");
+        debuginfo.innerHTML = "latitude: " + latitude + ", longitude: " + longitude + ", accuracy: " + accuracy;
+		
+		fetch(capabilitiesUrl).then(function(response) {
+			return response.text();
+		}).then(function(text) {
+		var result = parser.read(text);
+		var options = optionsFromCapabilities(result, {
+		layer: 'maastokartta',
+		matrixSet: 'EPSG:3067'
+		});
 
-  map = new Map({
-    controls: defaultControls().extend([mousePositionControl]),
-    layers: [
-      new TileLayer({
-        opacity: 1,
-        source: new WMTS(options)
-      })
-    ],
-    target: 'map',
-    view: new View({
-      projection: projection,
-      center: jyvaskyla,
-      zoom: 8
-    })
-  });
-});
+		map = new Map({
+			controls: defaultControls().extend([mousePositionControl]),
+			layers: [
+				new TileLayer({
+				opacity: 1,
+				source: new WMTS(options)
+				})
+			],
+		target: 'map',
+		view: new View({
+			projection: projection,
+			center: coords,
+			zoom: 10
+			})
+		});
+		});
+	});
+} else {
+    alert("Geolocation API is not supported in your browser.");
+	fetch(capabilitiesUrl).then(function(response) {
+			return response.text();
+		}).then(function(text) {
+		var result = parser.read(text);
+		var options = optionsFromCapabilities(result, {
+		layer: 'maastokartta',
+		matrixSet: 'EPSG:3067'
+		});
 
+		map = new Map({
+			controls: defaultControls().extend([mousePositionControl]),
+			layers: [
+				new TileLayer({
+				opacity: 1,
+				source: new WMTS(options)
+				})
+			],
+		target: 'map',
+		view: new View({
+			projection: projection,
+			center: jyvaskyla,
+			zoom: 10
+			})
+		});
+	});
+}
 // https://openlayers.org/en/latest/examples/mouse-position.html
 var mousePositionControl = new MousePosition({
   coordinateFormat: createStringXY(4),
