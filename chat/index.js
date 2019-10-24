@@ -1,5 +1,5 @@
  
-var hostname = "127.0.0.1:5678"
+var hostname = "ws://127.0.0.1:5678"
 
 var types = require('./testprotocol_pb');
 var ws = new WebSocket(hostname);
