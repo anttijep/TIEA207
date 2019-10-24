@@ -12,7 +12,7 @@ import sys
 clients = set()
 
 hostname = "127.0.0.1"
-port = 5678;
+port = 5678
 
 def counter():
     counter.count += 1
