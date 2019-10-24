@@ -6,6 +6,7 @@ import websockets
 import html
 import socket
 import os
+import sys
 
 
 clients = set()
@@ -42,7 +43,7 @@ async def serv(websocket, path):
                 bytes = msg.SerializeToString()
                 await sendmessage(websocket, bytes)
         except:
-            print("except")
+            print(sys.exc_info()[0])
         finally:
             removeuser(websocket)
             break
