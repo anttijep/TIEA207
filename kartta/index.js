@@ -25,6 +25,48 @@ var jyvaskyla = transform([25.749498121, 62.241677684], "EPSG:4326", "EPSG:3067"
 var parser = new WMTSCapabilities();
 var map;
 
+var types = require('./testprotocol_pb');
+class WSHandler {
+	constructor(hostname) {
+		this.ws = new WebSocket(hostname);
+		this.ws.binaryType = "arraybuffer";
+		this.onChatMessage = new Set();
+		this.onLocationChange = new Set();
+		var me = this;
+		
+		this.ws.onmessage = function(evnt) {
+			me.onMessage(evnt)};
+	}
+
+	sendChatMessage(msg) {
+		this.ws.send(msg);
+	}
+	onMessage(evnt) {
+		var bytes = proto.testi.Chatmessage.deserializeBinary(evnt.data);
+
+		this.onChatMessage.forEach(function(arg) { arg(bytes)});
+	}
+
+	addChatMessageListener(func) {
+		this.onChatMessage.add(func);
+	}
+	removeChatMessageListener(func) {
+		this.onChatMessage.delete(func);
+	}
+
+}
+var wsh = new WSHandler("ws://4nxi.xyz:5678");
+
+// esim. chat eventtien lukeminen
+function test(msg) {
+		var messages = document.getElementById('chattesti');
+		var message = document.createElement('li');
+		message.appendChild(document.createTextNode(msg.getMsg()));
+		messages.appendChild(message);
+}
+wsh.addChatMessageListener(test);
+//wsh.removeChatMessageListener(test);
+// end
 
 fetch(capabilitiesUrl).then(function(response) {
   return response.text();
