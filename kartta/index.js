@@ -12,6 +12,7 @@ import MousePosition from 'ol/control/MousePosition';
 import {createStringXY} from 'ol/coordinate';
 import {defaults as defaultControls} from 'ol/control';
 import {transform} from 'ol/proj';
+import { WSHandler } from "../kartta/wshandler";
 
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
@@ -25,35 +26,6 @@ var parser = new WMTSCapabilities();
 var map;
 
 var types = require('./testprotocol_pb');
-class WSHandler {
-	constructor(hostname) {
-		this.ws = new WebSocket(hostname);
-		this.ws.binaryType = "arraybuffer";
-		this.onChatMessage = new Set();
-		this.onLocationChange = new Set();
-		var me = this;
-
-		this.ws.onmessage = function(evnt) {
-			me.onMessage(evnt)};
-	}
-
-	sendChatMessage(msg) {
-		this.ws.send(msg);
-	}
-	onMessage(evnt) {
-		var bytes = proto.testi.Chatmessage.deserializeBinary(evnt.data);
-
-		this.onChatMessage.forEach(function(arg) { arg(bytes)});
-	}
-
-	addChatMessageListener(func) {
-		this.onChatMessage.add(func);
-	}
-	removeChatMessageListener(func) {
-		this.onChatMessage.delete(func);
-	}
-
-}
 var wsh = new WSHandler("ws://127.0.0.1:5678");
 
 // esim. chat eventtien lukeminen

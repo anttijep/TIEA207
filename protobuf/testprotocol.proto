@@ -1,13 +1,40 @@
-syntax = "proto2";
+syntax = "proto3";
 
 package testi;
 
 message Chatmessage {
-  required int32 senderID = 1;
-  required string senderName = 2;
-  required string msg = 3;
+  int32 senderID = 1;
+  string msg = 2;
 }
 
-message Chatmessages {
+message Location {
+  int32 senderID = 1;
+  double latitude = 2;
+  double longitude = 3;
+}
+
+message SendLocation {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+message SendLoginInfo {
+  string key = 1;
+  string username = 2;
+}
+
+message Query {
+  string cmd = 1;
+  string args = 2;
+}
+
+message FromServer {
   repeated Chatmessage chatmsg = 1;
+  repeated Location locations = 2;
+}
+message ToServer {
+  Query query = 1;
+  SendLoginInfo logininfo = 2;
+  string chatmsg = 3;
+  SendLocation location = 4;
 }

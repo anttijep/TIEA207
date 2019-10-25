@@ -1,15 +1,49 @@
- 
+
+import { WSHandler } from "../kartta/wshandler";
 var hostname = "ws://127.0.0.1:5678"
 
-var types = require('./testprotocol_pb');
-var ws = new WebSocket(hostname);
-ws.binaryType = 'arraybuffer';
+//var wshandler = require('./wshandler');
+var wsh = new WSHandler("ws://127.0.0.1:5678");
+
+// esim. chat eventtien lukeminen
+var messageselement = document.getElementById('chattesti');
+function test(msg) {
+	var message = document.createElement('li');
+	message.appendChild(document.createTextNode(msg.getSenderid() + ": " + msg.getMsg()));
+	messageselement.appendChild(message);
+}
+wsh.addChatMessageListener(test);
+//wsh.removeChatMessageListener(test);
+// esim. end
+
+// esim2. location lukeminen
+function test2(msg) {
+	var message = document.createElement('li');
+	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
+	message.appendChild(document.createTextNode(s));
+	messageselement.appendChild(message);
+}
+wsh.addLocationChangeListener(test2);
+// esim2. end
 
 var messages = document.createElement('ul');
-ws.binaryType = 'arraybuffer';
+
 
 var sendbutton = document.getElementById('sendbutton');
 sendbutton.onclick = textboxClick;
+
+var sendposbutton = document.getElementById("sendpos");
+sendposbutton.onclick = sendposition;
+
+var latbox = document.getElementById('latitude');
+var longbox = document.getElementById("longitude");
+function sendposition(evnt) {
+	var lat = parseFloat(latbox.value); 
+	var lon = parseFloat(longbox.value); 
+	wsh.sendLocation(lat, lon);
+	evnt.preventDefault();
+}
+
 
 var textbox = document.getElementById('textbox');
 textbox.addEventListener("keyup", function(evnt) {
@@ -20,19 +54,11 @@ textbox.addEventListener("keyup", function(evnt) {
 	return false;
 });
 
-ws.onmessage = function (event) {
-    console.debug("WebSocket message received:", event);
-    var messages = document.getElementsByTagName('ul')[0];
-    var message = document.createElement('li');
-    var bytes = proto.testi.Chatmessage.deserializeBinary(event.data);
-    message.appendChild(document.createTextNode(bytes));
-    messages.appendChild(message);
-};
 
 function textboxClick(evnt) {
     //var bytes = proto.testi.Chatmessage.prototype.serializeBinary(textbox.value);
     var bytes = textbox.value;
-    ws.send(bytes);
+    wsh.sendChatMessage(bytes);
 	evnt.preventDefault();
 }
 document.body.appendChild(messages);
