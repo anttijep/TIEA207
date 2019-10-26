@@ -24,7 +24,7 @@ message SendLoginInfo {
 }
 
 message Query {
-  string cmd = 1;
+  uint64 cmd = 1;
   string args = 2;
 }
 
