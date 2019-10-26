@@ -27,36 +27,59 @@ except Exception as e:
     print(e)
 
 class Room:
+    """
+    huone johon voi liittyä ja jossa olevien viestit (location, chattiviestit jne...)
+    välitetään toisille
+    """
     clients = {}
     count = 0
     def counter(self):
+        """
+        counteri, jotta kaikilla on uniqueid
+        """
         self.count += 1
         return self.count
 
     async def sendmessage(self, websocket, msg):
+        """
+        lähettää viestin kaikille huoneessa oleville
+        """
         if self.clients:
             await asyncio.wait([client.send(msg) for client in self.clients]) #if client != websocket])
 
-    async def handlemessage(self, websocket, msg, answer):
+    async def handlemessage(self, websocket, msg, msgout):
+        """
+        parsee viestit ja muodostaa viestin
+        msgout parametri varmaan poistettavissa, jos ei löydy
+        käyttötarkoitusta, jossa servu injectaisi viestiin jotain
+        """
         if msg.chatmsg:
             chatmsg = testprotocol_pb2.Chatmessage()
             chatmsg.senderID = self.clients[websocket]
             chatmsg.msg = html.escape(msg.chatmsg)
-            answer.chatmsg.append(chatmsg)
+            msgout.chatmsg.append(chatmsg)
 
         if msg.HasField("location"):
             loc = testprotocol_pb2.Location()
             loc.senderID = self.clients[websocket]
             loc.latitude = msg.location.latitude
             loc.longitude = msg.location.longitude
-            answer.locations.append(loc)
-        bytes = answer.SerializeToString()
+            msgout.locations.append(loc)
+        bytes = msgout.SerializeToString()
         await self.sendmessage(websocket, bytes)
 
     def adduser(self, websocket):
+        """
+        lisää käyttäjän huoneeseen
+        todo(?): ota parametrinä msg, jossa on position, nimi jne
+        ja ilmoita se muille(?)
+        """
         self.clients[websocket] = self.counter()
     
     def removeuser(self, websocket):
+        """
+        poistaa käyttäjän huoneesta
+        """
         del self.clients[websocket]
     
     
