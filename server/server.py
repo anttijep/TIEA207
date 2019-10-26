@@ -82,7 +82,8 @@ class Room:
         """
         del self.clients[websocket]
     
-    
+###TODO: joku luokka, joka handlaa servun kaikki huoneet
+###ja pitää huolta oikeuksista jne
 room = Room()
 
 async def serv(websocket, path):
