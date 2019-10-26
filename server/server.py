@@ -110,10 +110,7 @@ def runServer(config):
     print("Starting server...\nhostname: " + config.hostname)
     print("port: " + config.port)
     print("ssl enabled: " + str(config.ssl_context is not None))
-    if config.ssl_context is not None:
-        start_server = websockets.serve(serv, config.hostname, config.port, ssl=config.ssl_context)
-    else:
-        start_server = websockets.serve(serv, config.hostname, config.port)
+    start_server = websockets.serve(serv, config.hostname, config.port, ssl=config.ssl_context)
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()
 
