@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-
+import sys
+import os
 import asyncio
 import testprotocol_pb2
 import websockets
 import html
 import socket
-import os
-import sys
 import ssl
-
+import getpass
 
 class variables:
     hostname = "127.0.0.1"
@@ -21,9 +20,7 @@ def loadConfig(config):
             conf = variables()
             llist = [line.rstrip() for line in f]
             conf.hostname = llist[0]
-            print("hostname: " + conf.hostname)
             conf.port = llist[1]
-            print("port: " + conf.port)
             if not llist[2].startswith('#') and not llist[3].startswith('#'):
                 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
                 ssl_context.load_cert_chain(llist[2], llist[3])
@@ -111,6 +108,9 @@ async def serv(websocket, path):
 
 
 def runServer(config):
+    print("Starting server...\nhostname: " + config.hostname)
+    print("port: " + config.port)
+    print("ssl enabled: " + str(config.ssl_context is not None))
     if config.ssl_context is not None:
         start_server = websockets.serve(serv, config.hostname, config.port, ssl=config.ssl_context)
     else:
@@ -121,3 +121,4 @@ def runServer(config):
 if __name__ == "__main__":
     config = loadConfig("server.config")
     runServer(config)
+
