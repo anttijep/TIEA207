@@ -7,7 +7,6 @@ import websockets
 import html
 import socket
 import ssl
-import getpass
 
 class variables:
     hostname = "127.0.0.1"
