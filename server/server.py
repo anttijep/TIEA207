@@ -10,21 +10,29 @@ import sys
 import ssl
 
 
-hostname = "127.0.0.1"
-port = 5678
-ssl_context = None
-try:
-    with open("server.config", "r") as f:
-        llist = [line.rstrip() for line in f]
-        hostname = llist[0]
-        print("hostname: " + hostname)
-        port = llist[1]
-        print("port: " + port)
-        if not llist[2].startswith('#') and not llist[3].startswith('#'):
-            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            ssl_context.load_cert_chain(llist[2], llist[3])
-except Exception as e:
-    print(e)
+class variables:
+    hostname = "127.0.0.1"
+    port = 5678
+    ssl_context = None
+
+def loadConfig(config):
+    try:
+        with open(config, "r") as f:
+            conf = variables()
+            llist = [line.rstrip() for line in f]
+            conf.hostname = llist[0]
+            print("hostname: " + conf.hostname)
+            conf.port = llist[1]
+            print("port: " + conf.port)
+            if not llist[2].startswith('#') and not llist[3].startswith('#'):
+                ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+                ssl_context.load_cert_chain(llist[2], llist[3])
+                conf.ssl_context = ssl_context
+            return conf
+    except Exception as e:
+        print(e)
+
+
 
 class Room:
     """
@@ -101,12 +109,15 @@ async def serv(websocket, path):
     finally:
         room.removeuser(websocket)
 
-if ssl_context is not None:
-    start_server = websockets.serve(serv, hostname, port, ssl=ssl_context)
-else:
-    start_server = websockets.serve(serv, hostname, port)
 
-asyncio.get_event_loop().run_until_complete(start_server)
-asyncio.get_event_loop().run_forever()
+def runServer(config):
+    if config.ssl_context is not None:
+        start_server = websockets.serve(serv, config.hostname, config.port, ssl=config.ssl_context)
+    else:
+        start_server = websockets.serve(serv, config.hostname, config.port)
+    asyncio.get_event_loop().run_until_complete(start_server)
+    asyncio.get_event_loop().run_forever()
 
-
+if __name__ == "__main__":
+    config = loadConfig("server.config")
+    runServer(config)
