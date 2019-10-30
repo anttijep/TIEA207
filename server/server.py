@@ -88,17 +88,19 @@ class Room:
     
 ###TODO: joku luokka, joka handlaa servun kaikki huoneet
 ###ja pitää huolta oikeuksista jne
+class RoomHandler:
+	
 room = Room()
 
 async def serv(websocket, path):
     print("New connection!")
     room.adduser(websocket)
     try:
-        async for message in websocket:
+        async for message in websocket:		#palvelimen juttelu clientin kanssa
             print(message)
             answer = testprotocol_pb2.FromServer()
             msg = testprotocol_pb2.ToServer()
-            msg.ParseFromString(message)
+            msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
             await room.handlemessage(websocket, msg, answer)
     except Exception as e:
         print(e)
