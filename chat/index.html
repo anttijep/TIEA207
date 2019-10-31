@@ -2,13 +2,19 @@
 <html>
     <head>
         <title>WebSocket demo</title>
+		<meta charset="utf-8">
     </head>
     <body>
 		<div>
 			<input type="text" id="textbox">
-			<button type="button" id="sendbutton">send</button>
+            <button type="button" id="sendbutton">send</button>
+            <input type="text" id="latitude">
+            <input type="text" id="longitude">
+            <button type="button" id="sendpos">send position</button>
 		</div>
         </body>
-        <script src="./testprotocol_pb.js"></script>
+        <div id="chat">
+            <ul id="chattesti"></ul>
+        </div>
         <script src="./index.js"></script>
 </html>
