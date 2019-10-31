@@ -13,17 +13,83 @@ import {createStringXY} from 'ol/coordinate';
 import {defaults as defaultControls} from 'ol/control';
 import {transform} from 'ol/proj';
 import { WSHandler } from "./wshandler";
+import Feature from 'ol/Feature';
+import {Circle, Fill, Stroke, Style} from 'ol/style';
+import {Vector as VectorLayer} from 'ol/layer';
+import {Vector as VectorSource} from 'ol/source';
+import Point from 'ol/geom/Point';
+
 
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
 var projection = getProjection("EPSG:3067");
 var capabilitiesUrl = 'https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts/1.0.0/WMTSCapabilities.xml';
 
+// Markerin piirtäminen
+var positionMarker = new Feature();
+positionMarker.setStyle(new Style({
+	image: new Circle({
+		radius: 12,
+		fill: new Fill({
+			color: '#ffff00'
+		}),
+		stroke: new Stroke({
+			color: '#000000',
+			width: 2
+		})
+	})	
+}));
+
 // https://openlayers.org/en/latest/doc/faq.html#why-is-the-order-of-a-coordinate-lon-lat-and-not-lat-lon-
 var myPosition = transform([25.749498121, 62.241677684], "EPSG:4326", "EPSG:3067");
 
+if (navigator.geolocation) {
+	navigator.geolocation.getCurrentPosition(function(position) {
+		var latitude = position.coords.latitude;
+		var longitude = position.coords.longitude;
+		var accuracy = position.coords.accuracy;
+		var debuginfo = document.getElementById("debuginfo");
+		debuginfo.innerHTML = "latitude: " + latitude + ", longitude: " + longitude + ", accuracy: " + accuracy;
+		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
+		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		view.setCenter(myPosition);
+	});
+} else {
+	console.log("Geolocation API is not supported in your browser.");
+}
+
+console.log(myPosition);
+
+
+// https://openlayers.org/en/latest/examples/mouse-position.html
+var mousePositionControl = new MousePosition({
+	coordinateFormat: createStringXY(4),
+	projection: 'EPSG:3067',
+	// comment the following two lines to have the mouse position
+	// be placed within the map.
+	className: 'custom-mouse-position',
+	target: document.getElementById('mouse-position'),
+	undefinedHTML: '&nbsp;'
+});
 var parser = new WMTSCapabilities();
-var map;
+var view = new View({
+			projection: projection,
+			center: myPosition,
+			zoom: 10
+		});
+var map = new Map({
+		controls: defaultControls().extend([mousePositionControl]),
+		layers: [
+			new VectorLayer({
+				source: new VectorSource({
+					features: [positionMarker]
+				}),
+				zIndex: 5
+			})
+		],
+		target: 'map',
+		view: view
+	});
 
 var types = require('./testprotocol_pb');
 var wsh = new WSHandler("ws://127.0.0.1:5678");
@@ -39,19 +105,6 @@ wsh.addChatMessageListener(test);
 //wsh.removeChatMessageListener(test);
 // end
 
-if (navigator.geolocation) {
-	navigator.geolocation.getCurrentPosition(function(position) {
-		var latitude = position.coords.latitude;
-		var longitude = position.coords.longitude;
-		var accuracy = position.coords.accuracy;
-		var debuginfo = document.getElementById("debuginfo");
-		debuginfo.innerHTML = "latitude: " + latitude + ", longitude: " + longitude + ", accuracy: " + accuracy;
-		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
-	});
-} else {
-	console.log("Geolocation API is not supported in your browser.");
-}
-
 fetch(capabilitiesUrl).then(function(response) {
 	return response.text();
 }).then(function(text) {
@@ -60,8 +113,13 @@ fetch(capabilitiesUrl).then(function(response) {
 		layer: 'maastokartta',
 		matrixSet: 'EPSG:3067'
 	});
-
-	map = new Map({
+	var tl = new TileLayer({
+				opacity: 1,
+				source: new WMTS(options),
+				zIndex: 0
+			});
+	map.addLayer(tl);
+	/* map = new Map({
 		controls: defaultControls().extend([mousePositionControl]),
 		layers: [
 			new TileLayer({
@@ -75,20 +133,10 @@ fetch(capabilitiesUrl).then(function(response) {
 			center: myPosition,
 			zoom: 10
 		})
-	});
+	}); */
 });
 
 
-// https://openlayers.org/en/latest/examples/mouse-position.html
-var mousePositionControl = new MousePosition({
-	coordinateFormat: createStringXY(4),
-	projection: 'EPSG:3067',
-	// comment the following two lines to have the mouse position
-	// be placed within the map.
-	className: 'custom-mouse-position',
-	target: document.getElementById('mouse-position'),
-	undefinedHTML: '&nbsp;'
-});
 var projectionSelect = document.getElementById('projection');
 projectionSelect.addEventListener('change', function(event) {
 	mousePositionControl.setProjection(event.target.value);
