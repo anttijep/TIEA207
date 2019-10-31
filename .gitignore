@@ -6,3 +6,4 @@ server/server.config
 server/testprotocol_pb2.py
 chat/testprotocol_pb.js
 kartta/testprotocol_pb.js
+
