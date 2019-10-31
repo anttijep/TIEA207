@@ -15,6 +15,6 @@
 
 
 
-käyttäjä liittyy, jos hän ei ole jo jossain huoneessa, syöttää huoneen nimen sekä haluamansa käyttäjänimen
+käyttäjä liittyy, jos hän ei ole jo jossain huoneessa, syöttää huoneen nimen sekä haluamansa käyttäjänimen + haluaako luoda uuden vai liittyä olemassa olevaan
 , jos huone ei ole olemassa, luo uusi huone syötetyllä nimellä
 , jos huone on olemassa kysy salasanaa huoneeseen, lisää käyttäjä huoneeseen
