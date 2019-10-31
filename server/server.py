@@ -90,7 +90,7 @@ class Room:
 ###ja pitää huolta oikeuksista jne
 class RoomHandler:
     room = Room()
-    async def messagehandler(self, websocket, msg, answer): ###välittää vietit huoneille
+    async def messagehandler(self, websocket, msg, answer): #välittää vietit huoneille
         await self.room.handlemessage(websocket, msg, answer)
     
     def handlelogin(self, websocket):
@@ -99,7 +99,7 @@ class RoomHandler:
     def handlelogout(self, websocket):
         self.room.removeuser(websocket)
 	
-##class User:
+#class User:
 roomhandler = RoomHandler()
 
 
