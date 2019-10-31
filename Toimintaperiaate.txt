@@ -11,3 +11,10 @@
 6.Puhelin lähettää palvelimelle oman sijaintinsa
 
 7.Palvelin lähettää puhelimelle karttapohjan ja muiden sijainnit + marhdolliset merkinnät kartalla
+
+
+
+
+käyttäjä liittyy, jos hän ei ole jo jossain huoneessa, syöttää huoneen nimen sekä haluamansa käyttäjänimen
+, jos huone ei ole olemassa, luo uusi huone syötetyllä nimellä
+, jos huone on olemassa kysy salasanaa huoneeseen, lisää käyttäjä huoneeseen

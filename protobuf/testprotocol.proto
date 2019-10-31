@@ -20,7 +20,6 @@ message SendLocation {
 
 message SendLoginInfo {
   string key = 1;
-  string username = 2;
 }
 
 message Query {
@@ -37,4 +36,10 @@ message ToServer {
   SendLoginInfo logininfo = 2;
   string chatmsg = 3;
   SendLocation location = 4;
+}
+message JoinRoom {
+  string name = 1;
+  string password = 2;
+  string username = 3;
+  bool create = 4;
 }
