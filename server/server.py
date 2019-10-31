@@ -89,23 +89,35 @@ class Room:
 ###TODO: joku luokka, joka handlaa servun kaikki huoneet
 ###ja pitää huolta oikeuksista jne
 class RoomHandler:
+    room = Room()
+    async def messagehandler(self, websocket, msg, answer): ###välittää vietit huoneille
+        await self.room.handlemessage(websocket, msg, answer)
+    
+    def handlelogin(self, websocket):
+        self.room.adduser(websocket)
+    
+    def handlelogout(self, websocket):
+        self.room.removeuser(websocket)
 	
-room = Room()
+##class User:
+roomhandler = RoomHandler()
+
 
 async def serv(websocket, path):
     print("New connection!")
-    room.adduser(websocket)
+    roomhandler.handlelogin(websocket)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
             print(message)
             answer = testprotocol_pb2.FromServer()
             msg = testprotocol_pb2.ToServer()
             msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
-            await room.handlemessage(websocket, msg, answer)
+            await roomhandler.messagehandler(websocket, msg, answer)
     except Exception as e:
         print(e)
     finally:
-        room.removeuser(websocket)
+        roomhandler.handlelogout(websocket)
+
 
 
 def runServer(config):

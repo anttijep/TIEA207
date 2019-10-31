@@ -3,3 +3,6 @@ dist/
 node_modules/
 __pycache__/
 server/server.config
+server/testprotocol_pb2.py
+chat/testprotocol_pb.js
+kartta/testprotocol_pb.js
