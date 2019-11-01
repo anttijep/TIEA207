@@ -69,6 +69,11 @@ class Room:
             loc.latitude = msg.location.latitude
             loc.longitude = msg.location.longitude
             msgout.locations.append(loc)
+        if msg.HasField("shape"):
+            shape = msg.shape
+            shape.senderID = self.clients[websocket]
+            msgout.shapes.append(shape)
+
         bytes = msgout.SerializeToString()
         await self.sendmessage(websocket, bytes)
 

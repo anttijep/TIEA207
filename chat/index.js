@@ -3,7 +3,7 @@ import { WSHandler } from "../kartta/wshandler";
 var hostname = "ws://127.0.0.1:5678"
 
 //var wshandler = require('./wshandler');
-var wsh = new WSHandler("ws://127.0.0.1:5678");
+var wsh = new WSHandler(hostname);
 
 // esim. chat eventtien lukeminen
 var messageselement = document.getElementById('chattesti');
@@ -26,6 +26,17 @@ function test2(msg) {
 wsh.addLocationChangeListener(test2);
 // esim2. end
 
+// esim3. piirrustuksen lukeminen
+function test3(msg) {
+	var message = document.createElement('li');
+	var arr = [];
+	msg.getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()]));
+	var s = msg.getSenderid() + ": " + msg.getType()+ " :: " + arr.join("->");
+	message.appendChild(document.createTextNode(s));
+	messageselement.appendChild(message);
+}
+wsh.addReceiveDrawingListener(test3);
+
 var messages = document.createElement('ul');
 
 
@@ -35,6 +46,9 @@ sendbutton.onclick = textboxClick;
 var sendposbutton = document.getElementById("sendpos");
 sendposbutton.onclick = sendposition;
 
+var senddrawbutton = document.getElementById("senddraw");
+senddrawbutton.onclick = senddrawing;
+
 var latbox = document.getElementById('latitude');
 var longbox = document.getElementById("longitude");
 function sendposition(evnt) {
@@ -42,6 +56,11 @@ function sendposition(evnt) {
 	var lon = parseFloat(longbox.value); 
 	wsh.sendLocation(lat, lon);
 	evnt.preventDefault();
+}
+
+function senddrawing(evnt) {
+	var arr = [[24.944,60.167],[25.7495, 62.242],[28.188,61.059]];
+	wsh.sendDrawing(0, arr);
 }
 
 
@@ -62,3 +81,4 @@ function textboxClick(evnt) {
 	evnt.preventDefault();
 }
 document.body.appendChild(messages);
+

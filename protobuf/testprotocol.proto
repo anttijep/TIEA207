@@ -41,6 +41,7 @@ message DrawPoint {
 message DrawShape {
   repeated DrawPoint points = 1;
   int32 type = 2;
+  int32 senderID = 3;
 }
 
 message ToServer {
@@ -63,3 +64,4 @@ message JoinRoomAnswers {
   bool wrongpassword = 2;
   bool roomdoesntexist = 3;
 }
+

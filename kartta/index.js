@@ -20,6 +20,9 @@ import {Vector as VectorSource} from 'ol/source';
 import Point from 'ol/geom/Point';
 import Collection from 'ol/Collection';
 
+var types = require('./testprotocol_pb');
+var hostname = "ws://127.0.0.1:5678";
+var wsh = new WSHandler(hostname);
 
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
@@ -53,10 +56,10 @@ if (navigator.geolocation) {
 		debuginfo.innerHTML = "longitude: " + longitude + ", latitude: " + latitude + ", accuracy: " + accuracy;
 		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		positionMarker.watchPosition(function(position) {
+		navigator.geolocation.watchPosition(function(position) {
 			myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
 			positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-			debuginfo.innerHTML = "longitude: " + longitude + ", latitude: " + latitude + ", accuracy: " + accuracy;
+			debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
 		});
 		view.setCenter(myPosition);
 	});
@@ -81,7 +84,7 @@ markerLayer.push(positionMarker);
 var view = new View({
 			projection: projection,
 			center: myPosition,
-			zoom: 18
+			zoom: 16
 		});
 var map = new Map({
 		controls: defaultControls().extend([mousePositionControl]),
@@ -97,9 +100,6 @@ var map = new Map({
 		view: view
 	});
 
-var types = require('./testprotocol_pb');
-var hostname = "ws://127.0.0.1:5678";
-var wsh = new WSHandler(hostname);
 
 // esim. chat eventtien lukeminen
 function test(msg) {
