@@ -36,7 +36,7 @@ positionMarker.setStyle(new Style({
 		}),
 		stroke: new Stroke({
 			color: '#000000',
-			width: 2
+			width: 4
 		})
 	})	
 }));
@@ -50,17 +50,19 @@ if (navigator.geolocation) {
 		var longitude = position.coords.longitude;
 		var accuracy = position.coords.accuracy;
 		var debuginfo = document.getElementById("debuginfo");
-		debuginfo.innerHTML = "latitude: " + latitude + ", longitude: " + longitude + ", accuracy: " + accuracy;
+		debuginfo.innerHTML = "longitude: " + longitude + ", latitude: " + latitude + ", accuracy: " + accuracy;
 		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		positionMarker.watchPosition(function(position) {
+			myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
+			positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+			debuginfo.innerHTML = "longitude: " + longitude + ", latitude: " + latitude + ", accuracy: " + accuracy;
+		});
 		view.setCenter(myPosition);
 	});
 } else {
 	console.log("Geolocation API is not supported in your browser.");
 }
-
-console.log(myPosition);
-
 
 // https://openlayers.org/en/latest/examples/mouse-position.html
 var mousePositionControl = new MousePosition({
@@ -73,12 +75,13 @@ var mousePositionControl = new MousePosition({
 	undefinedHTML: '&nbsp;'
 });
 var parser = new WMTSCapabilities();
+
 var markerLayer = new Collection();
 markerLayer.push(positionMarker);
 var view = new View({
 			projection: projection,
 			center: myPosition,
-			zoom: 10
+			zoom: 18
 		});
 var map = new Map({
 		controls: defaultControls().extend([mousePositionControl]),
@@ -135,6 +138,8 @@ function updateLocation(msg) {
 	}
 }
 wsh.addLocationChangeListener(updateLocation);
+
+
 
 fetch(capabilitiesUrl).then(function(response) {
 	return response.text();
