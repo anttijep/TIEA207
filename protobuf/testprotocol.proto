@@ -30,6 +30,17 @@ message Query {
 message FromServer {
   repeated Chatmessage chatmsg = 1;
   repeated Location locations = 2;
+  repeated DrawShape shapes = 3;
+}
+
+message DrawPoint {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+message DrawShape {
+  repeated DrawPoint points = 1;
+  int32 type = 2;
 }
 
 message ToServer {
@@ -37,6 +48,7 @@ message ToServer {
   SendLoginInfo logininfo = 2;
   string chatmsg = 3;
   SendLocation location = 4;
+  DrawShape shape = 5;
 }
 
 message JoinRoom {
