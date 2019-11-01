@@ -81,7 +81,7 @@ markerLayer.push(positionMarker);
 var view = new View({
 			projection: projection,
 			center: myPosition,
-			zoom: 10
+			zoom: 18
 		});
 var map = new Map({
 		controls: defaultControls().extend([mousePositionControl]),
