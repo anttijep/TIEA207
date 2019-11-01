@@ -58,10 +58,10 @@ class Room:
         käyttötarkoitusta, jossa servu injectaisi viestiin jotain
         """
         if msg.chatmsg:
-            chatmsg = testprotocol_pb2.Chatmessage()
-            chatmsg.senderID = self.clients[websocket]
-            chatmsg.msg = html.escape(msg.chatmsg)
-            msgout.chatmsg.append(chatmsg)
+            serverchatmsg = testprotocol_pb2.Chatmessage()
+            serverchatmsg.senderID = self.clients[websocket]
+            serverchatmsg.msg = html.escape(msg.chatmsg)
+            msgout.chatmsg.append(serverchatmsg)
 
         if msg.HasField("location"):
             loc = testprotocol_pb2.Location()
@@ -87,6 +87,7 @@ class Room:
         del self.clients[websocket]
     
     def setpassword(self, websocket):#asettaa huoneelle salasanan
+        pass
         #miten salasana tallennetaan? missä muodossa? mihin?
     
 ###TODO: joku luokka, joka handlaa servun kaikki huoneet
@@ -96,10 +97,27 @@ class RoomHandler:
     async def messagehandler(self, websocket, msg, answer): #välittää vietit huoneille
         await self.room.handlemessage(websocket, msg, answer)
     
-    def newroom():#luo uuden huoneen
+    async def handlemessage(self, websocket, msg):  #käsittelee huoneiden hallintaa koskevat viestit
+        if msg.roomname:    #jos roomname kenttä on olemassa
+            joinroommsg = testprotocol_pb2.JoinRoom()
+            if msg.createroom == true:  #jos createroom checkbox on merkittynä
+                newroom()   #luo uusi huone syötetyillä parametreillä
+            else:
+                handlelogin()#yritä liittyä olemassaolevaan huoneeseen
+                
+        
+    rooms = {}#dict jossa huoneet olioina, huoneen nimi on avain
     
-    def removeroom():#poistaa olemassa olevan huoneen
-    
+    def newroom(self, websocket, msg):#luo uuden huoneen
+        if msg.roomname in self.rooms:#tarkistaa että samannimistä huonetta ei ole jo olemassa
+            pass
+            #virheilmoitus käyttäjälle
+        else:        
+            self.rooms[msg.roomname] = room #luodaan uusi huone
+        
+    def removeroom(self, roomname):#poistaa olemassa olevan huoneen
+        del self.rooms[roomname]#sulkuihin poistettavan huoneen nimi
+        
     def handlelogin(self, websocket): #mielummin handleadduser?
         self.room.adduser(websocket)
     
@@ -112,7 +130,7 @@ roomhandler = RoomHandler()
 
 async def serv(websocket, path):
     print("New connection!")
-    roomhandler.handleadduser(websocket)
+    roomhandler.handlelogin(websocket)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
             print(message)
