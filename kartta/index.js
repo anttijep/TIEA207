@@ -18,13 +18,14 @@ import {Circle, Fill, Stroke, Style} from 'ol/style';
 import {Vector as VectorLayer} from 'ol/layer';
 import {Vector as VectorSource} from 'ol/source';
 import Point from 'ol/geom/Point';
+import Collection from 'ol/Collection';
 
 
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
 var projection = getProjection("EPSG:3067");
 var capabilitiesUrl = 'https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts/1.0.0/WMTSCapabilities.xml';
-
+var markerDict = {};
 // Markerin piirtäminen
 var positionMarker = new Feature();
 positionMarker.setStyle(new Style({
@@ -72,6 +73,8 @@ var mousePositionControl = new MousePosition({
 	undefinedHTML: '&nbsp;'
 });
 var parser = new WMTSCapabilities();
+var markerLayer = new Collection();
+markerLayer.push(positionMarker);
 var view = new View({
 			projection: projection,
 			center: myPosition,
@@ -82,7 +85,7 @@ var map = new Map({
 		layers: [
 			new VectorLayer({
 				source: new VectorSource({
-					features: [positionMarker]
+					features: markerLayer
 				}),
 				zIndex: 5
 			})
@@ -92,7 +95,8 @@ var map = new Map({
 	});
 
 var types = require('./testprotocol_pb');
-var wsh = new WSHandler("ws://127.0.0.1:5678");
+var hostname = "ws://127.0.0.1:5678";
+var wsh = new WSHandler(hostname);
 
 // esim. chat eventtien lukeminen
 function test(msg) {
@@ -104,6 +108,33 @@ function test(msg) {
 wsh.addChatMessageListener(test);
 //wsh.removeChatMessageListener(test);
 // end
+
+function updateLocation(msg) {
+	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
+	var lonlat = transform([msg.getLongitude(), msg.getLatitude()], "EPSG:4326", "EPSG:3067");
+	if (msg.getSenderid() in markerDict) {
+		markerDict[msg.getSenderid()].setGeometry(lonlat ? new Point(lonlat) : null);
+	} else {
+		var markkeri = new Feature();
+		markkeri.setStyle(new Style({
+				image: new Circle({
+				radius: 12,
+				fill: new Fill({
+				color: '#ff00ff'
+			}),
+			stroke: new Stroke({
+				color: '#000000',
+				width: 2
+				})
+			})	
+		}));
+		
+		markerDict[msg.getSenderid()] = markkeri;
+		markkeri.setGeometry(lonlat ? new Point(lonlat) : null);
+		markerLayer.push(markkeri);
+	}
+}
+wsh.addLocationChangeListener(updateLocation);
 
 fetch(capabilitiesUrl).then(function(response) {
 	return response.text();

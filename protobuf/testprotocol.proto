@@ -41,5 +41,5 @@ message JoinRoom {
   string name = 1;
   string password = 2;
   string username = 3;
-  bool create = 4;
+  bool createroom = 4;
 }

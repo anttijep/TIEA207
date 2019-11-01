@@ -86,26 +86,33 @@ class Room:
         """
         del self.clients[websocket]
     
+    def setpassword(self, websocket):#asettaa huoneelle salasanan
+        #miten salasana tallennetaan? missä muodossa? mihin?
+    
 ###TODO: joku luokka, joka handlaa servun kaikki huoneet
 ###ja pitää huolta oikeuksista jne
 class RoomHandler:
     room = Room()
-    async def messagehandler(self, websocket, msg, answer): ###välittää vietit huoneille
+    async def messagehandler(self, websocket, msg, answer): #välittää vietit huoneille
         await self.room.handlemessage(websocket, msg, answer)
     
-    def handlelogin(self, websocket):
+    def newroom():#luo uuden huoneen
+    
+    def removeroom():#poistaa olemassa olevan huoneen
+    
+    def handlelogin(self, websocket): #mielummin handleadduser?
         self.room.adduser(websocket)
     
-    def handlelogout(self, websocket):
+    def handlelogout(self, websocket): #mielummin handleremoveuser? 
         self.room.removeuser(websocket)
 	
-##class User:
+#class User:
 roomhandler = RoomHandler()
 
 
 async def serv(websocket, path):
     print("New connection!")
-    roomhandler.handlelogin(websocket)
+    roomhandler.handleadduser(websocket)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
             print(message)
