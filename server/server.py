@@ -7,6 +7,12 @@ import websockets
 import html
 import socket
 import ssl
+import logging
+
+FORMAT = '%(asctime)-15s %(message)s'
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger("server")
+logger.setLevel("DEBUG")
 
 class variables:
     hostname = "127.0.0.1"
@@ -28,14 +34,20 @@ def loadConfig(config):
     except Exception as e:
         print(e)
 
-
+class User: #user class on vain huoneen sisällä
+    ID = 0 #uniikki tunniste
+    username = "testi"
+    
+    def addwebsocket(): #liittää websocketin käyttäjään
+        pass
 
 class Room:
     """
     huone johon voi liittyä ja jossa olevien viestit (location, chattiviestit jne...)
     välitetään toisille
     """
-    clients = {}
+    members = {} #jokaisella käyttäjällä oma websocket
+    teams = {}
     count = 0
     def counter(self):
         """
@@ -58,10 +70,10 @@ class Room:
         käyttötarkoitusta, jossa servu injectaisi viestiin jotain
         """
         if msg.chatmsg:
-            chatmsg = testprotocol_pb2.Chatmessage()
-            chatmsg.senderID = self.clients[websocket]
-            chatmsg.msg = html.escape(msg.chatmsg)
-            msgout.chatmsg.append(chatmsg)
+            serverchatmsg = testprotocol_pb2.Chatmessage()
+            serverchatmsg.senderID = self.clients[websocket]
+            serverchatmsg.msg = html.escape(msg.chatmsg)
+            msgout.chatmsg.append(serverchatmsg)
 
         if msg.HasField("location"):
             loc = testprotocol_pb2.Location()
@@ -69,6 +81,12 @@ class Room:
             loc.latitude = msg.location.latitude
             loc.longitude = msg.location.longitude
             msgout.locations.append(loc)
+            
+        if msg.HasField("shape"):
+            shape = msg.shape
+            shape.senderID = self.clients[websocket]
+            msgout.shapes.append(shape)
+
         bytes = msgout.SerializeToString()
         await self.sendmessage(websocket, bytes)
 
@@ -78,44 +96,71 @@ class Room:
         todo(?): ota parametrinä msg, jossa on position, nimi jne
         ja ilmoita se muille(?)
         """
-        self.clients[websocket] = self.counter()
+        self.members[websocket] = self.counter()
     
     def removeuser(self, websocket):
         """
         poistaa käyttäjän huoneesta
         """
-        del self.clients[websocket]
+        del self.members[websocket]
     
     def setpassword(self, websocket):#asettaa huoneelle salasanan
+        pass
         #miten salasana tallennetaan? missä muodossa? mihin?
+    
+    def permissions():#aseta käyttäjän oikeudet
+        pass
     
 ###TODO: joku luokka, joka handlaa servun kaikki huoneet
 ###ja pitää huolta oikeuksista jne
 class RoomHandler:
+    clients = {}
     room = Room()
     async def messagehandler(self, websocket, msg, answer): #välittää vietit huoneille
         await self.room.handlemessage(websocket, msg, answer)
     
-    def newroom():#luo uuden huoneen
+    def handlemessage(self, websocket, msg):  #käsittelee huoneiden hallintaa koskevat viestit
+        if msg.roomname:    #jos roomname kenttä on olemassa
+            joinroommsg = testprotocol_pb2.JoinRoom()
+            if msg.createroom == true:  #jos createroom checkbox on merkittynä
+                newroom()   #luo uusi huone syötetyillä parametreillä
+            else:
+                handlelogin()#yritä liittyä olemassaolevaan huoneeseen
+                
+        
+    rooms = {}#dict jossa huoneet olioina, huoneen nimi on avain
     
-    def removeroom():#poistaa olemassa olevan huoneen
+    def newroom(self, websocket, msg):#luo uuden huoneen
+        if msg.roomname in self.rooms:#tarkistaa jos samanniminen huone on jo olemassa
+            pass #virheilmoitus käyttäjälle
+        else:
+            self.rooms[msg.roomname] = room #luodaan uusi huone
+            handleadduser() #lisätään käyttäjä luotuun huoneeseen
+        
+    def removeroom(self, msg):#poistaa olemassa olevan huoneen
+        del self.rooms[msg.roomname]#sulkuihin poistettavan huoneen nimi
+        
+    def handlelogin(self, websocket): #yhdistäminen palvelimelle
+        self.clients[websocket] = self.counter()
     
-    def handlelogin(self, websocket): #mielummin handleadduser?
-        self.room.adduser(websocket)
-    
-    def handlelogout(self, websocket): #mielummin handleremoveuser? 
-        self.room.removeuser(websocket)
-	
-#class User:
+    def handlelogout(self, websocket): #yhteyden katkaisu palvelimelta
+        del self.clients[websocket]
+        
+    def handleadduser(self, websocket, msg): #lisää käyttäjän tiettyyn huoneeseen
+        self.rooms[msg.roomname].adduser(websocket)
+        
+    def handleremoveuser(self, websocket, msg): #poistaa käyttäjän tietystä huoneesta
+        self.rooms[msg.roomname].removeuser(websocket)
+        
 roomhandler = RoomHandler()
-
+    
 
 async def serv(websocket, path):
-    print("New connection!")
-    roomhandler.handleadduser(websocket)
+    logger.info("%s connected", websocket.remote_address)
+    roomhandler.handlelogin(websocket)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
-            print(message)
+            logger.debug(message)
             answer = testprotocol_pb2.FromServer()
             msg = testprotocol_pb2.ToServer()
             msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
@@ -128,9 +173,8 @@ async def serv(websocket, path):
 
 
 def runServer(config):
-    print("Starting server...\nhostname: " + config.hostname)
-    print("port: " + config.port)
-    print("ssl enabled: " + str(config.ssl_context is not None))
+    logger.info("Starting server... " + config.hostname +":" + config.port)
+    logger.info("ssl enabled: " + str(config.ssl_context is not None))
     start_server = websockets.serve(serv, config.hostname, config.port, ssl=config.ssl_context)
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()

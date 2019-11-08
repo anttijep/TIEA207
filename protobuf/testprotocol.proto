@@ -30,16 +30,53 @@ message Query {
 message FromServer {
   repeated Chatmessage chatmsg = 1;
   repeated Location locations = 2;
+  repeated DrawShape shapes = 3;
 }
+
+message DrawPoint {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+message PointArray{
+  repeated DrawPoint points = 1;
+}
+
+message Polygon{
+  repeated PointArray pointarray = 1;
+}
+
+message Circle{
+  double center = 1;
+  double radius = 2;
+}
+
+message DrawShape {
+  int32 senderID = 1;
+  repeated PointArray linestrings = 2;
+  repeated Polygon polys = 3;
+  repeated Circle circles = 4;
+}
+
+
 message ToServer {
   Query query = 1;
   SendLoginInfo logininfo = 2;
   string chatmsg = 3;
   SendLocation location = 4;
+  DrawShape shape = 5;
 }
+
 message JoinRoom {
-  string name = 1;
+  string roomname = 1;
   string password = 2;
   string username = 3;
   bool createroom = 4;
 }
+
+message JoinRoomAnswers {
+  bool joinsuccesful = 1;
+  bool wrongpassword = 2;
+  bool roomdoesntexist = 3;
+}
+
