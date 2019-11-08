@@ -38,10 +38,26 @@ message DrawPoint {
   double longitude = 2;
 }
 
-message DrawShape {
+message PointArray{
   repeated DrawPoint points = 1;
-  int32 type = 2;
-  int32 senderID = 3;
+}
+
+message Polygon{
+
+  repeated PointArray pointArray = 1;
+
+}
+
+message Circle{
+  double center = 1;
+  double radius = 2;
+}
+
+message DrawShape {
+  int32 senderID = 1;
+  repeated PointArray linestrings = 2;
+  repeated Polygon polys = 3;
+  repeated Circle circles = 4;
 }
 
 message ToServer {
