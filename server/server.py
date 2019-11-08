@@ -28,14 +28,20 @@ def loadConfig(config):
     except Exception as e:
         print(e)
 
-
+class User: #user class on vain huoneen sisällä
+    ID = 0 #uniikki tunniste
+    username = "testi"
+    
+    def addwebsocket(): #liittää websocketin käyttäjään
+        pass
 
 class Room:
     """
     huone johon voi liittyä ja jossa olevien viestit (location, chattiviestit jne...)
     välitetään toisille
     """
-    clients = {}
+    members = {} #jokaisella käyttäjällä oma websocket
+    teams = {}
     count = 0
     def counter(self):
         """
@@ -69,6 +75,7 @@ class Room:
             loc.latitude = msg.location.latitude
             loc.longitude = msg.location.longitude
             msgout.locations.append(loc)
+            
         if msg.HasField("shape"):
             shape = msg.shape
             shape.senderID = self.clients[websocket]
@@ -83,26 +90,30 @@ class Room:
         todo(?): ota parametrinä msg, jossa on position, nimi jne
         ja ilmoita se muille(?)
         """
-        self.clients[websocket] = self.counter()
+        self.members[websocket] = self.counter()
     
     def removeuser(self, websocket):
         """
         poistaa käyttäjän huoneesta
         """
-        del self.clients[websocket]
+        del self.members[websocket]
     
     def setpassword(self, websocket):#asettaa huoneelle salasanan
         pass
         #miten salasana tallennetaan? missä muodossa? mihin?
     
+    def permissions():#aseta käyttäjän oikeudet
+        pass
+    
 ###TODO: joku luokka, joka handlaa servun kaikki huoneet
 ###ja pitää huolta oikeuksista jne
 class RoomHandler:
+    clients = {}
     room = Room()
     async def messagehandler(self, websocket, msg, answer): #välittää vietit huoneille
         await self.room.handlemessage(websocket, msg, answer)
     
-    async def handlemessage(self, websocket, msg):  #käsittelee huoneiden hallintaa koskevat viestit
+    def handlemessage(self, websocket, msg):  #käsittelee huoneiden hallintaa koskevat viestit
         if msg.roomname:    #jos roomname kenttä on olemassa
             joinroommsg = testprotocol_pb2.JoinRoom()
             if msg.createroom == true:  #jos createroom checkbox on merkittynä
@@ -114,24 +125,29 @@ class RoomHandler:
     rooms = {}#dict jossa huoneet olioina, huoneen nimi on avain
     
     def newroom(self, websocket, msg):#luo uuden huoneen
-        if msg.roomname in self.rooms:#tarkistaa että samannimistä huonetta ei ole jo olemassa
-            pass
-            #virheilmoitus käyttäjälle
-        else:        
+        if msg.roomname in self.rooms:#tarkistaa jos samanniminen huone on jo olemassa
+            pass #virheilmoitus käyttäjälle
+        else:
             self.rooms[msg.roomname] = room #luodaan uusi huone
+            handleadduser() #lisätään käyttäjä luotuun huoneeseen
         
-    def removeroom(self, roomname):#poistaa olemassa olevan huoneen
-        del self.rooms[roomname]#sulkuihin poistettavan huoneen nimi
+    def removeroom(self, msg):#poistaa olemassa olevan huoneen
+        del self.rooms[msg.roomname]#sulkuihin poistettavan huoneen nimi
         
-    def handlelogin(self, websocket): #mielummin handleadduser?
-        self.room.adduser(websocket)
+    def handlelogin(self, websocket): #yhdistäminen palvelimelle
+        self.clients[websocket] = self.counter()
     
-    def handlelogout(self, websocket): #mielummin handleremoveuser? 
-        self.room.removeuser(websocket)
-	
-#class User:
+    def handlelogout(self, websocket): #yhteyden katkaisu palvelimelta
+        del self.clients[websocket]
+        
+    def handleadduser(self, websocket, msg): #lisää käyttäjän tiettyyn huoneeseen
+        self.rooms[msg.roomname].adduser(websocket)
+        
+    def handleremoveuser(self, websocket, msg): #poistaa käyttäjän tietystä huoneesta
+        self.rooms[msg.roomname].removeuser(websocket)
+        
 roomhandler = RoomHandler()
-
+    
 
 async def serv(websocket, path):
     print("New connection!")
