@@ -231,7 +231,6 @@ function addInteraction() {
     else {
     points = e.feature.getGeometry().getCoordinates();
     console.log(e.feature.getGeometry().getCoordinates());
-    console.log(e.feature.getGeometry());
 }
     //var feature = new Feature({
     //        geometry: new Polygon(points)
