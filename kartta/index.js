@@ -25,6 +25,9 @@ import LineString from "ol/geom/LineString";
 
 
 
+var types = require('./testprotocol_pb');
+var hostname = "ws://127.0.0.1:5678";
+var wsh = new WSHandler(hostname);
 
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
@@ -41,7 +44,7 @@ positionMarker.setStyle(new Style({
 		}),
 		stroke: new Stroke({
 			color: '#000000',
-			width: 2
+			width: 4
 		})
 	})	
 }));
@@ -68,17 +71,19 @@ if (navigator.geolocation) {
 		var longitude = position.coords.longitude;
 		var accuracy = position.coords.accuracy;
 		var debuginfo = document.getElementById("debuginfo");
-		debuginfo.innerHTML = "latitude: " + latitude + ", longitude: " + longitude + ", accuracy: " + accuracy;
+		debuginfo.innerHTML = "longitude: " + longitude + ", latitude: " + latitude + ", accuracy: " + accuracy;
 		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		navigator.geolocation.watchPosition(function(position) {
+			myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
+			positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+			debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+		});
 		view.setCenter(myPosition);
 	});
 } else {
 	console.log("Geolocation API is not supported in your browser.");
 }
-
-console.log(myPosition);
-
 
 // https://openlayers.org/en/latest/examples/mouse-position.html
 var mousePositionControl = new MousePosition({
@@ -91,12 +96,13 @@ var mousePositionControl = new MousePosition({
 	undefinedHTML: '&nbsp;'
 });
 var parser = new WMTSCapabilities();
+
 var markerLayer = new Collection();
 markerLayer.push(positionMarker);
 var view = new View({
 			projection: projection,
 			center: myPosition,
-			zoom: 10
+			zoom: 16
 		});
 var map = new Map({
 		controls: defaultControls().extend([mousePositionControl]),
@@ -112,9 +118,6 @@ var map = new Map({
 		view: view
 	});
 
-var types = require('./testprotocol_pb');
-var hostname = "ws://127.0.0.1:5678";
-var wsh = new WSHandler(hostname);
 
 // esim. chat eventtien lukeminen
 function test(msg) {
@@ -153,6 +156,8 @@ function updateLocation(msg) {
 	}
 }
 wsh.addLocationChangeListener(updateLocation);
+
+
 
 fetch(capabilitiesUrl).then(function(response) {
 	return response.text();
