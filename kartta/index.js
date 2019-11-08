@@ -210,7 +210,10 @@ var vectorLayerFeatures =vectorLayerSource.getFeatures();
 var typeSelect = document.getElementById('piirto');
 var points;
 var draw; // global so we can remove it later
+var circleCenter;
+var circleRadius;
 function addInteraction() {
+  var text = typeSelect.options[typeSelect.selectedIndex].text;
   var value = typeSelect.value;
   if (value !== 'None') {
     draw = new Draw({
@@ -219,9 +222,17 @@ function addInteraction() {
       freehand: true
     });
     draw.on('drawend',function(e){
+    if(text=="Circle"){
+    	circleCenter = e.feature.getGeometry().getCenter();
+    	circleRadius = e.feature.getGeometry().getRadius();
+    	console.log("center "+circleCenter + " " + "radius "+circleRadius);
+    	points = null;
+    }
+    else {
     points = e.feature.getGeometry().getCoordinates();
     console.log(e.feature.getGeometry().getCoordinates());
-    //debugger;
+    console.log(e.feature.getGeometry());
+}
     //var feature = new Feature({
     //        geometry: new Polygon(points)
     //    });
@@ -262,13 +273,30 @@ function drawTest(){
 
 function transformAndSendCoord(points){
 	var coordArray=[];
+	var selected = document.getElementById("piirto");
+	var text = selected.options[selected.selectedIndex].text;
 	var trimmedCoord;
-	for(var i=0;i<points.length;i++){
-		trimmedCoord =points[i];
-		coordArray[i]=transform(trimmedCoord,"EPSG:4326", "EPSG:3067");
+	var helpArray;
+	var transformedCenter;
+	if(text == "LineString"){
+		for(var i=0;i<points.length;i++){
+			trimmedCoord =points[i];
+			coordArray[i]=transform(trimmedCoord,"EPSG:4326", "EPSG:3067");
+		}
 	}
-	console.log("global coordinates")
-	console.log(coordArray);
+	if(text == "Polygon"){
+		for(var i=0;i<points[0].length;i++){
+			helpArray = points[0]
+			trimmedCoord =helpArray[i];
+			coordArray[i]=transform(trimmedCoord,"EPSG:4326", "EPSG:3067");
+		}
+	}
+	if(text == "Circle"){
+		transformedCenter = transform(circleCenter,"EPSG:4326", "EPSG:3067");
+	}
+	console.log("global coordinates");
+	if(text =="LineString" || text == "Polygon") console.log(coordArray);
+	else {console.log("global center: "+transformedCenter+ "radius: " + circleRadius);}
 }
 
 
