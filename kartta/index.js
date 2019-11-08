@@ -20,7 +20,6 @@ import {Vector as VectorSource} from 'ol/source';
 import Point from 'ol/geom/Point';
 import Collection from 'ol/Collection';
 
-
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
 var projection = getProjection("EPSG:3067");
@@ -28,11 +27,12 @@ var capabilitiesUrl = 'https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts/
 var markerDict = {};
 // Markerin piirtäminen
 var positionMarker = new Feature();
+var omaVari = "#ffff00";
 positionMarker.setStyle(new Style({
 	image: new Circle({
 		radius: 12,
 		fill: new Fill({
-			color: '#ffff00'
+			color: omaVari
 		}),
 		stroke: new Stroke({
 			color: '#000000',
@@ -43,6 +43,34 @@ positionMarker.setStyle(new Style({
 
 // https://openlayers.org/en/latest/doc/faq.html#why-is-the-order-of-a-coordinate-lon-lat-and-not-lat-lon-
 var myPosition = transform([25.749498121, 62.241677684], "EPSG:4326", "EPSG:3067");
+var myAccuracy = 0;
+var currentZoomLevel = 10;
+var accuracyCircle = new Circle({
+		radius: myAccuracy,
+		fill: new Fill({
+			color: omaVari
+		}),
+		stroke: new Stroke({
+			color: '#ffffff',
+			width: 1
+		})
+	});
+
+var accuracyMarker = new Feature();
+accuracyMarker.setStyle(new Style({
+	image: accuracyCircle
+}));
+
+var view = new View({
+			projection: projection,
+			center: myPosition,
+			zoom: currentZoomLevel,
+			minZoom:0,
+			maxZoom:18
+		});
+
+var parser = new WMTSCapabilities();
+var scales = [];
 
 if (navigator.geolocation) {
 	navigator.geolocation.getCurrentPosition(function(position) {
@@ -53,10 +81,23 @@ if (navigator.geolocation) {
 		debuginfo.innerHTML = "longitude: " + longitude + ", latitude: " + latitude + ", accuracy: " + accuracy;
 		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		positionMarker.watchPosition(function(position) {
+		myAccuracy = position.coords.accuracy;
+		navigator.geolocation.watchPosition(function(position) {
 			myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
 			positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-			debuginfo.innerHTML = "longitude: " + longitude + ", latitude: " + latitude + ", accuracy: " + accuracy;
+			debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+			myAccuracy = position.coords.accuracy;
+			
+			console.log(scales);
+			currentZoomLevel = Math.round(map.getView().getZoom());	
+			// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
+			var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
+		
+			console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
+			console.log(kaava);
+			console.log('Exact zoom level: ' + map.getView().getZoom());
+			accuracyCircle.setRadius(kaava);
+			accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		});
 		view.setCenter(myPosition);
 	});
@@ -74,15 +115,12 @@ var mousePositionControl = new MousePosition({
 	target: document.getElementById('mouse-position'),
 	undefinedHTML: '&nbsp;'
 });
-var parser = new WMTSCapabilities();
 
 var markerLayer = new Collection();
+var accuracyLayer = new Collection();
 markerLayer.push(positionMarker);
-var view = new View({
-			projection: projection,
-			center: myPosition,
-			zoom: 10
-		});
+accuracyLayer.push(accuracyMarker);
+
 var map = new Map({
 		controls: defaultControls().extend([mousePositionControl]),
 		layers: [
@@ -91,11 +129,35 @@ var map = new Map({
 					features: markerLayer
 				}),
 				zIndex: 5
+			}),
+			new VectorLayer({
+				opacity: 0.3,
+				source: new VectorSource({
+					features: accuracyLayer
+				}),
+				zIndex: 4
 			})
 		],
 		target: 'map',
 		view: view
 	});
+	
+map.on('moveend', function(event) {
+	if (scales[currentZoomLevel] != undefined) {
+		console.log(scales);
+		if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
+		else currentZoomLevel = Math.round(map.getView().getZoom());	
+		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
+		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
+		
+		console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
+		console.log(kaava);
+		console.log('Exact zoom level: ' + map.getView().getZoom());
+		accuracyCircle.setRadius(kaava);
+		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+	}
+});
+
 
 var types = require('./testprotocol_pb');
 var hostname = "ws://127.0.0.1:5678";
@@ -139,8 +201,6 @@ function updateLocation(msg) {
 }
 wsh.addLocationChangeListener(updateLocation);
 
-
-
 fetch(capabilitiesUrl).then(function(response) {
 	return response.text();
 }).then(function(text) {
@@ -149,6 +209,7 @@ fetch(capabilitiesUrl).then(function(response) {
 		layer: 'maastokartta',
 		matrixSet: 'EPSG:3067'
 	});
+	scales = result.Contents.TileMatrixSet[1].TileMatrix;	// xml:stä saadut arvot (EPSG:3067)
 	var tl = new TileLayer({
 				opacity: 1,
 				source: new WMTS(options),
@@ -172,7 +233,6 @@ fetch(capabilitiesUrl).then(function(response) {
 	}); */
 });
 
-
 var projectionSelect = document.getElementById('projection');
 projectionSelect.addEventListener('change', function(event) {
 	mousePositionControl.setProjection(event.target.value);
@@ -183,5 +243,3 @@ precisionInput.addEventListener('change', function(event) {
 	var format = createStringXY(event.target.valueAsNumber);
 	mousePositionControl.setCoordinateFormat(format);
 });
-
-

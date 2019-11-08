@@ -1,9 +1,9 @@
 
 import { WSHandler } from "../kartta/wshandler";
-var hostname = "ws://127.0.0.1:5678"
+var hostname = "wss://4nxi.xyz:5678"
 
 //var wshandler = require('./wshandler');
-var wsh = new WSHandler("ws://127.0.0.1:5678");
+var wsh = new WSHandler(hostname);
 
 // esim. chat eventtien lukeminen
 var messageselement = document.getElementById('chattesti');
