@@ -7,6 +7,12 @@ import websockets
 import html
 import socket
 import ssl
+import logging
+
+FORMAT = '%(asctime)-15s %(message)s'
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger("server")
+logger.setLevel("DEBUG")
 
 class variables:
     hostname = "127.0.0.1"
@@ -150,11 +156,11 @@ roomhandler = RoomHandler()
     
 
 async def serv(websocket, path):
-    print("New connection!")
+    logger.info("%s connected", websocket.remote_address)
     roomhandler.handlelogin(websocket)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
-            print(message)
+            logger.debug(message)
             answer = testprotocol_pb2.FromServer()
             msg = testprotocol_pb2.ToServer()
             msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
@@ -167,9 +173,8 @@ async def serv(websocket, path):
 
 
 def runServer(config):
-    print("Starting server...\nhostname: " + config.hostname)
-    print("port: " + config.port)
-    print("ssl enabled: " + str(config.ssl_context is not None))
+    logger.info("Starting server... " + config.hostname +":" + config.port)
+    logger.info("ssl enabled: " + str(config.ssl_context is not None))
     start_server = websockets.serve(serv, config.hostname, config.port, ssl=config.ssl_context)
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()
