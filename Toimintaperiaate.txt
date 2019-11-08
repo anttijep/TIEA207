@@ -19,9 +19,9 @@ käyttäjä liittyy, jos hän ei ole jo jossain huoneessa, syöttää huoneen nimen sek
 , jos huone ei ole olemassa, luo uusi huone syötetyllä nimellä
 , jos huone on olemassa kysy salasanaa huoneeseen, lisää käyttäjä huoneeseen
 
-client lista roomhandler luokassa?
-handlelogin ja handlelogout metodien lisäksi handleadduser ja handleremoveuser?
+client lista roomhandler luokassa
+handlelogin ja handlelogout metodien lisäksi handleadduser ja handleremoveuser
 
-joukkue dict room luokassa?
+members dict room luokassa
 liitytään oletuksena unassigned tiimiin
-admins lista vai isAdmin attribuutti jokaisella käyttäjällä?
+admins lista
