@@ -21,17 +21,48 @@ export class WSHandler {
 		this.ws.send(msg.serializeBinary());
 	}
 
-	sendDrawing(type, array) {
-		var msg = new proto.testi.ToServer();
-		
+	sendCircle(center, radius) {
+
+		var circle = new proto.testi.Circle();
+		circle.setCenter(center);
+		circle.setRadius(radius);
 		var shape = new proto.testi.DrawShape();
+		shape.getCirclesList().push(circle);
+		var msg = new proto.testi.ToServer();
+		msg.setShape(shape);
+		this.ws.send(msg.serializeBinary());
+	}
+
+	sendPolygon(poly) {
+		var polygon = new testi.proto.Polygon();
+		poly.forEach(arr=>{
+			var points = new proto.testi.PointArray();
+			arr.forEach(p=>{
+				var point = new proto.testi.DrawPoint();
+				point.setLongitude(p[0]);
+				point.setLongitude(p[1]);
+				points.getPointsList().push(point);
+			});
+			polygon.getPointarray().push(points);
+		});
+		var msg = new proto.testi.ToServer();
+		var shape = new proto.testi.DrawShape();
+		shape.getPolysList().push(polygon);
+		msg.setShape(shape);
+		this.ws.send(msg.serializeBinary());
+	}
+
+	sendLinestring(array) {
+		var msg = new proto.testi.ToServer();
+		var shape = new proto.testi.DrawShape();
+		var points = new proto.testi.PointArray();
 		array.forEach(e=>{
 			var point = new proto.testi.DrawPoint();
 			point.setLongitude(e[0]);
 			point.setLatitude(e[1]);
-			shape.getPointsList().push(point);
+			points.getPointsList().push(point);
 		});
-		shape.setType(0);
+		shape.getLinestringsList().push(points);
 		msg.setShape(shape);
 		this.ws.send(msg.serializeBinary());
 	}
