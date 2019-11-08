@@ -19,6 +19,11 @@ import {Vector as VectorLayer} from 'ol/layer';
 import {Vector as VectorSource} from 'ol/source';
 import Point from 'ol/geom/Point';
 import Collection from 'ol/Collection';
+import Draw from 'ol/interaction/Draw';
+import Polygon from 'ol/geom/Polygon';
+import LineString from "ol/geom/LineString";
+
+
 
 
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
@@ -41,6 +46,19 @@ positionMarker.setStyle(new Style({
 	})	
 }));
 
+var source = new VectorSource({wrapX: false});
+var vector = new VectorLayer({
+  source: source,
+  style: new Style({
+    fill: new Fill({
+      color: 'rgba(255,255,0,0.5)'
+    }),
+    stroke: new Stroke({
+      color: 'yellow',
+      width: 7
+    })
+  })
+});
 // https://openlayers.org/en/latest/doc/faq.html#why-is-the-order-of-a-coordinate-lon-lat-and-not-lat-lon-
 var myPosition = transform([25.749498121, 62.241677684], "EPSG:4326", "EPSG:3067");
 
@@ -89,7 +107,7 @@ var map = new Map({
 				}),
 				zIndex: 5
 			})
-		],
+		,vector],
 		target: 'map',
 		view: view
 	});
@@ -150,6 +168,8 @@ fetch(capabilitiesUrl).then(function(response) {
 				zIndex: 0
 			});
 	map.addLayer(tl);
+	map.removeLayer(vector);
+  	map.addLayer(vector);
 	/* map = new Map({
 		controls: defaultControls().extend([mousePositionControl]),
 		layers: [
@@ -179,4 +199,139 @@ precisionInput.addEventListener('change', function(event) {
 	mousePositionControl.setCoordinateFormat(format);
 });
 
+var vectorLayerSource = vector.getSource();
+var vectorLayerFeatures =vectorLayerSource.getFeatures();
 
+var typeSelect = document.getElementById('piirto');
+var points;
+var draw; // global so we can remove it later
+function addInteraction() {
+  var value = typeSelect.value;
+  if (value !== 'None') {
+    draw = new Draw({
+      source: source,
+      type: typeSelect.value,
+      freehand: true
+    });
+    draw.on('drawend',function(e){
+    points = e.feature.getGeometry().getCoordinates();
+    console.log(e.feature.getGeometry().getCoordinates());
+    //debugger;
+    //var feature = new Feature({
+    //        geometry: new Polygon(points)
+    //    });
+ 	//debugger;
+ 	//var feature =sendShapeCoord(event);
+
+    //source.addFeature(feature);
+    transformAndSendCoord(points);
+    });
+      map.addInteraction(draw);
+      
+  }
+}
+/**
+ * Handle change event.
+ */
+typeSelect.onchange = function() {
+  map.removeInteraction(draw);
+  addInteraction();
+};
+
+function clearAll(event){
+  event.preventDefault();
+  vectorLayerSource.clear();
+ // vector.setVisible(false);
+ // vector.setVisible(true);
+};
+var testButton =document.getElementById("test");
+var buttonId =document.getElementById("clear");
+testButton.onclick = sendShapeCoord;
+buttonId.onclick = clearAll;
+function drawTest(){
+	    var feature = new Feature({
+            geometry: new Polygon(points)
+        });
+    source.addFeature(feature);
+}
+
+function transformAndSendCoord(points){
+	var coordArray=[];
+	var trimmedCoord;
+	for(var i=0;i<points.length;i++){
+		trimmedCoord =points[i];
+		coordArray[i]=transform(trimmedCoord,"EPSG:4326", "EPSG:3067");
+	}
+	console.log("global coordinates")
+	console.log(coordArray);
+}
+
+
+function sendShapeCoord(){
+	var shape;
+	var selected = document.getElementById("piirto");
+	var text = selected.options[selected.selectedIndex].text;
+	if(text=="None") {return;}
+	if(text=="LineString"){
+		shape = new Feature({
+			geometry: new LineString(points)
+		})
+		source.addFeature(shape);
+		return shape;
+	}
+	if(text=="Polygon"){
+		shape = new Feature({
+			geometry: new Polygon(points)
+		})
+		source.addFeature(shape);
+		return shape;
+	}
+	if(text=="Circle"){
+		shape = new Feature({
+			geometry: new Circle(points)
+		})
+		source.addFeature(shape);
+		return shape;
+	}
+	else return;
+}
+
+var resolution = document.getElementById("resolution");
+
+
+
+
+function changeResolution(){
+	var text = resolution.options[resolution.selectedIndex].text;
+	var sheet = document.createElement('style');
+	if(text=="1200x900"){
+		//map.style.width = "1200px";
+		//map.style.height = "900px";
+		var styleHTML = ".custommap {    width: 1200px;    height: 900px;}";
+		sheet.innerHTML = styleHTML;
+		document.body.appendChild(sheet);
+		map.updateSize();
+	}
+	if(text=="750x1334"){
+		//map.style.width = "750px";
+		//map.style.height = "1334px";
+		var styleHTML = ".custommap {    width: 750px;    height: 1334px;}";
+		sheet.innerHTML = styleHTML;
+		document.body.appendChild(sheet);
+		map.updateSize();
+	}
+	if(text=="720x1280"){
+		//map.style.width = "720px";
+		//map.style.height = "1280px";
+		var styleHTML = ".custommap {    width: 720px;    height: 1280px;}";
+		sheet.innerHTML = styleHTML;
+		document.body.appendChild(sheet);
+		map.updateSize();
+	}
+}
+
+//resolution.onchange = function(){
+//	debugger;
+//	changeResolution();
+//}
+//resolution.addEventListener("change",changeResolution);
