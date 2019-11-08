@@ -30,8 +30,8 @@ wsh.addLocationChangeListener(test2);
 function test3(msg) {
 	var message = document.createElement('li');
 	var arr = [];
-	msg.getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()]));
-	var s = msg.getSenderid() + ": " + msg.getType()+ " :: " + arr.join("->");
+	msg.getLinestringsList().forEach(lstrings=>lstrings.getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()])));
+	var s = msg.getSenderid() + " :: " + arr.join("->");
 	message.appendChild(document.createTextNode(s));
 	messageselement.appendChild(message);
 }
@@ -60,7 +60,7 @@ function sendposition(evnt) {
 
 function senddrawing(evnt) {
 	var arr = [[24.944,60.167],[25.7495, 62.242],[28.188,61.059]];
-	wsh.sendDrawing(0, arr);
+	wsh.sendLinestring(arr);
 }
 
 
