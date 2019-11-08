@@ -110,7 +110,7 @@ class Room:
         """
         poistaa käyttäjän huoneesta
         """
-        del self.clients[websockets]
+        del self.clients[websocket]
         #del self.members[userID]
     
     def setpassword(self, websocket):#asettaa huoneelle salasanan
