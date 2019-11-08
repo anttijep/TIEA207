@@ -46,8 +46,13 @@ class Room:
     huone johon voi liittyä ja jossa olevien viestit (location, chattiviestit jne...)
     välitetään toisille
     """
-    members = {} #jokaisella käyttäjällä oma websocket
-    teams = {}
+    members = {} #huoneen jäsenet eli user classit
+    teams = {#joukkuelista
+        "default": "unassigned" #luodaan oletusjoukkue
+    }
+    admins = {} #adminit
+    user = User()
+    clients = {}
     count = 0
     def counter(self):
         """
@@ -90,25 +95,32 @@ class Room:
         bytes = msgout.SerializeToString()
         await self.sendmessage(websocket, bytes)
 
-    def adduser(self, websocket):
+    def createuser(self, websocket):
         """
         lisää käyttäjän huoneeseen
         todo(?): ota parametrinä msg, jossa on position, nimi jne
         ja ilmoita se muille(?)
         """
-        self.members[websocket] = self.counter()
+        self.members[userID] = user #luo käyttäjän, avain on käyttäjän uniikki ID
+        
+    def adduser(self, websocket):
+        self.clients[websocket] = self.counter()
     
     def removeuser(self, websocket):
         """
         poistaa käyttäjän huoneesta
         """
-        del self.members[websocket]
+        del self.clients[websockets]
+        #del self.members[userID]
     
     def setpassword(self, websocket):#asettaa huoneelle salasanan
         pass
         #miten salasana tallennetaan? missä muodossa? mihin?
     
-    def permissions():#aseta käyttäjän oikeudet
+    def Addmin(self, websocket): #asettaa käyttäjän adminiksi
+        pass
+    
+    def removeadmin():#poista admin oikeudet
         pass
     
 ###TODO: joku luokka, joka handlaa servun kaikki huoneet
@@ -141,16 +153,20 @@ class RoomHandler:
         del self.rooms[msg.roomname]#sulkuihin poistettavan huoneen nimi
         
     def handlelogin(self, websocket): #yhdistäminen palvelimelle
-        self.clients[websocket] = self.counter()
+        self.room.adduser(websocket)
+        #self.clients[websocket] = self.counter()
     
     def handlelogout(self, websocket): #yhteyden katkaisu palvelimelta
-        del self.clients[websocket]
+        self.room.removeuser(websocket)
+        #del self.clients[websocket]
         
     def handleadduser(self, websocket, msg): #lisää käyttäjän tiettyyn huoneeseen
-        self.rooms[msg.roomname].adduser(websocket)
+        self.rooms[msg.roomname].createuser(websocket)
         
     def handleremoveuser(self, websocket, msg): #poistaa käyttäjän tietystä huoneesta
         self.rooms[msg.roomname].removeuser(websocket)
+        
+    #joku metodi jolla luodaan uniikit ID:t käyttäjille
         
 roomhandler = RoomHandler()
     
