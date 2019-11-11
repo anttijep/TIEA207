@@ -13,11 +13,6 @@ message Location {
   double longitude = 3;
 }
 
-message SendLocation {
-  double latitude = 1;
-  double longitude = 2;
-}
-
 message SendLoginInfo {
   string key = 1;
 }
@@ -63,7 +58,7 @@ message ToServer {
   Query query = 1;
   SendLoginInfo logininfo = 2;
   string chatmsg = 3;
-  SendLocation location = 4;
+  Location location = 4;
   DrawShape shape = 5;
 }
 

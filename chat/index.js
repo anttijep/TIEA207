@@ -1,6 +1,6 @@
 
 import { WSHandler } from "../kartta/wshandler";
-var hostname = "wss://4nxi.xyz:5678"
+var hostname = "ws://127.0.0.1:5678";
 
 //var wshandler = require('./wshandler');
 var wsh = new WSHandler(hostname);
@@ -19,7 +19,7 @@ wsh.addChatMessageListener(test);
 // esim2. location lukeminen
 function test2(msg) {
 	var message = document.createElement('li');
-	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
+	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude() + ", " + msg.getAccuracy();
 	message.appendChild(document.createTextNode(s));
 	messageselement.appendChild(message);
 }
@@ -54,7 +54,7 @@ var longbox = document.getElementById("longitude");
 function sendposition(evnt) {
 	var lat = parseFloat(latbox.value); 
 	var lon = parseFloat(longbox.value); 
-	wsh.sendLocation(lat, lon);
+	wsh.sendLocation(lat, lon, 25);
 	evnt.preventDefault();
 }
 

@@ -81,10 +81,8 @@ class Room:
             msgout.chatmsg.append(serverchatmsg)
 
         if msg.HasField("location"):
-            loc = testprotocol_pb2.Location()
+            loc = msg.location
             loc.senderID = self.clients[websocket]
-            loc.latitude = msg.location.latitude
-            loc.longitude = msg.location.longitude
             msgout.locations.append(loc)
             
         if msg.HasField("shape"):
@@ -176,10 +174,10 @@ async def serv(websocket, path):
     roomhandler.handlelogin(websocket)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
-            logger.debug(message)
             answer = testprotocol_pb2.FromServer()
             msg = testprotocol_pb2.ToServer()
             msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
+            logger.debug(msg);
             await roomhandler.messagehandler(websocket, msg, answer)
     except Exception as e:
         print(e)
