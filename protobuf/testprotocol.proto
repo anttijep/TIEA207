@@ -1,34 +1,7 @@
 syntax = "proto3";
 
 package testi;
-
-message Chatmessage {
-  int32 senderID = 1;
-  string msg = 2;
-}
-
-message Location {
-  int32 senderID = 1;
-  double latitude = 2;
-  double longitude = 3;
-  int32 accuracy = 4;
-}
-
-message SendLoginInfo {
-  string key = 1;
-}
-
-message Query {
-  uint64 cmd = 1;
-  string args = 2;
-}
-
-message FromServer {
-  repeated Chatmessage chatmsg = 1;
-  repeated Location locations = 2;
-  repeated DrawShape shapes = 3;
-}
-
+// DRAW
 message DrawPoint {
   double latitude = 1;
   double longitude = 2;
@@ -54,6 +27,31 @@ message DrawShape {
   repeated Circle circles = 4;
 }
 
+// DRAW END
+
+
+//CHAT&& LOCATION
+message Chatmessage {
+  int32 senderID = 1;
+  string msg = 2;
+}
+
+message Location {
+  int32 senderID = 1;
+  double latitude = 2;
+  double longitude = 3;
+  int32 accuracy = 4;
+}
+//CHAT&&LOCATION END
+
+message FromServer {
+  repeated Chatmessage chatmsg = 1;
+  repeated Location locations = 2;
+  repeated DrawShape shapes = 3;
+  LoginAnswer loginanswer = 16;
+  JoinRoomAnswer joinanswer = 17;
+  string errmsg = 18;
+}
 
 message ToServer {
   Query query = 1;
@@ -61,18 +59,41 @@ message ToServer {
   string chatmsg = 3;
   Location location = 4;
   DrawShape shape = 5;
+  JoinRoom joinroom = 6;
+}
+
+
+// LOGIN&&JOIN
+
+message LoginAnswer {
+  string key = 1;
+  string username = 2;
+  bool success = 3;
+  string errmsg = 4;
+}
+
+message SendLoginInfo {
+  string key = 1;
+  string username = 2;
 }
 
 message JoinRoom {
   string roomname = 1;
   string password = 2;
-  string username = 3;
-  bool createroom = 4;
+  bool createroom = 3;
 }
 
-message JoinRoomAnswers {
-  bool joinsuccesful = 1;
+message JoinRoomAnswer {
+  bool success = 1;
   bool wrongpassword = 2;
-  bool roomdoesntexist = 3;
+  bool roomexist = 3;
+  string errmsg = 4;
 }
+// LOGIN&&JOIN END
+
+message Query {
+  uint64 cmd = 1;
+  string args = 2;
+}
+
 

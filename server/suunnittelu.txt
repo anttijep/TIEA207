@@ -1,11 +1,21 @@
 
 
+enum state
+----------
+0 = connected
+1 = logged in
+2 = disconnected
 
 User-class
 ---------------
 |uid          |
 |             |
 |websocket    | connection, jonka kautta voidaan lähettää viestejä
+|             |
+|state-enum   | onko käyttäjä kirjautunut sisään.
+|             | i.e ei voi liittyä huoneeseen, jos ei ole kirjautunut
+|             | jos taas on disconnected, niin voidaan ehkä lähettää ohi menneet viestit uudestaan,
+|             | kun käyttäjä ottaa uuden yhteyden
 |             |
 |username     |
 |             |
