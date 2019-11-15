@@ -85,8 +85,12 @@ wsh.addLocationChangeListener(test2);
 function test3(msg) {
 	var message = document.createElement('li');
 	var arr = [];
-	msg.getLinestringsList().forEach(lstrings=>lstrings.getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()])));
-	var s = msg.getSenderid() + " :: " + arr.join("->");
+	var id = -1;
+	msg.getLinestringsList().forEach(lstrings=>{
+		lstrings.getPointarray().getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()]))
+		id = lstrings.getId();
+	});
+	var s = msg.getSenderid() + " :: " + id + " :: " + arr.join("->");
 	message.appendChild(document.createTextNode(s));
 	messageselement.appendChild(message);
 }
