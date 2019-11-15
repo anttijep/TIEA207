@@ -5,22 +5,31 @@ html, body{
 }
 
 #map {
-	  height: 95%;
-  }
+	  height: 100%;
+	  position: relative;
+	  margin: 0px;
+	  z-index: -1;
+}
 
- /* Style the navigation menu */
+
+
+ /* Navigaatiomenu */
 .navigation {
   overflow: hidden;
   background-color: #333;
-  position: relative;
+  position: absolute;
+  z-index: 1;
+  margin-right: 0px;
+  margin-left: 0px;
+  width: 100%;
 }
 
-/* Hide the links inside the navigation menu (except for logo/home) */
-.navigation #myLinks {
+/* Piilottaa avautuvat linkit */
+.navigation #links {
   display: none;
 }
 
-/* Style navigation menu links */
+/* Navigaatiolinkit */
 .navigation a {
   color: white;
   padding: 14px 16px;
@@ -29,23 +38,45 @@ html, body{
   display: block;
 }
 
-/* Style the hamburger menu */
+/* Hampurilaiskuvake */
 .navigation a.icon {
   background: black;
   display: block;
   position: absolute;
-  right: 0;
+  left: 0;
   top: 0;
 }
 
-/* Add a grey background color on mouse-over */
+/* Hiiren alla olevan linkin tausta */
 .navigation a:hover {
   background-color: #ddd;
   color: black;
 }
 
-/* Style the active link (or home/logo) */
+
+.navigation #topbar {
+  padding-left: 65px;
+}
+
+/* Tyylittelee tällä hetkellä valitun linkin */
 .active {
   background-color: #4CAF50;
   color: white;
 } 
+
+/* Alapalkin tyyli */
+.bottombar {
+	z-index: 1;
+	position: absolute;
+	margin-right: 0px;
+	margin-left: 0px;
+	margin-bottom: 0px;
+	width: 100%;
+	opacity: 0.5;
+}
+
+.bottombar #drawtools {
+	display: flex;
+	justify-content: space-evenly;
+	opacity: 1;
+}

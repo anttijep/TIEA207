@@ -10,17 +10,24 @@
   </head>
   <body>
 	<div class="navigation">
-		<a href="" class="active">Tiedot #placeholder</a>
+		<a id="topbar" class="active">Tiedot #placeholder</a>
 		<div id="links">
 			<a href="#rooms">Huoneet</a>
 			<a href="#teams">Ryhmät</a>
 			<a href="#settings">Asetukset</a>
+			<a href="#drawtools">Piirtotyökalut</a>
 		</div>
 		<a id="hamburger" class="icon">
 			<i class="fa fa-bars"></i>
 		</a>
 	</div>
     <div id="map"></div>
+	<div class="bottombar">
+		<div id="drawtools">
+			<a href="#draw">Piirrä</a>
+			<a href="#erase">Pyyhi</a>
+		</div>
+	</div>
     <!-- <div id="mouse-position"></div> -->
     <form id="debugform">
       <label>Projection </label>
@@ -39,8 +46,10 @@
       <button id="clear" >Clear</button> 
       <button id="test" type="button">test</button> 
     </form>
-      <label>Precision </label>
-      <input id="precision" type="number" min="0" max="12" value="4"/>
+		<div id="piilotettava">
+		  <label>Precision </label>
+		  <input id="precision" type="number" min="0" max="12" value="4"/>
+		</div>
     </form>
 	
 	
