@@ -8,6 +8,8 @@ import html
 import socket
 import ssl
 import logging
+import secrets
+from enum import Enum
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
@@ -33,16 +35,64 @@ def loadConfig(config):
             return conf
     except Exception as e:
         print(e)
+    return None
 
+class State(Enum):
+    UNKNOWN = -1
+    CONNECTED = 0
+    LOGGED_IN = 1
+    DISCONNECTED = 2
 
+class User: #user class on vain huoneen sisällä
+    def __init__(self):
+        self.key = None #uniikki tunniste
+        self.username = "anonymous"
+        self.state = State.UNKNOWN
+        self.websocket = None
+        self.room = None
+        self.location = [0,0]
+
+    def setsocket(self, websocket):
+        self.websocket = websocket
+    def getsocket(self):
+        return self.websocket
+    def setstate(self, state):
+        self.state = state;
+    def getstate(self):
+        return self.state;
+
+    def setlocation(self, pos):
+        self.location = pos
+
+    def getlocation(self):
+        return self.location
+
+    async def send(self, msg):
+        await self.websocket.send(msg)
 
 class Room:
     """
     huone johon voi liittyä ja jossa olevien viestit (location, chattiviestit jne...)
     välitetään toisille
     """
-    clients = {}
-    count = 0
+    def __init__(self):
+        self.clients = {}
+        self.members = {} #huoneen jäsenet eli user classit
+        self.teams = {#joukkuelista
+            "default": "unassigned" #luodaan oletusjoukkue
+        }
+        self.admins = {} #adminit
+        self.count = 0
+        self.drawcount = 0
+        self.drawings = {}
+        self.drawings["linestrings"] = {}
+        self.drawings["circles"] = {}
+        self.drawings["polygons"] = {}
+
+    def drawcounter(self):
+        self.drawcount += 1
+        return self.drawcount
+
     def counter(self):
         """
         counteri, jotta kaikilla on uniqueid
@@ -50,111 +100,197 @@ class Room:
         self.count += 1
         return self.count
 
-    async def sendmessage(self, websocket, msg):
+    async def sendmessage(self, user, msg):
         """
         lähettää viestin kaikille huoneessa oleville
         """
         if self.clients:
             await asyncio.wait([client.send(msg) for client in self.clients]) #if client != websocket])
 
-    async def handlemessage(self, websocket, msg, msgout):
+    async def handlemessage(self, user : User, msg):
         """
         parsee viestit ja muodostaa viestin
-        msgout parametri varmaan poistettavissa, jos ei löydy
-        käyttötarkoitusta, jossa servu injectaisi viestiin jotain
         """
+        msgout = testprotocol_pb2.FromServer()
+        relay = False
         if msg.chatmsg:
+            relay = True
             serverchatmsg = testprotocol_pb2.Chatmessage()
-            serverchatmsg.senderID = self.clients[websocket]
+            serverchatmsg.senderID = self.clients[user]
             serverchatmsg.msg = html.escape(msg.chatmsg)
             msgout.chatmsg.append(serverchatmsg)
 
         if msg.HasField("location"):
-            loc = testprotocol_pb2.Location()
-            loc.senderID = self.clients[websocket]
-            loc.latitude = msg.location.latitude
-            loc.longitude = msg.location.longitude
+            relay = True
+            loc = msg.location
+            loc.senderID = self.clients[user]
             msgout.locations.append(loc)
+            user.setlocation([loc.latitude, loc.longitude])
+            
         if msg.HasField("shape"):
+            relay = True
             shape = msg.shape
-            shape.senderID = self.clients[websocket]
+            shape.senderID = self.clients[user]
+            for i in msg.shape.linestrings:
+                i.id = self.drawcounter()
+                self.drawings["linestrings"][i.id] = i
+            for i in msg.shape.polys:
+                i.id = self.drawcounter()
+                self.drawings["polygons"][i.id] = i
+            for i in msg.shape.circles:
+                i.id = self.drawcounter()
+                self.drawings["circles"][i.id] = i
+
             msgout.shapes.append(shape)
-
-        bytes = msgout.SerializeToString()
-        await self.sendmessage(websocket, bytes)
-
-    def adduser(self, websocket):
-        """
-        lisää käyttäjän huoneeseen
-        todo(?): ota parametrinä msg, jossa on position, nimi jne
-        ja ilmoita se muille(?)
-        """
-        self.clients[websocket] = self.counter()
+        if relay:
+            bytes = msgout.SerializeToString()
+            await self.sendmessage(user, bytes)
+        
+    def adduser(self, user : User):
+        if not user in self.clients:
+            self.clients[user] = self.counter()
+        return self.clients[user]
     
-    def removeuser(self, websocket):
+    def removeuser(self, user : User):
         """
         poistaa käyttäjän huoneesta
         """
-        del self.clients[websocket]
+        del self.clients[user]
+
+    def verifypassword(self, password):
+        return True
     
-    def setpassword(self, websocket):#asettaa huoneelle salasanan
+    def setpassword(self, user : User):#asettaa huoneelle salasanan
         pass
         #miten salasana tallennetaan? missä muodossa? mihin?
+    
+    def Addmin(self, user : User): #asettaa käyttäjän adminiksi
+        pass
+    
+    def removeadmin(self, user : User):#poista admin oikeudet
+        pass
     
 ###TODO: joku luokka, joka handlaa servun kaikki huoneet
 ###ja pitää huolta oikeuksista jne
 class RoomHandler:
-    room = Room()
-    async def messagehandler(self, websocket, msg, answer): #välittää vietit huoneille
-        await self.room.handlemessage(websocket, msg, answer)
+    def __init__(self):
+        self.rooms = {}#dict jossa huoneet olioina, huoneen nimi on avain
     
-    async def handlemessage(self, websocket, msg):  #käsittelee huoneiden hallintaa koskevat viestit
-        if msg.roomname:    #jos roomname kenttä on olemassa
-            joinroommsg = testprotocol_pb2.JoinRoom()
-            if msg.createroom == true:  #jos createroom checkbox on merkittynä
-                newroom()   #luo uusi huone syötetyillä parametreillä
-            else:
-                handlelogin()#yritä liittyä olemassaolevaan huoneeseen
-                
-        
-    rooms = {}#dict jossa huoneet olioina, huoneen nimi on avain
+    async def messagehandler(self, user, msg): #välittää vietit huoneille
+        if msg.HasField("joinroom"):
+            await self.handleJoinRoom(user, msg.joinroom)
+            return
+        room = self.rooms.get(user.room)
+        if room is not None:
+            await room.handlemessage(user, msg)
     
-    def newroom(self, websocket, msg):#luo uuden huoneen
-        if msg.roomname in self.rooms:#tarkistaa että samannimistä huonetta ei ole jo olemassa
-            pass
-            #virheilmoitus käyttäjälle
-        else:        
-            self.rooms[msg.roomname] = room #luodaan uusi huone
-        
-    def removeroom(self, roomname):#poistaa olemassa olevan huoneen
-        del self.rooms[roomname]#sulkuihin poistettavan huoneen nimi
-        
-    def handlelogin(self, websocket): #mielummin handleadduser?
-        self.room.adduser(websocket)
-    
-    def handlelogout(self, websocket): #mielummin handleremoveuser? 
-        self.room.removeuser(websocket)
-	
-#class User:
-roomhandler = RoomHandler()
+    async def handleJoinRoom(self, user, msg):
+        answer = testprotocol_pb2.FromServer()
+        if not msg.roomname:
+            answer.joinanswer.success = False
+            answer.joinanswer.errmsg = "Empty name not allowed!"
+            await user.send(answer.SerializeToString())
+            return
 
+        currentroom = self.rooms.get(user.room)
+        room = self.rooms.get(msg.roomname)
+        if currentroom is not None and currentroom != room:
+            currentroom.removeuser(user)
+
+        if room is None:
+            logger.info("Creating room: " + msg.roomname)
+            room = Room()
+            self.rooms[msg.roomname] = room
+            if msg.password:
+                room.setpassword(msg.password, user)
+
+        elif not room.verifypassword(msg.password):
+            answer.joinanswer.success = False
+            answer.joinanswer.errmsg = "Wrong password!"
+            await user.send(answer.SerializeToString())
+            return
+
+        answer.joinanswer.success = True
+        user.room = msg.roomname
+        uid = room.adduser(user)
+        answer.joinanswer.id = uid
+
+        await user.send(answer.SerializeToString())
+        
+    def handlelogout(self, user): #yhteyden katkaisu palvelimelta
+        room = self.rooms.get(user.room)
+        if room is None:
+            return
+        #room.removeuser(user)
+        
+class LoginHandler():
+    def __init__(self):
+        self.users = {}
+
+    async def handleLogin(self, user : User, msg) -> User:
+        resp = testprotocol_pb2.FromServer()
+        if user.getstate() == State.LOGGED_IN:
+            logger.info("Already logged in")
+            resp.loginanswer.errmsg = "Already logged in"
+            resp.loginanswer.success = False
+            await user.send(resp.SerializeToString())
+            return user
+        if msg.logininfo.key and len(msg.logininfo.key) == 64 and msg.logininfo.key in self.users:
+            olduser = user
+            user = self.users[msg.logininfo.key]
+            user.setsocket(olduser.getsocket())
+            resp.loginanswer.oldroom = user.room
+        else:
+            user.key = secrets.token_hex(32)
+            self.users[user.key] = user
+
+        if msg.logininfo.username:
+            user.username = msg.logininfo.username
+        user.state = State.LOGGED_IN
+        resp = testprotocol_pb2.FromServer()
+
+        resp.loginanswer.key = user.key
+        resp.loginanswer.username = user.username
+        resp.loginanswer.success = True
+        await user.send(resp.SerializeToString())
+        return user
+
+    async def handleLogout(self, roomhandler : RoomHandler, user : User):
+        roomhandler.handlelogout(user)
+
+
+roomhandler = RoomHandler()
+loginhandler = LoginHandler()
 
 async def serv(websocket, path):
-    logger.info("%s connected", websocket.remote_address)
-    roomhandler.handlelogin(websocket)
+    addr = websocket.remote_address
+    logger.info("%s connected", addr)
+    user = User()
+    user.setsocket(websocket)
+    user.setstate(State.CONNECTED)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
+
             answer = testprotocol_pb2.FromServer()
             msg = testprotocol_pb2.ToServer()
             msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
             logger.debug(msg)
             await roomhandler.messagehandler(websocket, msg, answer)
+
+##            msg = testprotocol_pb2.ToServer()
+##            msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
+##            logger.debug(msg)
+##            if msg.HasField("logininfo"):
+##                user = await loginhandler.handleLogin(user, msg)
+##            if user.getstate() == State.LOGGED_IN:
+##                await roomhandler.messagehandler(user, msg)
+
     except Exception as e:
         print(e)
+        raise
     finally:
-        roomhandler.handlelogout(websocket)
-
-
+        await loginhandler.handleLogout(roomhandler, user)
+        logger.info("%s closed connection", addr)
 
 def runServer(config):
     logger.info("Starting server... " + config.hostname +":" + config.port)
@@ -165,5 +301,6 @@ def runServer(config):
 
 if __name__ == "__main__":
     config = loadConfig("server.config")
-    runServer(config)
+    if config is not None:
+        runServer(config)
 

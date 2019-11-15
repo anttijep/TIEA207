@@ -1,0 +1,56 @@
+
+
+enum state
+----------
+0 = connected
+1 = logged in
+2 = disconnected
+
+User-class
+---------------
+|uid          |
+|             |
+|websocket    | connection, jonka kautta voidaan lähettää viestejä
+|             |
+|state-enum   | onko käyttäjä kirjautunut sisään.
+|             | i.e ei voi liittyä huoneeseen, jos ei ole kirjautunut
+|             | jos taas on disconnected, niin voidaan ehkä lähettää ohi menneet viestit uudestaan,
+|             | kun käyttäjä ottaa uuden yhteyden
+|             |
+|username     |
+|             |
+|huone(?)     | voi olla vain yhdessä huoneessa kerrallaan(?)
+|             |
+
+
+------------------------------------------------------------------------------------------
+
+
+Room-class
+--------------
+|password    |
+|            |
+|users-list  | käyttäjä mapattynä uidhen. Vaikka bidictiin, niin voi myös uidn perusteella ettiä userin
+|            |
+|groups-list | lista ryhmissä huoneen sisällä. \
+|            |  Jokainen group sisältää listan käyttäjistä, jotka kuuluvut kyseiseen ryhmään(?)
+|            |
+|owner?      | kuka omistaa huoneen
+|            |
+|admins-list | lista käyttäjistä, jotka voivat hallita huonetta
+
+------------------------------------------------------------------------------------------
+
+Roomhandler-class
+--------------
+|rooms-list  | Lista palvelimen kaikista huoneista
+--------------
+
+
+hoitaa huoneisiin liittymisen, sekä välittää käyttäjän viestit oikeisiin huoneisiin
+
+
+------------------------------------------------------------------------------------------
+
+
+
