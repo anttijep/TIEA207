@@ -51,6 +51,10 @@ function joinresult(result) {
 	if (result.getSuccess()) {
 		logindiv.style.display = "none";
 		chatdiv.style.display = "block";
+		var messageselement = document.getElementById('chattesti');
+		var message = document.createElement('li');
+		message.appendChild(document.createTextNode("Joined.. my id: " + result.getId()));
+		messageselement.appendChild(message);
 	}
 	else if (result.getErrmsg() !== "") {
 		document.getElementById("errmsg").textContent = result.getErrmsg();

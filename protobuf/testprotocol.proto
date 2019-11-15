@@ -95,7 +95,7 @@ message JoinRoomAnswer {
   bool wrongpassword = 2;
   bool roomexist = 3;
   string errmsg = 4;
-  int32 uid = 5;
+  int32 id = 5;
 }
 // LOGIN&&JOIN END
 

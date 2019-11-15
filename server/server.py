@@ -155,8 +155,7 @@ class Room:
         """
         poistaa käyttäjän huoneesta
         """
-        pass
-        #del self.clients[user]
+        del self.clients[user]
 
     def verifypassword(self, password):
         return True
@@ -214,7 +213,7 @@ class RoomHandler:
         answer.joinanswer.success = True
         user.room = msg.roomname
         uid = room.adduser(user)
-        answer.joinanswer.uid = uid
+        answer.joinanswer.id = uid
 
         await user.send(answer.SerializeToString())
         
@@ -222,7 +221,7 @@ class RoomHandler:
         room = self.rooms.get(user.room)
         if room is None:
             return
-        room.removeuser(user)
+        #room.removeuser(user)
         
 class LoginHandler():
     def __init__(self):
