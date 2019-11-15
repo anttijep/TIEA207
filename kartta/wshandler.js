@@ -6,6 +6,9 @@ export class WSHandler {
 		this.onChatMessage = new Set();
 		this.onLocationChange = new Set();
 		this.onReceiveDrawing = new Set();
+
+		this.onLoginResult = new Set();
+		this.onJoinResult = new Set();
 		var me = this;
 
 		this.ws.onmessage = function(evnt) {
@@ -73,9 +76,43 @@ export class WSHandler {
 		resp.setChatmsg(msg);
 		this.ws.send(resp.serializeBinary());
 	}
+
+	joinRoom(room, password = "", create = null){
+		var msg = new proto.testi.ToServer();
+		var join = new proto.testi.JoinRoom();
+		join.setRoomname(room);
+		join.setPassword(password);
+		if (create !== null)
+			join.setCreateroom(create);
+		msg.setJoinroom(join);
+		this.ws.send(msg.serializeBinary());
+	}
+
+	login(username, key = "") {
+		var msg = new proto.testi.ToServer();
+		var logininfo = new proto.testi.SendLoginInfo();
+		logininfo.setUsername(username);
+		if (key !== "") {
+			logininfo.setKey(key);
+		}
+		msg.setLogininfo(logininfo);
+		this.ws.send(msg.serializeBinary());
+	}
+
 	onMessage(evnt) {
 		var msg = proto.testi.FromServer.deserializeBinary(evnt.data);
+		console.log(msg);
+		var err = msg.getErrmsg();
+		if (err !== "")
+			console.log(err);
+
 		var that = this;
+		if (msg.hasLoginanswer()) {
+			this.onLoginResult.forEach(f=>f(msg.getLoginanswer()));
+		}
+		if (msg.hasJoinanswer()) {
+			this.onJoinResult.forEach(f=>f(msg.getJoinanswer()));
+		}
 		msg.getChatmsgList().forEach(e=>that.onChatMessage.forEach(f=>f(e)));
 		msg.getLocationsList().forEach(e=>that.onLocationChange.forEach(f=>f(e)));
 		msg.getShapesList().forEach(e=>that.onReceiveDrawing.forEach(f=>f(e)));
@@ -97,6 +134,18 @@ export class WSHandler {
 	}
 	removeChatMessageListener(func) {
 		this.onChatMessage.delete(func);
+	}
+	addLoginResultListener(func) {
+		this.onLoginResult.add(func);
+	}
+	removeLoginResultListener(func) {
+		this.onLoginResult.delete(func);
+	}
+	addJoinResultListener(func) {
+		this.onJoinResult.add(func);
+	}
+	removeJoinResultListener(func) {
+		this.onJoinResult.delete(func);
 	}
 }
 

@@ -1,9 +1,64 @@
 
 import { WSHandler } from "../kartta/wshandler";
-var hostname = "wss://4nxi.xyz:5678"
+var hostname = "ws://127.0.0.1:5678";
 
-//var wshandler = require('./wshandler');
 var wsh = new WSHandler(hostname);
+
+
+// esim. Login & join room
+
+var logindiv = document.getElementById("logindiv");
+var chatdiv = document.getElementById("chatdiv");
+var usekeybox = document.getElementById("usekey");
+var sendloginbutton = document.getElementById("sendlogin");
+var unamebox = document.getElementById("unamebox");
+
+chatdiv.style.display = "none";
+
+sendloginbutton.onclick = sendLogin;
+
+function sendLogin(e) {
+	wsh.login(unamebox.value);
+	e.preventDefault();
+}
+function joinRoom(e) {
+	wsh.joinRoom(unamebox.value);
+	e.preventDefault();
+}
+
+function loginresult(result) {
+	if (result.getSuccess()) {
+		if (usekeybox.checked) {
+			sessionStorage.userkey = result.getKey();
+		}
+		unamebox.value = "";
+		sendloginbutton.onclick = joinRoom;
+	}
+	else if (result.getErrmsg() !== "") {
+		document.getElementById("errmsg").textContent = result.getErrmsg();
+	}
+	else {
+		document.getElementById("errmsg").textContent = "Login failed without error message";
+	}
+
+}
+
+function joinresult(result) {
+	if (result.getSuccess()) {
+		logindiv.style.display = "none";
+		chatdiv.style.display = "block";
+	}
+	else if (result.getErrmsg() !== "") {
+		document.getElementById("errmsg").textContent = result.getErrmsg();
+	}
+	else {
+		document.getElementById("errmsg").textContent = "Join failed without error message";
+	}
+}
+wsh.addJoinResultListener(joinresult);
+wsh.addLoginResultListener(loginresult);
+
+// esim. login&join END
 
 // esim. chat eventtien lukeminen
 var messageselement = document.getElementById('chattesti');
@@ -19,7 +74,7 @@ wsh.addChatMessageListener(test);
 // esim2. location lukeminen
 function test2(msg) {
 	var message = document.createElement('li');
-	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
+	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude() + ", " + msg.getAccuracy();
 	message.appendChild(document.createTextNode(s));
 	messageselement.appendChild(message);
 }
@@ -54,7 +109,7 @@ var longbox = document.getElementById("longitude");
 function sendposition(evnt) {
 	var lat = parseFloat(latbox.value); 
 	var lon = parseFloat(longbox.value); 
-	wsh.sendLocation(lat, lon);
+	wsh.sendLocation(lat, lon, 25);
 	evnt.preventDefault();
 }
 
