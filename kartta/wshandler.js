@@ -24,7 +24,10 @@ export class WSHandler {
 	sendCircle(center, radius) {
 
 		var circle = new proto.testi.Circle();
-		circle.setCenter(center);
+		var point = new proto.testi.DrawPoint();
+		point.setLongitude(center[0]);
+		point.setLatitude(center[1]);
+		circle.setCenter(point);
 		circle.setRadius(radius);
 		var shape = new proto.testi.DrawShape();
 		shape.getCirclesList().push(circle);

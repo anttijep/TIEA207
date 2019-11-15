@@ -47,7 +47,7 @@ message Polygon{
 }
 
 message Circle{
-  double center = 1;
+  DrawPoint center = 1;
   double radius = 2;
 }
 

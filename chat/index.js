@@ -26,11 +26,17 @@ function test2(msg) {
 wsh.addLocationChangeListener(test2);
 // esim2. end
 
+function handleCircle(circle,arr){
+	arr.push([circle.getCenter().getLatitude(),circle.getCenter().getLatitude(),circle.getRadius()])
+}
+
+
 // esim3. piirrustuksen lukeminen
 function test3(msg) {
 	var message = document.createElement('li');
 	var arr = [];
 	msg.getLinestringsList().forEach(lstrings=>lstrings.getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()])));
+	msg.getCirclesList().forEach(circle =>handleCircle(circle,arr));
 	var s = msg.getSenderid() + " :: " + arr.join("->");
 	message.appendChild(document.createTextNode(s));
 	messageselement.appendChild(message);
