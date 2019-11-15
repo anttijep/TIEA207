@@ -18,7 +18,11 @@ chatdiv.style.display = "none";
 sendloginbutton.onclick = sendLogin;
 
 function sendLogin(e) {
-	wsh.login(unamebox.value);
+	var key = "";
+	if (usekeybox.checked && sessionStorage.userkey) {
+		key = sessionStorage.userkey;
+	}
+	wsh.login(unamebox.value, key);
 	e.preventDefault();
 }
 function joinRoom(e) {

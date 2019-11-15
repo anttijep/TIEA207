@@ -112,19 +112,23 @@ class Room:
         parsee viestit ja muodostaa viestin
         """
         msgout = testprotocol_pb2.FromServer()
+        relay = False
         if msg.chatmsg:
+            relay = True
             serverchatmsg = testprotocol_pb2.Chatmessage()
             serverchatmsg.senderID = self.clients[user]
             serverchatmsg.msg = html.escape(msg.chatmsg)
             msgout.chatmsg.append(serverchatmsg)
 
         if msg.HasField("location"):
+            relay = True
             loc = msg.location
             loc.senderID = self.clients[user]
             msgout.locations.append(loc)
             user.setlocation([loc.latitude, loc.longitude])
             
         if msg.HasField("shape"):
+            relay = True
             shape = msg.shape
             shape.senderID = self.clients[user]
             for i in msg.shape.linestrings:
@@ -138,22 +142,21 @@ class Room:
                 self.drawings["circles"][i.id] = i
 
             msgout.shapes.append(shape)
-
-
-        bytes = msgout.SerializeToString()
-        await self.sendmessage(user, bytes)
+        if relay:
+            bytes = msgout.SerializeToString()
+            await self.sendmessage(user, bytes)
         
     def adduser(self, user : User):
-        uid = self.counter()
-        self.clients[user] = uid
-        return uid
+        if not user in self.clients:
+            self.clients[user] = self.counter()
+        return self.clients[user]
     
     def removeuser(self, user : User):
         """
         poistaa käyttäjän huoneesta
         """
-        del self.clients[user]
-        #del self.members[userID]
+        pass
+        #del self.clients[user]
 
     def verifypassword(self, password):
         return True
@@ -184,7 +187,6 @@ class RoomHandler:
     
     async def handleJoinRoom(self, user, msg):
         answer = testprotocol_pb2.FromServer()
-        answer.joinanswer.success = True
         if not msg.roomname:
             answer.joinanswer.success = False
             answer.joinanswer.errmsg = "Empty name not allowed!"
@@ -192,10 +194,10 @@ class RoomHandler:
             return
 
         currentroom = self.rooms.get(user.room)
-        if currentroom is not None:
+        room = self.rooms.get(msg.roomname)
+        if currentroom is not None and currentroom != room:
             currentroom.removeuser(user)
 
-        room = self.rooms.get(msg.roomname)
         if room is None:
             logger.info("Creating room: " + msg.roomname)
             room = Room()
@@ -209,6 +211,7 @@ class RoomHandler:
             await user.send(answer.SerializeToString())
             return
 
+        answer.joinanswer.success = True
         user.room = msg.roomname
         uid = room.adduser(user)
         answer.joinanswer.uid = uid
@@ -233,12 +236,11 @@ class LoginHandler():
             resp.loginanswer.success = False
             await user.send(resp.SerializeToString())
             return user
-        if msg.logininfo.key and len(msg.logininfo.key) == 16:
-            if user.key in users:
-                olduser = user
-                user = self.users[msg.key]
-                user.setsocket(olduser.getsocket)
-                resp.loginanswer.oldroom = user.room
+        if msg.logininfo.key and len(msg.logininfo.key) == 64 and msg.logininfo.key in self.users:
+            olduser = user
+            user = self.users[msg.logininfo.key]
+            user.setsocket(olduser.getsocket())
+            resp.loginanswer.oldroom = user.room
         else:
             user.key = secrets.token_hex(32)
             self.users[user.key] = user
@@ -265,7 +267,7 @@ async def serv(websocket, path):
     addr = websocket.remote_address
     logger.info("%s connected", addr)
     user = User()
-    user.setsocket(websocket = websocket)
+    user.setsocket(websocket)
     user.setstate(State.CONNECTED)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
