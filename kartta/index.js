@@ -1,3 +1,5 @@
+// TODO: Sijainnin päivityksen ajastin + tarkistus onko päivitetty (estää useammat päivityspyynnöt)
+
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -34,7 +36,7 @@ var capabilitiesUrl = 'https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts/
 var markerDict = {};
 // Markerin piirtäminen
 var positionMarker = new Feature();
-var omaVari = "#ffff00";
+var omaVari = "#ffff00";	// oman sijainnin ja tarkkuuden väri
 positionMarker.setStyle(new Style({
 	image: new Circle({
 		radius: 12,
@@ -85,12 +87,13 @@ var view = new View({
 			projection: projection,
 			center: myPosition,
 			zoom: currentZoomLevel,
-			minZoom:0,
 			maxZoom:18
 		});
 
 var parser = new WMTSCapabilities();
 var scales = [];
+var lastLocationUpdate = Date.now();
+console.log(lastLocationUpdate);
 
 if (navigator.geolocation) {
 	navigator.geolocation.getCurrentPosition(function(position) {
@@ -109,15 +112,12 @@ if (navigator.geolocation) {
 
 			myAccuracy = position.coords.accuracy;
 			
-			console.log(scales);
 			currentZoomLevel = Math.round(map.getView().getZoom());	
 			// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
 			var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
-			console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
-			console.log(kaava);
-			console.log('Exact zoom level: ' + map.getView().getZoom());
 			accuracyCircle.setRadius(kaava);
 			accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+			sendDataToServer();
 		});
 		view.setCenter(myPosition);
 	});
@@ -202,11 +202,11 @@ function updateLocation(msg) {
 				image: new Circle({
 				radius: 12,
 				fill: new Fill({
-				color: '#ff00ff'
-			}),
-			stroke: new Stroke({
-				color: '#000000',
-				width: 2
+					color: '#ff00ff'
+				}),
+				stroke: new Stroke({
+					color: '#000000',
+					width: 2
 				})
 			})	
 		}));
@@ -251,6 +251,25 @@ fetch(capabilitiesUrl).then(function(response) {
 		})
 	}); */
 });
+
+// Sijainnin ja sijainnin tarkkuuden lähetys palvelimelle
+function sendDataToServer() {
+	var timeDiff = Date.now() - lastLocationUpdate;
+	if (timeDiff < 10000) {
+		window.setTimeout(sendDataToServer, 10001 - timeDiff);
+		return;
+	}
+	
+	lastLocationUpdate = Date.now();
+	console.log(lastLocationUpdate);
+	var wCoords = transform(myPosition, "EPSG:3067", "EPSG:4326");
+	var lat = wCoords[0];
+	var lon = wCoords[1];
+	var acc = myAccuracy;	
+	wsh.sendLocation(lat, lon, acc);
+	console.log("DATAA OLETETTAVASTI LÄHETETTY: " + wCoords);
+	console.log(JSON.stringify({ "position": myPosition, "accuracy": myAccuracy }));
+}
 
 var projectionSelect = document.getElementById('projection');
 projectionSelect.addEventListener('change', function(event) {
@@ -389,9 +408,6 @@ function sendShapeCoord(){
 }
 
 var resolution = document.getElementById("resolution");
-
-
-
 
 function changeResolution(){
 	var text = resolution.options[resolution.selectedIndex].text;

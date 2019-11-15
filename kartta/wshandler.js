@@ -12,11 +12,12 @@ export class WSHandler {
 			me.onMessage(evnt)};
 	}
 
-	sendLocation(lat, lon) {
+	sendLocation(lat, lon, acc) {
 		var msg = new proto.testi.ToServer();
 		var loc = new proto.testi.Location();
 		loc.setLatitude(lat);
 		loc.setLongitude(lon);
+		loc.setAccuracy(acc);
 		msg.setLocation(loc);
 		this.ws.send(msg.serializeBinary());
 	}

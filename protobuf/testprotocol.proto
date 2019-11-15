@@ -11,11 +11,7 @@ message Location {
   int32 senderID = 1;
   double latitude = 2;
   double longitude = 3;
-}
-
-message SendLocation {
-  double latitude = 1;
-  double longitude = 2;
+  int32 accuracy = 4;
 }
 
 message SendLoginInfo {
@@ -63,7 +59,7 @@ message ToServer {
   Query query = 1;
   SendLoginInfo logininfo = 2;
   string chatmsg = 3;
-  SendLocation location = 4;
+  Location location = 4;
   DrawShape shape = 5;
 }
 
