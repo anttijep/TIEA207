@@ -396,15 +396,16 @@ function sendShapeCoord(){
 
 //--------------KÄYTTÖLIITTYMÄN SKRIPTIT TÄSTÄ ALASPÄIN-----------------
 
+
 document.getElementById("debugform").style.display = "none";//piilotetaan turhat
 document.getElementById("piilotettava").style.display = "none"
 document.getElementById("chattesti").style.display = "none"
 document.getElementById("debuginfo").style.display = "none"
-document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
+
 
 //hampurilaisvalikon avaus/sulku
-var burgermenu = document.getElementById("hamburger");
-burgermenu.addEventListener("click", openHamburger);
+document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
+document.getElementById("hamburger").addEventListener("click", openHamburger);
 
 function openHamburger(){
 	var x = document.getElementById("links");
@@ -417,15 +418,15 @@ function openHamburger(){
   }
 }
 
-
+//Työkalupalkin avaus/sulku
+document.getElementById("drawtools").style.display = "none"; //piirtotyökalut kiinni alussa
+document.getElementById("toolstoggle").addEventListener("click", openTools)
 
 function openTools(){
-	var x = document.getElementById("bottombar");
-	if (x.style.display === "block") {
-		x.style.zIndex = "auto";
+	var x = document.getElementById("drawtools");
+	if (x.style.display === "flex") {
 		x.style.display = "none";
   } else {
-		x.style.zIndex = "1";
-		x.style.display = "block";
+		x.style.display = "flex";
   }
 }

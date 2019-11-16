@@ -8,10 +8,13 @@ html, body{
 	  height: 100%;
 	  position: relative;
 	  margin: 0px;
-	  z-index: -1;
+	  z-index: auto;
 }
 
-
+/* Liikuttaa zoomausnappeja */
+.ol-zoom.ol-unselectable.ol-control {
+	top: 4em;
+}
 
  /* Navigaatiomenu */
 .navigation {
@@ -68,15 +71,14 @@ html, body{
 .bottombar {
 	z-index: 1;
 	position: absolute;
+	bottom: 0px;
 	margin-right: 0px;
 	margin-left: 0px;
-	margin-bottom: 0px;
 	width: 100%;
-	opacity: 0.5;
 }
 
 .bottombar #drawtools {
+	background: #333;
 	display: flex;
 	justify-content: space-evenly;
-	opacity: 1;
 }
