@@ -75,13 +75,13 @@ html, body{
 	padding-bottom: 5px;
 }
 
-#subtitle {
+#debuginfo {
 	font-size: 12px;
 }
 
 /* Tyylittelee tällä hetkellä valitun linkin */
 .active {
-  background-color: #4CAF50;
+  background-color: #193b78;
   color: white;
 } 
 

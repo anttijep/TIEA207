@@ -400,7 +400,7 @@ function sendShapeCoord(){
 document.getElementById("debugform").style.display = "none";
 document.getElementById("piilotettava").style.display = "none";
 document.getElementById("chattesti").style.display = "none";
-document.getElementById("debuginfo").style.display = "none";
+//document.getElementById("debuginfo").style.display = "none";
 
 
 //hampurilaisvalikon avaus/sulku
@@ -429,4 +429,9 @@ function openTools(){
   } else {
 		x.style.display = "flex";
   }
+}
+
+//TODO: funktio joka hakee käyttäjän tämänhetkisen joukkueen nimen
+function teamName(){
+	
 }
