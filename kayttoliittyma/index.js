@@ -396,8 +396,8 @@ function sendShapeCoord(){
 
 //--------------KÄYTTÖLIITTYMÄN SKRIPTIT TÄSTÄ ALASPÄIN-----------------
 
-
-document.getElementById("debugform").style.display = "none";//piilotetaan turhat
+//piilotetaan turhat
+document.getElementById("debugform").style.display = "none";
 document.getElementById("piilotettava").style.display = "none"
 document.getElementById("chattesti").style.display = "none"
 document.getElementById("debuginfo").style.display = "none"

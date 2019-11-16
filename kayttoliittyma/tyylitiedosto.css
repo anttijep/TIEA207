@@ -2,6 +2,7 @@ html, body{
 	width: 100%;
 	height: 100%;
 	margin: 0;
+	overflow: hidden;
 }
 
 #map {
@@ -35,10 +36,13 @@ html, body{
 /* Navigaatiolinkit */
 .navigation a {
   color: white;
-  padding: 14px 16px;
+  padding: 10px 16px;
+  padding-top: 5px;
+  padding-bottom: 5px;
   text-decoration: none;
-  font-size: 17px;
   display: block;
+  font-size: 18px;
+  height: 30px;
 }
 
 /* Hampurilaiskuvake */
@@ -48,6 +52,8 @@ html, body{
   position: absolute;
   left: 0;
   top: 0;
+  padding: 15px;
+  height: 20px;
 }
 
 /* Hiiren alla olevan linkin tausta */
@@ -59,6 +65,18 @@ html, body{
 
 .navigation #topbar {
   padding-left: 65px;
+  padding-top: 0px;
+  padding-bottom: 5px;
+  height: 45px;
+}
+
+#title {
+	font-size: 20px;
+	padding-bottom: 5px;
+}
+
+#subtitle {
+	font-size: 12px;
 }
 
 /* Tyylittelee tällä hetkellä valitun linkin */
