@@ -398,9 +398,9 @@ function sendShapeCoord(){
 
 //piilotetaan turhat
 document.getElementById("debugform").style.display = "none";
-document.getElementById("piilotettava").style.display = "none"
-document.getElementById("chattesti").style.display = "none"
-document.getElementById("debuginfo").style.display = "none"
+document.getElementById("piilotettava").style.display = "none";
+document.getElementById("chattesti").style.display = "none";
+document.getElementById("debuginfo").style.display = "none";
 
 
 //hampurilaisvalikon avaus/sulku
