@@ -85,6 +85,13 @@ html, body{
   color: white;
 } 
 
+#debugmenu {
+	background-color: white;
+	z-index: 1;
+	top: 75%;
+	position: absolute;
+}
+
 /* Alapalkin tyyli */
 .bottombar {
 	z-index: 1;

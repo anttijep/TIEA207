@@ -457,10 +457,8 @@ function sendShapeCoord(){
 //--------------KÄYTTÖLIITTYMÄN SKRIPTIT TÄSTÄ ALASPÄIN-----------------
 
 //piilotetaan turhat
-document.getElementById("debugform").style.display = "none";
-document.getElementById("piilotettava").style.display = "none";
-document.getElementById("chattesti").style.display = "none";
-//document.getElementById("debuginfo").style.display = "none";
+//document.getElementById("debugmenu").style.display = "none";
+
 
 
 //hampurilaisvalikon avaus/sulku
@@ -488,6 +486,25 @@ function openTools(){
 		x.style.display = "none";
   } else {
 		x.style.display = "flex";
+  }
+}
+//työkalupalkin tapahtumankuuntelijat
+//document.getElementById("drawline").addEventListener("click", );
+//document.getElementById("drawpoly").addEventListener("click", );
+//document.getElementById("drawcircle").addEventListener("click", );
+document.getElementById("erase").addEventListener("click", clearAll);
+
+
+
+document.getElementById("debugmenu").style.display = "none";
+document.getElementById("settings").addEventListener("click", openDebugmenu)
+
+function openDebugmenu(){
+	var x = document.getElementById("debugmenu");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+  } else {
+		x.style.display = "block";
   }
 }
 
