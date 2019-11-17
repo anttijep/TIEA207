@@ -28,7 +28,10 @@ export class WSHandler {
 	sendCircle(center, radius) {
 
 		var circle = new proto.testi.Circle();
-		circle.setCenter(center);
+		var point = new proto.testi.DrawPoint();
+		point.setLongitude(center[0]);
+		point.setLatitude(center[1]);
+		circle.setCenter(point);
 		circle.setRadius(radius);
 		var shape = new proto.testi.DrawShape();
 		shape.getCirclesList().push(circle);
@@ -66,7 +69,9 @@ export class WSHandler {
 			point.setLatitude(e[1]);
 			points.getPointsList().push(point);
 		});
-		shape.getLinestringsList().push(points);
+		var linestring = new proto.testi.Linestring();
+		linestring.setPointarray(points);
+		shape.getLinestringsList().push(linestring);
 		msg.setShape(shape);
 		this.ws.send(msg.serializeBinary());
 	}
@@ -148,4 +153,7 @@ export class WSHandler {
 		this.onJoinResult.delete(func);
 	}
 }
+
+export default WSHandler;
+
 

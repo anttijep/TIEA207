@@ -13,16 +13,22 @@ message PointArray{
 
 message Polygon{
   repeated PointArray pointarray = 1;
+  int32 id = 2;
 }
 
 message Circle{
-  double center = 1;
+  DrawPoint center = 1;
   double radius = 2;
+  int32 id = 3;
+}
+message Linestring {
+  PointArray pointarray = 1;
+  int32 id = 2;
 }
 
 message DrawShape {
   int32 senderID = 1;
-  repeated PointArray linestrings = 2;
+  repeated Linestring linestrings = 2;
   repeated Polygon polys = 3;
   repeated Circle circles = 4;
 }
@@ -70,6 +76,7 @@ message LoginAnswer {
   string username = 2;
   bool success = 3;
   string errmsg = 4;
+  string oldroom = 5;
 }
 
 message SendLoginInfo {
@@ -88,6 +95,7 @@ message JoinRoomAnswer {
   bool wrongpassword = 2;
   bool roomexist = 3;
   string errmsg = 4;
+  int32 id = 5;
 }
 // LOGIN&&JOIN END
 
