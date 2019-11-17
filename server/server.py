@@ -177,6 +177,9 @@ class RoomHandler:
         self.rooms = {}#dict jossa huoneet olioina, huoneen nimi on avain
     
     async def messagehandler(self, user, msg): #välittää vietit huoneille
+        if user.getstate() != State.LOGGED_IN:
+            ##TODO//ERROR?
+            return
         if msg.HasField("joinroom"):
             await self.handleJoinRoom(user, msg.joinroom)
             return
@@ -270,21 +273,12 @@ async def serv(websocket, path):
     user.setstate(State.CONNECTED)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
-
-            answer = testprotocol_pb2.FromServer()
             msg = testprotocol_pb2.ToServer()
             msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
             logger.debug(msg)
-            await roomhandler.messagehandler(websocket, msg, answer)
-
-##            msg = testprotocol_pb2.ToServer()
-##            msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
-##            logger.debug(msg)
-##            if msg.HasField("logininfo"):
-##                user = await loginhandler.handleLogin(user, msg)
-##            if user.getstate() == State.LOGGED_IN:
-##                await roomhandler.messagehandler(user, msg)
-
+            if msg.HasField("logininfo"):
+                user = await loginhandler.handleLogin(user, msg)
+            await roomhandler.messagehandler(user, msg)
     except Exception as e:
         print(e)
         raise
