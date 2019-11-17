@@ -433,5 +433,6 @@ function openTools(){
 
 //TODO: funktio joka hakee käyttäjän tämänhetkisen joukkueen nimen
 function teamName(){
-	
+	name = "";
+	document.getElementById("title").textContent = "Team: " + name;
 }
