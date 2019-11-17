@@ -388,42 +388,51 @@ function sendShapeCoord(){
 	else return;
 }
 
-var resolution = document.getElementById("resolution");
-
-
-
-
-function changeResolution(){
-	var text = resolution.options[resolution.selectedIndex].text;
-	var sheet = document.createElement('style');
-	if(text=="1200x900"){
-		//map.style.width = "1200px";
-		//map.style.height = "900px";
-		var styleHTML = ".custommap {    width: 1200px;    height: 900px;}";
-		sheet.innerHTML = styleHTML;
-		document.body.appendChild(sheet);
-		map.updateSize();
-	}
-	if(text=="750x1334"){
-		//map.style.width = "750px";
-		//map.style.height = "1334px";
-		var styleHTML = ".custommap {    width: 750px;    height: 1334px;}";
-		sheet.innerHTML = styleHTML;
-		document.body.appendChild(sheet);
-		map.updateSize();
-	}
-	if(text=="720x1280"){
-		//map.style.width = "720px";
-		//map.style.height = "1280px";
-		var styleHTML = ".custommap {    width: 720px;    height: 1280px;}";
-		sheet.innerHTML = styleHTML;
-		document.body.appendChild(sheet);
-		map.updateSize();
-	}
-}
-
 //resolution.onchange = function(){
 //	debugger;
 //	changeResolution();
 //}
 //resolution.addEventListener("change",changeResolution);
+
+//--------------KÄYTTÖLIITTYMÄN SKRIPTIT TÄSTÄ ALASPÄIN-----------------
+
+//piilotetaan turhat
+document.getElementById("debugform").style.display = "none";
+document.getElementById("piilotettava").style.display = "none";
+document.getElementById("chattesti").style.display = "none";
+//document.getElementById("debuginfo").style.display = "none";
+
+
+//hampurilaisvalikon avaus/sulku
+document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
+document.getElementById("hamburger").addEventListener("click", openHamburger);
+
+function openHamburger(){
+	var x = document.getElementById("links");
+	if (x.style.display === "block") {
+		x.style.zIndex = "auto";
+		x.style.display = "none";
+  } else {
+		x.style.zIndex = "1";
+		x.style.display = "block";
+  }
+}
+
+//Työkalupalkin avaus/sulku
+document.getElementById("drawtools").style.display = "none"; //piirtotyökalut kiinni alussa
+document.getElementById("toolstoggle").addEventListener("click", openTools)
+
+function openTools(){
+	var x = document.getElementById("drawtools");
+	if (x.style.display === "flex") {
+		x.style.display = "none";
+  } else {
+		x.style.display = "flex";
+  }
+}
+
+//TODO: funktio joka hakee käyttäjän tämänhetkisen joukkueen nimen
+function teamName(){
+	name = "";
+	document.getElementById("title").textContent = "Team: " + name;
+}

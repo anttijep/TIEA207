@@ -3,21 +3,41 @@
   <head>
     <meta charset="utf-8">
     <title>Using Parcel with OpenLayers</title>
-    <style>
-      html, body {
-		  width: 100%;
-		  height: 100%;
-		  margin: 0;
-      }
-	  #map {
-		  height: 95%;
-	  }
-    </style>
+	<!-- <script src=""></script> -->
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="StyleSheet" href="tyylitiedosto.css" type="text/css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </head>
   <body>
-    <div id="map"></div>
-    <div id="mouse-position"></div>
-    <form>
+	<div class="navigation">
+		<a id="topbar" class="active">
+			<div id="title"> Team: -Unassigned-</div>
+			<div id="debuginfo"> Location: </div>
+		</a>
+		<div id="links">
+			<a href="#rooms">Huoneet</a>
+			<a href="#teams">Ryhmät</a>
+			<a href="#settings">Asetukset</a>
+			<a id="toolstoggle">Piirtotyökalut</a>
+		</div>
+		<a id="hamburger" class="icon">
+			<i class="fa fa-bars"></i>
+		</a>
+	</div>
+    
+	
+	<div id="map">
+		<div class="bottombar">
+			<div id="drawtools">
+				<a id="#drawline">Viiva</a>
+				<a id="#drawpoly">Polygoni</a>
+				<a id="#drawcircle">Ympyrä</a>
+				<a id="#erase">Pyyhi</a>
+			</div>
+		</div>
+	</div>
+    <!-- <div id="mouse-position"></div> -->
+    <form id="debugform">
       <label>Projection </label>
       <select id="projection">
         <option value="EPSG:4326">EPSG:4326</option>
@@ -34,19 +54,15 @@
       <button id="clear" >Clear</button> 
       <button id="test" type="button">test</button> 
     </form>
-    <form>
-      <select id="resolution">
-        <option value="1200x900">1200x900</option>
-        <option value="750x1334">740x1334</option>
-        <option value="720x1280">720x1280</option>
-      </select>
+		<div id="piilotettava">
+		  <label>Precision </label>
+		  <input id="precision" type="number" min="0" max="12" value="4"/>
+		</div>
     </form>
-
-      <label>Precision </label>
-      <input id="precision" type="number" min="0" max="12" value="4"/>
-    </form>
-	<div id="debuginfo"></div>
+	
+	
 	<ul id="chattesti"></ul>
-    <script src="./index.js"></script>
+	<!-- <div id="debuginfo"></div> -->
+    <script type="text/javascript" src="./index.js"></script>
   </body>
 </html>
