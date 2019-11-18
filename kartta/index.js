@@ -12,7 +12,7 @@ import MousePosition from 'ol/control/MousePosition';
 import {createStringXY} from 'ol/coordinate';
 import {defaults as defaultControls} from 'ol/control';
 import {transform} from 'ol/proj';
-import WSHandler from "./wshandler";
+import {WSHandler} from "./wshandler";
 import Feature from 'ol/Feature';
 import {Circle, Fill, Stroke, Style} from 'ol/style';
 import {Vector as VectorLayer} from 'ol/layer';
@@ -23,11 +23,12 @@ import Draw from 'ol/interaction/Draw';
 import Polygon from 'ol/geom/Polygon';
 import LineString from "ol/geom/LineString";
 import CircleGeom from "ol/geom/Circle";
+import Select from 'ol/interaction/Select';
 
 var types = require('./testprotocol_pb');
 var hostname = "ws://127.0.0.1:5678";
 var wsh = new WSHandler(hostname);
-var firstdrawingId = 0;
+var featureID = 0;
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
 var projection = getProjection("EPSG:3067");
@@ -49,6 +50,10 @@ positionMarker.setStyle(new Style({
 	})	
 }));
 
+
+
+
+var dummysource = new VectorSource({wrapX: false});
 var source = new VectorSource({wrapX: false});
 var vector = new VectorLayer({
   source: source,
@@ -171,9 +176,9 @@ map.on('moveend', function(event) {
 		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
 		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
 		
-		console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
-		console.log(kaava);
-		console.log('Exact zoom level: ' + map.getView().getZoom());
+		//console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
+		//console.log(kaava);
+		//console.log('Exact zoom level: ' + map.getView().getZoom());
 		accuracyCircle.setRadius(kaava);
 		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 	}
@@ -278,7 +283,7 @@ function addInteraction() {
   var value = typeSelect.value;
   if (value !== 'None') {
     draw = new Draw({
-      source: source,
+      source: dummysource,
       type: typeSelect.value,
       freehand: true
     });
@@ -304,8 +309,9 @@ function addInteraction() {
     transformAndSendCoord(points);
     });
       map.addInteraction(draw);
-      
+      dummysource.clear();     
   }
+
 }
 /**
  * Handle change event.
@@ -365,9 +371,11 @@ function transformAndSendCoord(points){
 	else {console.log("global center: "+transformedCenter+ "radius: " + circleRadius);}
 }
 
-function handleLineString(linestring){
+setTimeout(function(){
+    wsh.login("asd");
+	wsh.joinRoom("wasd");
+}, 10000);
 
-}
 
 function handleCircle(circle){
 	//circleCenter = [circle.getCenter().getLongitude(),circle.getCenter().getLatitude()];
@@ -384,23 +392,80 @@ function handleCircle(circle){
     		width: 7
     		})
   	}));
+  		featureID++;
+  		circlefeat.setId(featureID);
   		circlefeat.setGeometry(circle);
 		source.addFeature(circlefeat);
 		console.log("circle features");
-		console.log(source.getFeatures());		
+		console.log(source.getFeatures());
+		console.log("circleID");
+		console.log(circlefeat.getId());		
 
 }
 
-function drawReceivedDrawing(msg) {
+function handleLinestring(linestring){
+	//var linepoints = [];
+	console.log(linestring);
+	//for(var i=0;i<linepoints.length;i++){
+	//	linepoints[i]= transform([linestring.getLongitude(),linestring.getLatitude()],"EPSG:4326","EPSG:3067");
+	//}
+	console.log("linepoints");
+	//console.log(linepoints);
+	var linestring = new LineString(linestringCoord);
+	var linefeat = new Feature({
+		geometry: linestring
+	});
+	featureID++;
+	linefeat.setId(featureID);
 
-	//msg.getLinestringsList().forEach(lstrings=>lstrings.getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()])));
+	source.addFeature(linefeat);
+	console.log("linestring features");
+	console.log(source.getFeatures());
+	console.log("linestringID");
+	console.log(linefeat.getId());
+
+}
+
+function handlePolygon(polygon){
+	var linepoints = polygon.getPointsList();
+	console.log("linepoints");
+	console.log(linepoints);
+	for(var i=0;i<linepoints.length;i++){
+		linepoints[i]= transform(linepoints[i],"EPSG:4326","EPSG:3067");
+	}
+	var poly = new Polygon(points);
+	var polyfeat = new Feature({
+		geometry: polyfeat
+	});
+	featureID++;
+  	circlefeat.setProperties({
+    id: featureID
+	});
+	source.addFeature(polyfeat);
+}
+
+var linestringCoord = [];
+
+function transformLinestring(coord){
+	linestringCoord.push(transform([coord.getLongitude(),coord.getLatitude()],"EPSG:4326","EPSG:3067"));
+}
+
+
+
+function drawReceivedDrawing(msg) {
+	msg.getLinestringsList().forEach(lstrings=>{
+		lstrings.getPointarray().getPointsList().forEach(coord=>transformLinestring(coord))
+		console.log("linestring points\n########################################\n##################################");
+		console.log(linestringCoord);
+		handleLinestring(linestringCoord);
+		linestringCoord= [];
+	});
 	msg.getCirclesList().forEach(circle =>handleCircle(circle));
 
 }
-
+//getPointsList().
 
 wsh.addReceiveDrawingListener(drawReceivedDrawing);
-
 
 
 
