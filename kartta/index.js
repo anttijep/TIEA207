@@ -181,15 +181,11 @@ var map = new Map({
 
 map.on('moveend', function(event) {
 	if (scales[currentZoomLevel] != undefined) {
-		console.log(scales);
 		if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
 		else currentZoomLevel = Math.round(map.getView().getZoom());	
 		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
 		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
 
-		console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
-		console.log(kaava);
-		console.log('Exact zoom level: ' + map.getView().getZoom());
 		accuracyCircle.setRadius(kaava);
 		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 	}
