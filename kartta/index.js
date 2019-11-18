@@ -10,6 +10,7 @@ import WMTS, {optionsFromCapabilities} from 'ol/source/WMTS';
 import proj4 from 'proj4';
 import {register} from 'ol/proj/proj4';
 import {get as getProjection} from 'ol/proj';
+import Geolocation from 'ol/Geolocation';
 import MousePosition from 'ol/control/MousePosition';
 import {createStringXY} from 'ol/coordinate';
 import {defaults as defaultControls} from 'ol/control';
@@ -64,10 +65,27 @@ var vector = new VectorLayer({
     })
   })
 });
+
 // https://openlayers.org/en/latest/doc/faq.html#why-is-the-order-of-a-coordinate-lon-lat-and-not-lat-lon-
 var myPosition = transform([25.749498121, 62.241677684], "EPSG:4326", "EPSG:3067");
 var myAccuracy = 0;
 var currentZoomLevel = 10;
+
+var accuracyCircle = new Circle({
+		radius: myAccuracy,
+		fill: new Fill({
+			color: omaVari
+		}),
+		stroke: new Stroke({
+			color: '#ffffff',
+			width: 1
+		})
+	});
+
+var accuracyMarker = new Feature();
+accuracyMarker.setStyle(new Style({
+	image: accuracyCircle
+}));
 
 var view = new View({
 			projection: projection,
@@ -80,6 +98,14 @@ var parser = new WMTSCapabilities();
 var scales = [];
 var lastLocationUpdate = Date.now();
 console.log(lastLocationUpdate);
+
+var geolocation = new Geolocation({
+	trackingOptions: {
+		enableHighAccuracy: true
+	},
+	projection: view.getProjection()
+});
+geolocation.setTracking(true);
 
 if (navigator.geolocation) {
 	navigator.geolocation.getCurrentPosition(function(position) {
@@ -99,6 +125,12 @@ if (navigator.geolocation) {
 			myAccuracy = position.coords.accuracy;
 			
 			currentZoomLevel = Math.round(map.getView().getZoom());	
+			
+			var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
+			accuracyCircle.setRadius(kaava);
+			accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+			sendDataToServer();
+			
 			// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
 			if (Date.now() - lastLocationUpdate < 10000) {
 				sendDataToServer();
@@ -122,7 +154,9 @@ var mousePositionControl = new MousePosition({
 });
 
 var markerLayer = new Collection();
+var accuracyLayer = new Collection();
 markerLayer.push(positionMarker);
+accuracyLayer.push(accuracyMarker);
 
 var map = new Map({
 		controls: defaultControls().extend([mousePositionControl]),
@@ -133,10 +167,33 @@ var map = new Map({
 				}),
 				zIndex: 5
 			}),
-		vector],
+			new VectorLayer({
+				opacity: 0.3,
+				source: new VectorSource({
+					features: accuracyLayer
+				}),
+				zIndex: 4
+			})
+		,vector],
 		target: 'map',
 		view: view
 	});
+
+map.on('moveend', function(event) {
+	if (scales[currentZoomLevel] != undefined) {
+		console.log(scales);
+		if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
+		else currentZoomLevel = Math.round(map.getView().getZoom());	
+		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
+		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
+
+		console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
+		console.log(kaava);
+		console.log('Exact zoom level: ' + map.getView().getZoom());
+		accuracyCircle.setRadius(kaava);
+		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+	}
+});
 
 // esim. chat eventtien lukeminen
 function test(msg) {
@@ -210,16 +267,14 @@ fetch(capabilitiesUrl).then(function(response) {
 	}); */
 });
 
-// Sijainnin ja sijainnin tarkkuuden lähetys palvelimelle
+// Sijainnin ja sen tarkkuuden lähetys palvelimelle
 function sendDataToServer() {	
 	lastLocationUpdate = Date.now();
-	console.log(lastLocationUpdate);
 	var wCoords = transform(myPosition, "EPSG:3067", "EPSG:4326");
 	var lat = wCoords[0];
 	var lon = wCoords[1];
 	var acc = myAccuracy;	
 	wsh.sendLocation(lat, lon, acc);
-	console.log("DATAA OLETETTAVASTI LÄHETETTY: " + wCoords);
 }
 
 var projectionSelect = document.getElementById('projection');
