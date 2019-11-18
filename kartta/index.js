@@ -12,7 +12,7 @@ import MousePosition from 'ol/control/MousePosition';
 import {createStringXY} from 'ol/coordinate';
 import {defaults as defaultControls} from 'ol/control';
 import {transform} from 'ol/proj';
-import WSHandler from "./wshandler";
+import {WSHandler} from "./wshandler";
 import Feature from 'ol/Feature';
 import {Circle, Fill, Stroke, Style} from 'ol/style';
 import {Vector as VectorLayer} from 'ol/layer';
