@@ -101,12 +101,9 @@ console.log(lastLocationUpdate);
 
 if (navigator.geolocation) {
 	navigator.geolocation.watchPosition(function(position) {
-		var latitude = position.coords.latitude;
-		var longitude = position.coords.longitude;
-		var accuracy = position.coords.accuracy;
 		var debuginfo = document.getElementById("debuginfo");
-		debuginfo.innerHTML = "longitude: " + longitude + ", latitude: " + latitude + ", accuracy: " + accuracy;
-		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
+		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		myAccuracy = position.coords.accuracy;
 		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
