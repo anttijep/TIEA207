@@ -88,6 +88,15 @@ function test2(msg) {
 }
 wsh.addLocationChangeListener(test2);
 // esim2. end
+// join group
+
+function userMoved(msg) {
+	var message = document.createElement('li');
+	var s = msg.getUserid() + " moved to " + msg.getGroupid();
+	message.appendChild(document.createTextNode(s));
+	messageselement.appendChild(message);
+}
+wsh.addUserMovedListener(userMoved);
 
 function handleCircle(circle,arr){
 	arr.push([circle.getCenter().getLatitude(),circle.getCenter().getLatitude(),circle.getRadius()])
@@ -99,16 +108,12 @@ function test3(msg) {
 	var message = document.createElement('li');
 	var arr = [];
 
-	msg.getLinestringsList().forEach(lstrings=>lstrings.getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()])));
-	msg.getCirclesList().forEach(circle =>handleCircle(circle,arr));
-	var s = msg.getSenderid() + " :: " + arr.join("->");
-
-//	var id = -1;
-//	msg.getLinestringsList().forEach(lstrings=>{
-//		lstrings.getPointarray().getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()]))
-//		id = lstrings.getId();
-//	});
-//	var s = msg.getSenderid() + " :: " + id + " :: " + arr.join("->");
+	var id = -1;
+	msg.getLinestringsList().forEach(lstrings=>{
+		lstrings.getPointarray().getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()]))
+		id = lstrings.getId();
+	});
+	var s = msg.getSenderid() + " :: " + id + " :: " + arr.join("->");
 
 	message.appendChild(document.createTextNode(s));
 	messageselement.appendChild(message);
@@ -141,6 +146,17 @@ function senddrawing(evnt) {
 	wsh.sendLinestring(arr);
 }
 
+var creategroupb = document.getElementById("creategroup");
+creategroupb.onclick = creategroup;
+function creategroup(e) {
+	wsh.createGroup("test");
+}
+var joingroupb = document.getElementById("joingroup");
+joingroupb.onclick = joingroup;
+
+function joingroup(e) {
+	wsh.joinGroup(1);
+}
 
 var textbox = document.getElementById('textbox');
 textbox.addEventListener("keyup", function(evnt) {
