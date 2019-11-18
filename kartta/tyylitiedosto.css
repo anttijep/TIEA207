@@ -1,0 +1,111 @@
+html, body{
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	overflow: hidden;
+}
+
+#map {
+	  height: 100%;
+	  position: relative;
+	  margin: 0px;
+	  z-index: auto;
+}
+
+/* Liikuttaa zoomausnappeja */
+.ol-zoom.ol-unselectable.ol-control {
+	top: 4em;
+}
+
+ /* Navigaatiomenu */
+.navigation {
+  overflow: hidden;
+  background-color: #333;
+  position: absolute;
+  z-index: 1;
+  margin-right: 0px;
+  margin-left: 0px;
+  width: 100%;
+}
+
+/* Piilottaa avautuvat linkit */
+.navigation #links {
+  display: none;
+}
+
+/* Navigaatiolinkit */
+.navigation a {
+  color: white;
+  padding: 10px 16px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  text-decoration: none;
+  display: block;
+  font-size: 18px;
+  height: 30px;
+}
+
+/* Hampurilaiskuvake */
+.navigation a.icon {
+  background: black;
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 15px;
+  height: 20px;
+}
+
+/* Hiiren alla olevan linkin tausta */
+.navigation a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+
+.navigation #topbar {
+  padding-left: 65px;
+  padding-top: 0px;
+  padding-bottom: 5px;
+  height: 45px;
+}
+
+#title {
+	font-size: 20px;
+	padding-bottom: 5px;
+}
+
+#debuginfo {
+	font-size: 12px;
+}
+
+/* Tyylittelee tällä hetkellä valitun linkin */
+.active {
+  background-color: #193b78;
+  color: white;
+} 
+
+#debugmenu {
+	background-color: white;
+	z-index: 1;
+	top: 75%;
+	position: absolute;
+}
+
+/* Alapalkin tyyli */
+.bottombar {
+	z-index: 1;
+	position: absolute;
+	bottom: 0px;
+	margin-right: 0px;
+	margin-left: 0px;
+	width: 100%;
+}
+
+.bottombar #drawtools {
+	background: #333;
+	display: flex;
+	justify-content: space-evenly;
+	font-size: 18px;
+	color: white;
+}

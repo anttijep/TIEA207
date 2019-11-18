@@ -14,7 +14,7 @@ import MousePosition from 'ol/control/MousePosition';
 import {createStringXY} from 'ol/coordinate';
 import {defaults as defaultControls} from 'ol/control';
 import {transform} from 'ol/proj';
-import { WSHandler } from "./wshandler";
+import WSHandler from "./wshandler";
 import Feature from 'ol/Feature';
 import {Circle, Fill, Stroke, Style} from 'ol/style';
 import {Vector as VectorLayer} from 'ol/layer';
@@ -24,11 +24,12 @@ import Collection from 'ol/Collection';
 import Draw from 'ol/interaction/Draw';
 import Polygon from 'ol/geom/Polygon';
 import LineString from "ol/geom/LineString";
+import CircleGeom from "ol/geom/Circle";
 
 var types = require('./testprotocol_pb');
 var hostname = "ws://127.0.0.1:5678";
 var wsh = new WSHandler(hostname);
-
+var firstdrawingId = -1;
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
 var projection = getProjection("EPSG:3067");
@@ -170,7 +171,7 @@ function updateLocation(msg) {
 		
 		markerDict[msg.getSenderid()] = markkeri;
 		markkeri.setGeometry(lonlat ? new Point(lonlat) : null);
-		markerLayer.push(markkeri);
+
 	}
 }
 wsh.addLocationChangeListener(updateLocation);
@@ -256,6 +257,10 @@ function addInteraction() {
     	circleRadius = e.feature.getGeometry().getRadius();
     	console.log("center "+circleCenter + " " + "radius "+circleRadius);
     	points = null;
+    	debugger;
+    	e.setId(firstdrawingId);
+    	source.removeFeature(source.getFeatureById(firstdrawingId));
+
     }
     else {
     points = e.feature.getGeometry().getCoordinates();
@@ -309,23 +314,66 @@ function transformAndSendCoord(points){
 	if(text == "LineString"){
 		for(var i=0;i<points.length;i++){
 			trimmedCoord =points[i];
-			coordArray[i]=transform(trimmedCoord,"EPSG:4326", "EPSG:3067");
+			coordArray[i]=transform(trimmedCoord,"EPSG:3067","EPSG:4326");
 		}
+		wsh.sendLinestring(coordArray);
 	}
 	if(text == "Polygon"){
 		for(var i=0;i<points[0].length;i++){
 			helpArray = points[0]
 			trimmedCoord =helpArray[i];
-			coordArray[i]=transform(trimmedCoord,"EPSG:4326", "EPSG:3067");
+			coordArray[i]=transform(trimmedCoord,"EPSG:3067","EPSG:4326");
 		}
+		wsh.sendPolygon(coordArray);
 	}
 	if(text == "Circle"){
-		transformedCenter = transform(circleCenter,"EPSG:4326", "EPSG:3067");
+		transformedCenter = transform(circleCenter,"EPSG:3067","EPSG:4326");
+		wsh.sendCircle(transformedCenter,circleRadius);
+
 	}
 	console.log("global coordinates");
 	if(text =="LineString" || text == "Polygon") console.log(coordArray);
+
 	else {console.log("global center: "+transformedCenter+ "radius: " + circleRadius);}
 }
+
+function handleLineString(linestring){
+
+}
+
+function handleCircle(circle){
+	//circleCenter = [circle.getCenter().getLongitude(),circle.getCenter().getLatitude()];
+	var center = transform([circle.getCenter().getLongitude(),circle.getCenter().getLatitude()],"EPSG:4326","EPSG:3067");
+	var radius = circle.getRadius();
+	var circle = new CircleGeom(center,radius);
+	var circlefeat = new Feature();
+	circlefeat.setStyle(new Style({
+   		fill: new Fill({
+      		color: 'rgba(255,255,0,0.5)'
+    		}),
+   			stroke: new Stroke({
+   			color: 'yellow',
+    		width: 7
+    		})
+  	}));
+  		circlefeat.setGeometry(circle);
+		source.addFeature(circlefeat);
+		console.log(source.getFeatures());		
+
+}
+
+function drawReceivedDrawing(msg) {
+
+	//msg.getLinestringsList().forEach(lstrings=>lstrings.getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()])));
+	msg.getCirclesList().forEach(circle =>handleCircle(circle));
+
+}
+
+
+wsh.addReceiveDrawingListener(drawReceivedDrawing);
+
+
+
 
 
 function sendShapeCoord(){
@@ -348,49 +396,87 @@ function sendShapeCoord(){
 		return shape;
 	}
 	if(text=="Circle"){
-		shape = new Feature({
-			geometry: new Circle(points)
-		})
-		source.addFeature(shape);
-		return shape;
+		
+		var circle = new CircleGeom(circleCenter,circleRadius);
+		console.log("center "+circleCenter + " " + "radius "+circleRadius);
+		//circle.setCenterAndRadius(circleCenter,circleRadius);
+		var circlefeat = new Feature();
+		circlefeat.setStyle(new Style({
+   			fill: new Fill({
+      			color: 'rgba(255,255,0,0.5)'
+    			}),
+    			stroke: new Stroke({
+      			color: 'yellow',
+      			width: 7
+    			})
+  		}));
+  		circlefeat.setGeometry(circle);
+		source.addFeature(circlefeat);
+		return circlefeat;
 	}
 	else return;
 }
-
-var resolution = document.getElementById("resolution");
-
-function changeResolution(){
-	var text = resolution.options[resolution.selectedIndex].text;
-	var sheet = document.createElement('style');
-	if(text=="1200x900"){
-		//map.style.width = "1200px";
-		//map.style.height = "900px";
-		var styleHTML = ".custommap {    width: 1200px;    height: 900px;}";
-		sheet.innerHTML = styleHTML;
-		document.body.appendChild(sheet);
-		map.updateSize();
-	}
-	if(text=="750x1334"){
-		//map.style.width = "750px";
-		//map.style.height = "1334px";
-		var styleHTML = ".custommap {    width: 750px;    height: 1334px;}";
-		sheet.innerHTML = styleHTML;
-		document.body.appendChild(sheet);
-		map.updateSize();
-	}
-	if(text=="720x1280"){
-		//map.style.width = "720px";
-		//map.style.height = "1280px";
-		var styleHTML = ".custommap {    width: 720px;    height: 1280px;}";
-		sheet.innerHTML = styleHTML;
-		document.body.appendChild(sheet);
-		map.updateSize();
-	}
-}
-
 
 //resolution.onchange = function(){
 //	debugger;
 //	changeResolution();
 //}
 //resolution.addEventListener("change",changeResolution);
+
+//--------------KÄYTTÖLIITTYMÄN SKRIPTIT TÄSTÄ ALASPÄIN-----------------
+
+//piilotetaan turhat
+//document.getElementById("debugmenu").style.display = "none";
+
+
+
+//hampurilaisvalikon avaus/sulku
+document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
+document.getElementById("hamburger").addEventListener("click", openHamburger);
+
+function openHamburger(){
+	var x = document.getElementById("links");
+	if (x.style.display === "block") {
+		x.style.zIndex = "auto";
+		x.style.display = "none";
+  } else {
+		x.style.zIndex = "1";
+		x.style.display = "block";
+  }
+}
+
+//Työkalupalkin avaus/sulku
+document.getElementById("drawtools").style.display = "none"; //piirtotyökalut kiinni alussa
+document.getElementById("toolstoggle").addEventListener("click", openTools)
+
+function openTools(){
+	var x = document.getElementById("drawtools");
+	if (x.style.display === "flex") {
+		x.style.display = "none";
+  } else {
+		x.style.display = "flex";
+  }
+}
+//työkalupalkin tapahtumankuuntelijat
+//document.getElementById("drawline").addEventListener("click", );
+//document.getElementById("drawpoly").addEventListener("click", );
+//document.getElementById("drawcircle").addEventListener("click", );
+document.getElementById("erase").addEventListener("click", clearAll);
+
+document.getElementById("debugmenu").style.display = "none";
+document.getElementById("settings").addEventListener("click", openDebugmenu)
+
+function openDebugmenu(){
+	var x = document.getElementById("debugmenu");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+  } else {
+		x.style.display = "block";
+  }
+}
+
+//TODO: funktio joka hakee käyttäjän tämänhetkisen joukkueen nimen
+function teamName(){
+	name = "";
+	document.getElementById("title").textContent = "Team: " + name;
+}

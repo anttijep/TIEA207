@@ -9,6 +9,8 @@ export class WSHandler {
 
 		this.onLoginResult = new Set();
 		this.onJoinResult = new Set();
+		this.onNewGroup = new Set();
+		this.onUserMoved = new Set();
 		var me = this;
 
 		this.ws.onmessage = function(evnt) {
@@ -28,7 +30,10 @@ export class WSHandler {
 	sendCircle(center, radius) {
 
 		var circle = new proto.testi.Circle();
-		circle.setCenter(center);
+		var point = new proto.testi.DrawPoint();
+		point.setLongitude(center[0]);
+		point.setLatitude(center[1]);
+		circle.setCenter(point);
 		circle.setRadius(radius);
 		var shape = new proto.testi.DrawShape();
 		shape.getCirclesList().push(circle);
@@ -66,7 +71,9 @@ export class WSHandler {
 			point.setLatitude(e[1]);
 			points.getPointsList().push(point);
 		});
-		shape.getLinestringsList().push(points);
+		var linestring = new proto.testi.Linestring();
+		linestring.setPointarray(points);
+		shape.getLinestringsList().push(linestring);
 		msg.setShape(shape);
 		this.ws.send(msg.serializeBinary());
 	}
@@ -99,6 +106,22 @@ export class WSHandler {
 		this.ws.send(msg.serializeBinary());
 	}
 
+	createGroup(name) {
+		var msg = new proto.testi.ToServer();
+		var group = new proto.testi.CreateGroup();
+		group.setName(name);
+		msg.setCreategroup(group);
+		this.ws.send(msg.serializeBinary());
+	}
+
+	joinGroup(groupid) {
+		var msg = new proto.testi.ToServer();
+		var group = new proto.testi.JoinGroup();
+		group.setId(groupid);
+		msg.setJoingroup(group);
+		this.ws.send(msg.serializeBinary());
+	}
+
 	onMessage(evnt) {
 		var msg = proto.testi.FromServer.deserializeBinary(evnt.data);
 		console.log(msg);
@@ -113,6 +136,8 @@ export class WSHandler {
 		if (msg.hasJoinanswer()) {
 			this.onJoinResult.forEach(f=>f(msg.getJoinanswer()));
 		}
+		msg.getNewgroupsList().forEach(e=>that.onNewGroup.forEach(f=>f(e)));
+		msg.getUsermovedList().forEach(e=>that.onUserMoved.forEach(f=>f(e)));
 		msg.getChatmsgList().forEach(e=>that.onChatMessage.forEach(f=>f(e)));
 		msg.getLocationsList().forEach(e=>that.onLocationChange.forEach(f=>f(e)));
 		msg.getShapesList().forEach(e=>that.onReceiveDrawing.forEach(f=>f(e)));
@@ -147,5 +172,18 @@ export class WSHandler {
 	removeJoinResultListener(func) {
 		this.onJoinResult.delete(func);
 	}
+	addNewGroupListener(func) {
+		this.onNewGroup.add(func);
+	}
+	removeNewGroupListener(func) {
+		this.onNewGroup.delete(func);
+	}
+	addUserMovedListener(func) {
+		this.onUserMoved.add(func);
+	}
+	removeUserMovedListener(func) {
+		this.onUserMoved.delete(func);
+	}
 }
+
 
