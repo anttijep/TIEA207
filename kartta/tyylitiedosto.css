@@ -12,8 +12,8 @@ html, body{
 	  z-index: auto;
 }
 
-/* Liikuttaa zoomausnappeja */
-.ol-zoom.ol-unselectable.ol-control {
+/* Liikuttaa zoomausnappeja ja käännön resetointinappia */
+.ol-zoom.ol-unselectable.ol-control, .ol-rotate.ol-unselectable.ol-control {
 	top: 4em;
 }
 
@@ -22,7 +22,7 @@ html, body{
   overflow: hidden;
   background-color: #333;
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   margin-right: 0px;
   margin-left: 0px;
   width: 100%;
@@ -83,12 +83,58 @@ html, body{
 .active {
   background-color: #193b78;
   color: white;
+}
+
+/*flexboxit jotka keskittää login ikkunan*/
+#flexLR {
+	z-index: 1;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	position: absolute;
+	width: 100%;
+	height: inherit;
+}
+#flexUD {
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	height: 100%;
 } 
 
+
+/*login-ikkuna*/
+#loginwindow {
+	background-color: #333;
+	color: white;
+	position: relative;
+	left: 25%;
+	max-width: 50%;
+}
+/*login ikkunan yläpalkki*/
+#loginwindowTop{
+	background-color: #193b78;
+	color: white;
+	width: inherit;
+	padding: 5px;
+	font-size: 18px;
+}
+
+/*login ikkunan sisältö*/
+#loginwindowContent{
+	padding: 5px;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+
+
+/*debugmenu*/
 #debugmenu {
 	background-color: white;
-	z-index: 1;
 	top: 75%;
+	z-index: 1;
 	position: absolute;
 }
 

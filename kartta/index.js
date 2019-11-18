@@ -1,3 +1,5 @@
+// TODO: Sijainnin päivityksen ajastin + tarkistus onko päivitetty (estää useammat päivityspyynnöt)
+
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -8,6 +10,7 @@ import WMTS, {optionsFromCapabilities} from 'ol/source/WMTS';
 import proj4 from 'proj4';
 import {register} from 'ol/proj/proj4';
 import {get as getProjection} from 'ol/proj';
+import Geolocation from 'ol/Geolocation';
 import MousePosition from 'ol/control/MousePosition';
 import {createStringXY} from 'ol/coordinate';
 import {defaults as defaultControls} from 'ol/control';
@@ -36,7 +39,7 @@ var capabilitiesUrl = 'https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts/
 var markerDict = {};
 // Markerin piirtäminen
 var positionMarker = new Feature();
-var omaVari = "#ffff00";
+var omaVari = "#ffff00";	// oman sijainnin ja tarkkuuden väri
 positionMarker.setStyle(new Style({
 	image: new Circle({
 		radius: 12,
@@ -67,10 +70,12 @@ var vector = new VectorLayer({
     })
   })
 });
+
 // https://openlayers.org/en/latest/doc/faq.html#why-is-the-order-of-a-coordinate-lon-lat-and-not-lat-lon-
 var myPosition = transform([25.749498121, 62.241677684], "EPSG:4326", "EPSG:3067");
 var myAccuracy = 0;
 var currentZoomLevel = 10;
+
 var accuracyCircle = new Circle({
 		radius: myAccuracy,
 		fill: new Fill({
@@ -91,40 +96,37 @@ var view = new View({
 			projection: projection,
 			center: myPosition,
 			zoom: currentZoomLevel,
-			minZoom:0,
 			maxZoom:18
 		});
 
 var parser = new WMTSCapabilities();
 var scales = [];
+var lastLocationUpdate = Date.now();
+console.log(lastLocationUpdate);
 
 if (navigator.geolocation) {
-	navigator.geolocation.getCurrentPosition(function(position) {
-		var latitude = position.coords.latitude;
-		var longitude = position.coords.longitude;
-		var accuracy = position.coords.accuracy;
+	navigator.geolocation.watchPosition(function(position) {
 		var debuginfo = document.getElementById("debuginfo");
-		debuginfo.innerHTML = "longitude: " + longitude + ", latitude: " + latitude + ", accuracy: " + accuracy;
-		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
+		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		myAccuracy = position.coords.accuracy;
-		navigator.geolocation.watchPosition(function(position) {
-			myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
-			positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-			debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
+		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
 
-			myAccuracy = position.coords.accuracy;
-			
-			console.log(scales);
-			currentZoomLevel = Math.round(map.getView().getZoom());	
-			// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
-			var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
-			console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
-			console.log(kaava);
-			console.log('Exact zoom level: ' + map.getView().getZoom());
-			accuracyCircle.setRadius(kaava);
-			accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		});
+		myAccuracy = position.coords.accuracy;
+		
+		currentZoomLevel = Math.round(map.getView().getZoom());	
+		
+		changeAccuracy();
+		
+		sendDataToServer();
+		
+		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
+		if (Date.now() - lastLocationUpdate < 10000) {
+			sendDataToServer();
+		}
 		view.setCenter(myPosition);
 	});
 } else {
@@ -167,24 +169,29 @@ var map = new Map({
 		target: 'map',
 		view: view
 	});
-	
+
 map.on('moveend', function(event) {
+	changeAccuracy();
+});
+
+function changeAccuracy() {
 	if (scales[currentZoomLevel] != undefined) {
-		console.log(scales);
 		if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
 		else currentZoomLevel = Math.round(map.getView().getZoom());	
 		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
 		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
+
 		
-		//console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
-		//console.log(kaava);
-		//console.log('Exact zoom level: ' + map.getView().getZoom());
+		console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
+		console.log(kaava);
+		console.log('Exact zoom level: ' + map.getView().getZoom());
+
+
+
 		accuracyCircle.setRadius(kaava);
 		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 	}
-});
-
-
+};
 
 // esim. chat eventtien lukeminen
 function test(msg) {
@@ -208,11 +215,11 @@ function updateLocation(msg) {
 				image: new Circle({
 				radius: 12,
 				fill: new Fill({
-				color: '#ff00ff'
-			}),
-			stroke: new Stroke({
-				color: '#000000',
-				width: 2
+					color: '#ff00ff'
+				}),
+				stroke: new Stroke({
+					color: '#000000',
+					width: 2
 				})
 			})	
 		}));
@@ -257,6 +264,16 @@ fetch(capabilitiesUrl).then(function(response) {
 		})
 	}); */
 });
+
+// Sijainnin ja sen tarkkuuden lähetys palvelimelle
+function sendDataToServer() {	
+	lastLocationUpdate = Date.now();
+	var wCoords = transform(myPosition, "EPSG:3067", "EPSG:4326");
+	var lat = wCoords[0];
+	var lon = wCoords[1];
+	var acc = myAccuracy;	
+	wsh.sendLocation(lat, lon, acc);
+}
 
 var projectionSelect = document.getElementById('projection');
 projectionSelect.addEventListener('change', function(event) {
@@ -557,8 +574,7 @@ function openTools(){
 //document.getElementById("drawcircle").addEventListener("click", );
 document.getElementById("erase").addEventListener("click", clearAll);
 
-
-
+//debug menun avaus/sulku
 document.getElementById("debugmenu").style.display = "none";
 document.getElementById("settings").addEventListener("click", openDebugmenu)
 
@@ -576,3 +592,54 @@ function teamName(){
 	name = "";
 	document.getElementById("title").textContent = "Team: " + name;
 }
+
+//login ikkunan avaus/sulku
+document.getElementById("loginwindow").style.display = "none";
+document.getElementById("flexLR").style.display = "none";
+document.getElementById("openroomlogin").addEventListener("click", openLogin)
+document.getElementById("formPassword").style.display = "none";
+
+var loginButton = document.getElementById("loginButton")
+var passwordButton = document.getElementById("passwordButton");
+
+function openLogin(){
+	openHamburger();
+	document.getElementById("formRoomUsername").style.display = "block";
+	document.getElementById("formPassword").style.display = "none";
+	
+	loginButton.onclick = passwordEntry;//pitää muuttaa
+	
+	var x = document.getElementById("flexLR");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+  } else {
+		x.style.display = "block";
+  }
+  
+	var y = document.getElementById("loginwindow");
+	if (y.style.display === "block") {
+		y.style.display = "none";
+  } else {
+		y.style.display = "block";
+  }
+}
+
+//kutsutaan jos huoneseen tarvitsee salasanan
+function passwordEntry(){
+	document.getElementById("formRoomUsername").style.display = "none";
+	document.getElementById("formPassword").style.display = "block";
+	
+}
+/*
+function applyMapCover(){
+	var x = document.getElementById("flexLR");
+	if (x.style.display === "none") {
+		x.style.display = "block";
+	}
+}
+function removeMapCover(){
+	var x = document.getElementById("flexLR");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+	}
+}*/
