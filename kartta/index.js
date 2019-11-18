@@ -103,7 +103,12 @@ var lastLocationUpdate = Date.now();
 console.log(lastLocationUpdate);
 
 if (navigator.geolocation) {
+	var firstCenter = true;
 	navigator.geolocation.watchPosition(function(position) {
+		if (firstCenter == true) {
+			firstCenter == false;
+			view.setCenter(myPosition);
+		}
 		var debuginfo = document.getElementById("debuginfo");
 		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
 		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
@@ -246,6 +251,7 @@ fetch(capabilitiesUrl).then(function(response) {
 		})
 	}); */
 });
+
 
 // Sijainnin ja sen tarkkuuden lähetys palvelimelle
 function sendDataToServer() {	
