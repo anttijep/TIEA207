@@ -146,6 +146,17 @@ function senddrawing(evnt) {
 	wsh.sendLinestring(arr);
 }
 
+var creategroupb = document.getElementById("creategroup");
+creategroupb.onclick = creategroup;
+function creategroup(e) {
+	wsh.createGroup("test");
+}
+var joingroupb = document.getElementById("joingroup");
+joingroupb.onclick = joingroup;
+
+function joingroup(e) {
+	wsh.joinGroup(1);
+}
 
 var textbox = document.getElementById('textbox');
 textbox.addEventListener("keyup", function(evnt) {

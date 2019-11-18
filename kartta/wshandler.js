@@ -114,6 +114,14 @@ export class WSHandler {
 		this.ws.send(msg.serializeBinary());
 	}
 
+	joinGroup(groupid) {
+		var msg = new proto.testi.ToServer();
+		var group = new proto.testi.JoinGroup();
+		group.setId(groupid);
+		msg.setJoingroup(group);
+		this.ws.send(msg.serializeBinary());
+	}
+
 	onMessage(evnt) {
 		var msg = proto.testi.FromServer.deserializeBinary(evnt.data);
 		console.log(msg);

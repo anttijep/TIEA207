@@ -69,7 +69,7 @@ class User:
     async def senderr(self, errmsg):
         err = testprotocol_pb2.FromServer()
         err.errmsg = errmsg
-        await user.send(err)
+        await self.send(err)
 
     async def send(self, msg):
         await self.websocket.send(msg.SerializeToString())
@@ -146,7 +146,7 @@ class Room:
             msgout.shapes.append(shape)
 
         if msg.HasField("creategroup"):
-            if msg.creategroup.name and msg.creategroup.name not in self.groups:
+            if msg.creategroup.name and msg.creategroup.name not in self.groups.values():
                 relay = True
                 self.groups[self.nextgroupid] = msg.creategroup.name
                 newgroup = testprotocol_pb2.NewGroup()
@@ -158,7 +158,7 @@ class Room:
                 await user.senderr("invalid group name")
 
         if msg.HasField("joingroup"):
-            if msg.joingroup.id in self.groups:
+            if self.usergroup[user] != msg.joingroup.id and msg.joingroup.id in self.groups:
                 self.usergroup[user] = msg.joingroup.id
                 relay = True
                 usermoved = testprotocol_pb2.UserMoved()
