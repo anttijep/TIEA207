@@ -116,6 +116,8 @@ if (navigator.geolocation) {
 		
 		changeAccuracy();
 		
+		sendDataToServer();
+		
 		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
 		if (Date.now() - lastLocationUpdate < 10000) {
 			sendDataToServer();
