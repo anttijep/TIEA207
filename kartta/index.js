@@ -529,13 +529,14 @@ document.getElementById("flexLR").style.display = "none";
 document.getElementById("openroomlogin").addEventListener("click", openLogin)
 document.getElementById("formPassword").style.display = "none";
 
+var loginButton = document.getElementById("loginButton")
+var passwordButton = document.getElementById("passwordButton");
 
 function openLogin(){
 	openHamburger();
 	document.getElementById("formRoomUsername").style.display = "block";
 	document.getElementById("formPassword").style.display = "none";
 	
-	var loginButton = document.getElementById("loginButton")
 	loginButton.onclick = passwordEntry;//pitää muuttaa
 	
 	var x = document.getElementById("flexLR");
