@@ -1,5 +1,3 @@
-// TODO: Sijainnin päivityksen ajastin + tarkistus onko päivitetty (estää useammat päivityspyynnöt)
-
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -26,11 +24,12 @@ import Draw from 'ol/interaction/Draw';
 import Polygon from 'ol/geom/Polygon';
 import LineString from "ol/geom/LineString";
 import CircleGeom from "ol/geom/Circle";
+import Select from 'ol/interaction/Select';
 
 var types = require('./testprotocol_pb');
 var hostname = "ws://127.0.0.1:5678";
 var wsh = new WSHandler(hostname);
-var firstdrawingId = -1;
+var featureID = 0;
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
 var projection = getProjection("EPSG:3067");
@@ -52,6 +51,10 @@ positionMarker.setStyle(new Style({
 	})	
 }));
 
+
+
+
+var dummysource = new VectorSource({wrapX: false});
 var source = new VectorSource({wrapX: false});
 var vector = new VectorLayer({
   source: source,
@@ -99,48 +102,30 @@ var scales = [];
 var lastLocationUpdate = Date.now();
 console.log(lastLocationUpdate);
 
-var geolocation = new Geolocation({
-	trackingOptions: {
-		enableHighAccuracy: true
-	},
-	projection: view.getProjection()
-});
-geolocation.setTracking(true);
-
 if (navigator.geolocation) {
-	navigator.geolocation.getCurrentPosition(function(position) {
-		var latitude = position.coords.latitude;
-		var longitude = position.coords.longitude;
-		var accuracy = position.coords.accuracy;
+	var firstCenter = true;
+	navigator.geolocation.watchPosition(function(position) {
+		if (firstCenter == true) {
+			firstCenter == false;
+			view.setCenter(myPosition);
+		}
 		var debuginfo = document.getElementById("debuginfo");
-		debuginfo.innerHTML = "longitude: " + longitude + ", latitude: " + latitude + ", accuracy: " + accuracy;
-		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
+		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		myAccuracy = position.coords.accuracy;
-		this.watchPosition(function(position) {
-			myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
-			positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-			debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
-
-			myAccuracy = position.coords.accuracy;
-			
-			currentZoomLevel = Math.round(map.getView().getZoom());	
-			
-			var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
-			accuracyCircle.setRadius(kaava);
-			accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		
+		changeAccuracy();
+		
+		// aina kun saadaan uusi sijaintitieto ja aikaa on kulunut 10 sekuntia, lähetetään tiedot palvelimelle
+		if (Date.now() - lastLocationUpdate > 10000) {
 			sendDataToServer();
-			
-			// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
-			if (Date.now() - lastLocationUpdate < 10000) {
-				sendDataToServer();
-			}
-		});
-		view.setCenter(myPosition);
+		}
 	});
 } else {
 	console.log("Geolocation API is not supported in your browser.");
 }
+
 
 // https://openlayers.org/en/latest/examples/mouse-position.html
 var mousePositionControl = new MousePosition({
@@ -180,6 +165,10 @@ var map = new Map({
 	});
 
 map.on('moveend', function(event) {
+	changeAccuracy();
+});
+
+function changeAccuracy() {
 	if (scales[currentZoomLevel] != undefined) {
 		if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
 		else currentZoomLevel = Math.round(map.getView().getZoom());	
@@ -189,7 +178,7 @@ map.on('moveend', function(event) {
 		accuracyCircle.setRadius(kaava);
 		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 	}
-});
+};
 
 // esim. chat eventtien lukeminen
 function test(msg) {
@@ -263,6 +252,7 @@ fetch(capabilitiesUrl).then(function(response) {
 	}); */
 });
 
+
 // Sijainnin ja sen tarkkuuden lähetys palvelimelle
 function sendDataToServer() {	
 	lastLocationUpdate = Date.now();
@@ -298,7 +288,7 @@ function addInteraction() {
   var value = typeSelect.value;
   if (value !== 'None') {
     draw = new Draw({
-      source: source,
+      source: dummysource,
       type: typeSelect.value,
       freehand: true
     });
@@ -308,9 +298,6 @@ function addInteraction() {
     	circleRadius = e.feature.getGeometry().getRadius();
     	console.log("center "+circleCenter + " " + "radius "+circleRadius);
     	points = null;
-    	debugger;
-    	e.setId(firstdrawingId);
-    	source.removeFeature(source.getFeatureById(firstdrawingId));
 
     }
     else {
@@ -327,8 +314,9 @@ function addInteraction() {
     transformAndSendCoord(points);
     });
       map.addInteraction(draw);
-      
+      dummysource.clear();     
   }
+
 }
 /**
  * Handle change event.
@@ -388,9 +376,11 @@ function transformAndSendCoord(points){
 	else {console.log("global center: "+transformedCenter+ "radius: " + circleRadius);}
 }
 
-function handleLineString(linestring){
+setTimeout(function(){
+    wsh.login("asd");
+	wsh.joinRoom("wasd");
+}, 10000);
 
-}
 
 function handleCircle(circle){
 	//circleCenter = [circle.getCenter().getLongitude(),circle.getCenter().getLatitude()];
@@ -407,22 +397,80 @@ function handleCircle(circle){
     		width: 7
     		})
   	}));
+  		featureID++;
+  		circlefeat.setId(featureID);
   		circlefeat.setGeometry(circle);
 		source.addFeature(circlefeat);
-		console.log(source.getFeatures());		
+		console.log("circle features");
+		console.log(source.getFeatures());
+		console.log("circleID");
+		console.log(circlefeat.getId());		
 
 }
 
-function drawReceivedDrawing(msg) {
+function handleLinestring(linestring){
+	//var linepoints = [];
+	console.log(linestring);
+	//for(var i=0;i<linepoints.length;i++){
+	//	linepoints[i]= transform([linestring.getLongitude(),linestring.getLatitude()],"EPSG:4326","EPSG:3067");
+	//}
+	console.log("linepoints");
+	//console.log(linepoints);
+	var linestring = new LineString(linestringCoord);
+	var linefeat = new Feature({
+		geometry: linestring
+	});
+	featureID++;
+	linefeat.setId(featureID);
 
-	//msg.getLinestringsList().forEach(lstrings=>lstrings.getPointsList().forEach(e=>arr.push([e.getLongitude(), e.getLatitude()])));
+	source.addFeature(linefeat);
+	console.log("linestring features");
+	console.log(source.getFeatures());
+	console.log("linestringID");
+	console.log(linefeat.getId());
+
+}
+
+function handlePolygon(polygon){
+	var linepoints = polygon.getPointsList();
+	console.log("linepoints");
+	console.log(linepoints);
+	for(var i=0;i<linepoints.length;i++){
+		linepoints[i]= transform(linepoints[i],"EPSG:4326","EPSG:3067");
+	}
+	var poly = new Polygon(points);
+	var polyfeat = new Feature({
+		geometry: polyfeat
+	});
+	featureID++;
+  	circlefeat.setProperties({
+    id: featureID
+	});
+	source.addFeature(polyfeat);
+}
+
+var linestringCoord = [];
+
+function transformLinestring(coord){
+	linestringCoord.push(transform([coord.getLongitude(),coord.getLatitude()],"EPSG:4326","EPSG:3067"));
+}
+
+
+
+function drawReceivedDrawing(msg) {
+	msg.getLinestringsList().forEach(lstrings=>{
+		lstrings.getPointarray().getPointsList().forEach(coord=>transformLinestring(coord))
+		console.log("linestring points\n########################################\n##################################");
+		console.log(linestringCoord);
+		handleLinestring(linestringCoord);
+		linestringCoord= [];
+	});
 	msg.getCirclesList().forEach(circle =>handleCircle(circle));
 
 }
-
+//getPointsList().
 
 wsh.addReceiveDrawingListener(drawReceivedDrawing);
-
 
 
 
@@ -514,6 +562,7 @@ function openTools(){
 //document.getElementById("drawcircle").addEventListener("click", );
 document.getElementById("erase").addEventListener("click", clearAll);
 
+//debug menun avaus/sulku
 document.getElementById("debugmenu").style.display = "none";
 document.getElementById("settings").addEventListener("click", openDebugmenu)
 
@@ -531,3 +580,54 @@ function teamName(){
 	name = "";
 	document.getElementById("title").textContent = "Team: " + name;
 }
+
+//login ikkunan avaus/sulku
+document.getElementById("loginwindow").style.display = "none";
+document.getElementById("flexLR").style.display = "none";
+document.getElementById("openroomlogin").addEventListener("click", openLogin)
+document.getElementById("formPassword").style.display = "none";
+
+var loginButton = document.getElementById("loginButton")
+var passwordButton = document.getElementById("passwordButton");
+
+function openLogin(){
+	openHamburger();
+	document.getElementById("formRoomUsername").style.display = "block";
+	document.getElementById("formPassword").style.display = "none";
+	
+	loginButton.onclick = passwordEntry;//pitää muuttaa
+	
+	var x = document.getElementById("flexLR");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+  } else {
+		x.style.display = "block";
+  }
+  
+	var y = document.getElementById("loginwindow");
+	if (y.style.display === "block") {
+		y.style.display = "none";
+  } else {
+		y.style.display = "block";
+  }
+}
+
+//kutsutaan jos huoneseen tarvitsee salasanan
+function passwordEntry(){
+	document.getElementById("formRoomUsername").style.display = "none";
+	document.getElementById("formPassword").style.display = "block";
+	
+}
+/*
+function applyMapCover(){
+	var x = document.getElementById("flexLR");
+	if (x.style.display === "none") {
+		x.style.display = "block";
+	}
+}
+function removeMapCover(){
+	var x = document.getElementById("flexLR");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+	}
+}*/

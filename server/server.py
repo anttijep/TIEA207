@@ -306,12 +306,16 @@ async def serv(websocket, path):
     user.setstate(State.CONNECTED)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
+
+
+
             msg = testprotocol_pb2.ToServer()
             msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
             logger.debug(msg)
             if msg.HasField("logininfo"):
                 user = await loginhandler.handleLogin(user, msg)
             await roomhandler.messagehandler(user, msg)
+
     except Exception as e:
         print(e)
         raise
