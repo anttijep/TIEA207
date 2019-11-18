@@ -32,13 +32,21 @@
 				<div id="loginwindow">
 					<div id="loginwindowTop">Kirjautuminen huoneeseen</div>
 					<div id="loginwindowContent">
-						<form>
+						<form id="formRoomUsername">
 						  <label>Huonetunnus:</label>
 						  <input type="text" name="" value=""><br>
 						  <label>Käyttäjätunnus:</label>
 						  <input type="text" name="" value=""><br>
 						  <input type="checkbox" name="" value=""> Luo uusi huone <br>
 						  <button id="loginButton">Kirjaudu</button> 
+						</form>
+						<form id="formPassword">
+							<fieldset>
+								<legend>Huone tarvitsee salasanan. </legend>
+							  <label>Salasana:</label>
+							  <input type="text" name="" value=""><br>
+							  <button id="passwordButton">Kirjaudu</button> 
+							 </fieldset>
 						</form>
 					</div>
 				</div>
