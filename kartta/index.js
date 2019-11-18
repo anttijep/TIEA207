@@ -27,7 +27,7 @@ import CircleGeom from "ol/geom/Circle";
 var types = require('./testprotocol_pb');
 var hostname = "ws://127.0.0.1:5678";
 var wsh = new WSHandler(hostname);
-var firstdrawingId = -1;
+var firstdrawingId = 0;
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
 var projection = getProjection("EPSG:3067");
@@ -288,9 +288,6 @@ function addInteraction() {
     	circleRadius = e.feature.getGeometry().getRadius();
     	console.log("center "+circleCenter + " " + "radius "+circleRadius);
     	points = null;
-    	debugger;
-    	e.setId(firstdrawingId);
-    	source.removeFeature(source.getFeatureById(firstdrawingId));
 
     }
     else {
@@ -389,6 +386,7 @@ function handleCircle(circle){
   	}));
   		circlefeat.setGeometry(circle);
 		source.addFeature(circlefeat);
+		console.log("circle features");
 		console.log(source.getFeatures());		
 
 }
