@@ -1,34 +1,6 @@
 syntax = "proto3";
 
 package testi;
-
-message Chatmessage {
-  int32 senderID = 1;
-  string msg = 2;
-}
-
-message Location {
-  int32 senderID = 1;
-  double latitude = 2;
-  double longitude = 3;
-  int32 accuracy = 4;
-}
-
-message SendLoginInfo {
-  string key = 1;
-}
-
-message Query {
-  uint64 cmd = 1;
-  string args = 2;
-}
-
-message FromServer {
-  repeated Chatmessage chatmsg = 1;
-  repeated Location locations = 2;
-  repeated DrawShape shapes = 3;
-}
-
 // DRAW
 message DrawPoint {
   double latitude = 1;

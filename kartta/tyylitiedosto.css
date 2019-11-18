@@ -83,8 +83,23 @@ html, body{
 .active {
   background-color: #193b78;
   color: white;
+}
+
+/*flexbox jossa kartan päälle tulevat ikkunat sijaitsee*/
+#mapcovers {
+	z-index: 1;
+
+	display: flex;
+	flex-direction: column;
+	
 } 
 
+/*login-ikkuna*/
+#loginwindow {
+	
+}
+
+/*debugmenu*/
 #debugmenu {
 	background-color: white;
 	z-index: 1;

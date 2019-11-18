@@ -21,36 +21,41 @@
 			<a id="toolstoggle">Piirtotyökalut</a>
 		</div>
 		<a id="hamburger" class="icon">
-			<i class="fa fa-bars"></i>
+			<i class="fa fa-bars"></i> <!-- cloudflaresta importattu ikoni ^^^^ pitää ehkä korvata toisella -->
 		</a>
 	</div>
     
 	
 	<div id="map">
-		<div id="debugmenu">
-			<form id="debugform">
-			  <label>Projection </label>
-			  <select id="projection">
-				<option value="EPSG:4326">EPSG:4326</option>
-				<option value="EPSG:3067">EPSG:3067</option>
-			  </select>
-			<form class="form-inline">
-			  <label>Geometry type &nbsp;</label>
-			  <select id="piirto">
-				<option value="None">None</option>
-				<option value="LineString">LineString</option>
-				<option value="Polygon">Polygon</option>
-				<option value="Circle">Circle</option> 
-			  </select>
-			  <button id="clear" >Clear</button> 
-			  <button id="test" type="button">test</button> 
-			</form>
-				<div>
-				  <label>Precision </label>
-				  <input id="precision" type="number" min="0" max="12" value="4"/>
-				</div>
-			</form>
-			<div id="mouse-position"></div>
+		<div id="mapcovers">
+			<div id="loginwindow">
+				helou
+			</div>
+			<div id="debugmenu">
+				<form id="debugform">
+				  <label>Projection </label>
+				  <select id="projection">
+					<option value="EPSG:4326">EPSG:4326</option>
+					<option value="EPSG:3067">EPSG:3067</option>
+				  </select>
+				<form class="form-inline">
+				  <label>Geometry type &nbsp;</label>
+				  <select id="piirto">
+					<option value="None">None</option>
+					<option value="LineString">LineString</option>
+					<option value="Polygon">Polygon</option>
+					<option value="Circle">Circle</option> 
+				  </select>
+				  <button id="clear" >Clear</button> 
+				  <button id="test" type="button">test</button> 
+				</form>
+					<div>
+					  <label>Precision </label>
+					  <input id="precision" type="number" min="0" max="12" value="4"/>
+					</div>
+				</form>
+				<div id="mouse-position"></div>
+			</div>
 		</div>
 		
 		<div class="bottombar">
@@ -62,7 +67,6 @@
 			</div>
 		</div>
 	</div>
-    <!--  -->
 	
 	<ul id="chattesti"></ul>
 	<!-- <div id="debuginfo"></div> -->
