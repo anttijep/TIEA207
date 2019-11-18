@@ -117,7 +117,7 @@ if (navigator.geolocation) {
 		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		myAccuracy = position.coords.accuracy;
-		navigator.geolocation.watchPosition(function(position) {
+		this.watchPosition(function(position) {
 			myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
 			positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 			debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
