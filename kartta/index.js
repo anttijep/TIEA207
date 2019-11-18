@@ -99,16 +99,8 @@ var scales = [];
 var lastLocationUpdate = Date.now();
 console.log(lastLocationUpdate);
 
-var geolocation = new Geolocation({
-	trackingOptions: {
-		enableHighAccuracy: true
-	},
-	projection: view.getProjection()
-});
-geolocation.setTracking(true);
-
 if (navigator.geolocation) {
-	navigator.geolocation.getCurrentPosition(function(position) {
+	navigator.geolocation.watchPosition(function(position) {
 		var latitude = position.coords.latitude;
 		var longitude = position.coords.longitude;
 		var accuracy = position.coords.accuracy;
@@ -117,25 +109,23 @@ if (navigator.geolocation) {
 		myPosition = transform([longitude, latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		myAccuracy = position.coords.accuracy;
-		navigator.geolocation.watchPosition(function(position) {
-			myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
-			positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-			debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
+		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
 
-			myAccuracy = position.coords.accuracy;
+		myAccuracy = position.coords.accuracy;
 			
-			currentZoomLevel = Math.round(map.getView().getZoom());	
+		currentZoomLevel = Math.round(map.getView().getZoom());	
 			
-			var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
-			accuracyCircle.setRadius(kaava);
-			accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
+		accuracyCircle.setRadius(kaava);
+		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		sendDataToServer();
+			
+		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
+		if (Date.now() - lastLocationUpdate < 10000) {
 			sendDataToServer();
-			
-			// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
-			if (Date.now() - lastLocationUpdate < 10000) {
-				sendDataToServer();
-			}
-		});
+		}
 		view.setCenter(myPosition);
 	});
 } else {
