@@ -527,9 +527,18 @@ function teamName(){
 document.getElementById("loginwindow").style.display = "none";
 document.getElementById("flexLR").style.display = "none";
 document.getElementById("openroomlogin").addEventListener("click", openLogin)
+document.getElementById("formPassword").style.display = "none";
+
+var loginButton = document.getElementById("loginButton")
+var passwordButton = document.getElementById("passwordButton");
 
 function openLogin(){
 	openHamburger();
+	document.getElementById("formRoomUsername").style.display = "block";
+	document.getElementById("formPassword").style.display = "none";
+	
+	loginButton.onclick = passwordEntry;//pitää muuttaa
+	
 	var x = document.getElementById("flexLR");
 	if (x.style.display === "block") {
 		x.style.display = "none";
@@ -543,6 +552,13 @@ function openLogin(){
   } else {
 		y.style.display = "block";
   }
+}
+
+//kutsutaan jos huoneseen tarvitsee salasanan
+function passwordEntry(){
+	document.getElementById("formRoomUsername").style.display = "none";
+	document.getElementById("formPassword").style.display = "block";
+	
 }
 /*
 function applyMapCover(){
