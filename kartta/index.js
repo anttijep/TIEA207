@@ -14,7 +14,7 @@ import MousePosition from 'ol/control/MousePosition';
 import {createStringXY} from 'ol/coordinate';
 import {defaults as defaultControls} from 'ol/control';
 import {transform} from 'ol/proj';
-import WSHandler from "./wshandler";
+import {WSHandler} from "./wshandler";
 import Feature from 'ol/Feature';
 import {Circle, Fill, Stroke, Style} from 'ol/style';
 import {Vector as VectorLayer} from 'ol/layer';
@@ -27,7 +27,7 @@ import LineString from "ol/geom/LineString";
 import CircleGeom from "ol/geom/Circle";
 
 var types = require('./testprotocol_pb');
-var hostname = "ws://127.0.0.1:5678";
+var hostname = "wss://4nxi.xyz:5678";
 var wsh = new WSHandler(hostname);
 var firstdrawingId = -1;
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
