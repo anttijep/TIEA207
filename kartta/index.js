@@ -115,7 +115,6 @@ if (navigator.geolocation) {
 		currentZoomLevel = Math.round(map.getView().getZoom());	
 		
 		changeAccuracy();
-		sendDataToServer();
 		
 		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
 		if (Date.now() - lastLocationUpdate < 10000) {
@@ -164,18 +163,20 @@ var map = new Map({
 		view: view
 	});
 
-function changeAccuracy() {
-	map.on('moveend', function(event) {
-		if (scales[currentZoomLevel] != undefined) {
-			if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
-			else currentZoomLevel = Math.round(map.getView().getZoom());	
-			// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
-			var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
+map.on('moveend', function(event) {
+	changeAccuracy();
+});
 
-			accuracyCircle.setRadius(kaava);
-			accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		}
-	});
+function changeAccuracy() {
+	if (scales[currentZoomLevel] != undefined) {
+		if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
+		else currentZoomLevel = Math.round(map.getView().getZoom());	
+		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
+		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
+
+		accuracyCircle.setRadius(kaava);
+		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+	}
 };
 
 // esim. chat eventtien lukeminen
