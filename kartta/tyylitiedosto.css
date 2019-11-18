@@ -12,8 +12,8 @@ html, body{
 	  z-index: auto;
 }
 
-/* Liikuttaa zoomausnappeja */
-.ol-zoom.ol-unselectable.ol-control {
+/* Liikuttaa zoomausnappeja ja käännön resetointinappia */
+.ol-zoom.ol-unselectable.ol-control, .ol-rotate.ol-unselectable.ol-control {
 	top: 4em;
 }
 
