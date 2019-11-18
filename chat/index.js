@@ -88,6 +88,15 @@ function test2(msg) {
 }
 wsh.addLocationChangeListener(test2);
 // esim2. end
+// join group
+
+function userMoved(msg) {
+	var message = document.createElement('li');
+	var s = msg.getUserid() + " moved to " + msg.getGroupid();
+	message.appendChild(document.createTextNode(s));
+	messageselement.appendChild(message);
+}
+wsh.addUserMovedListener(userMoved);
 
 function handleCircle(circle,arr){
 	arr.push([circle.getCenter().getLatitude(),circle.getCenter().getLatitude(),circle.getRadius()])

@@ -54,6 +54,8 @@ message FromServer {
   repeated Chatmessage chatmsg = 1;
   repeated Location locations = 2;
   repeated DrawShape shapes = 3;
+  repeated NewGroup newgroups = 5;
+  repeated UserMoved usermoved = 6;
   LoginAnswer loginanswer = 16;
   JoinRoomAnswer joinanswer = 17;
   string errmsg = 18;
@@ -66,8 +68,28 @@ message ToServer {
   Location location = 4;
   DrawShape shape = 5;
   JoinRoom joinroom = 6;
+  CreateGroup creategroup = 7;
+  JoinGroup joingroup = 8;
 }
 
+// GROUPS
+message CreateGroup {
+  string name = 1;
+}
+
+message UserMoved {
+  int32 userid = 1;
+  int32 groupid = 2;
+}
+
+message JoinGroup {
+  int32 id = 1;
+}
+
+message NewGroup {
+  int32 id = 1;
+  string name = 2;
+}
 
 // LOGIN&&JOIN
 

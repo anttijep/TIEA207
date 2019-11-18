@@ -4,7 +4,6 @@ import os
 import asyncio
 import testprotocol_pb2
 import websockets
-import html
 import socket
 import ssl
 import logging
@@ -43,7 +42,7 @@ class State(Enum):
     LOGGED_IN = 1
     DISCONNECTED = 2
 
-class User: #user class on vain huoneen sisällä
+class User:
     def __init__(self):
         self.key = None #uniikki tunniste
         self.username = "anonymous"
@@ -67,8 +66,13 @@ class User: #user class on vain huoneen sisällä
     def getlocation(self):
         return self.location
 
+    async def senderr(self, errmsg):
+        err = testprotocol_pb2.FromServer()
+        err.errmsg = errmsg
+        await user.send(err)
+
     async def send(self, msg):
-        await self.websocket.send(msg)
+        await self.websocket.send(msg.SerializeToString())
 
 class Room:
     """
@@ -77,10 +81,9 @@ class Room:
     """
     def __init__(self):
         self.clients = {}
-        self.members = {} #huoneen jäsenet eli user classit
-        self.teams = {#joukkuelista
-            "default": "unassigned" #luodaan oletusjoukkue
-        }
+        self.groups = {0:"unassigned"}
+        self.usergroup = {}
+        self.nextgroupid = 1
         self.admins = {} #adminit
         self.count = 0
         self.drawcount = 0
@@ -117,7 +120,7 @@ class Room:
             relay = True
             serverchatmsg = testprotocol_pb2.Chatmessage()
             serverchatmsg.senderID = self.clients[user]
-            serverchatmsg.msg = html.escape(msg.chatmsg)
+            serverchatmsg.msg = msg.chatmsg
             msgout.chatmsg.append(serverchatmsg)
 
         if msg.HasField("location"):
@@ -140,15 +143,45 @@ class Room:
             for i in msg.shape.circles:
                 i.id = self.drawcounter()
                 self.drawings["circles"][i.id] = i
-
             msgout.shapes.append(shape)
+
+        if msg.HasField("creategroup"):
+            if msg.creategroup.name and msg.creategroup.name not in self.groups:
+                relay = True
+                self.groups[self.nextgroupid] = msg.creategroup.name
+                newgroup = testprotocol_pb2.NewGroup()
+                newgroup.id = self.nextgroupid
+                newgroup.name = msg.creategroup.name
+                msgout.newgroups.append(newgroup)
+                self.nextgroupid += 1
+            else:
+                await user.senderr("invalid group name")
+
+        if msg.HasField("joingroup"):
+            if msg.joingroup.id in self.groups:
+                self.usergroup[user] = msg.joingroup.id
+                relay = True
+                usermoved = testprotocol_pb2.UserMoved()
+                usermoved.userid = self.clients[user]
+                usermoved.groupid = msg.joingroup.id
+                msgout.usermoved.append(usermoved)
+            else:
+                await user.senderr("invalid group")
+
         if relay:
-            bytes = msgout.SerializeToString()
-            await self.sendmessage(user, bytes)
+            await self.sendmessage(user, msgout)
         
-    def adduser(self, user : User):
+    async def adduser(self, user : User):
         if not user in self.clients:
             self.clients[user] = self.counter()
+        if not user in self.usergroup:
+            self.usergroup[user] = 0
+            msgout = testprotocol_pb2.FromServer()
+            usermoved = testprotocol_pb2.UserMoved()
+            usermoved.userid = self.clients[user]
+            usermoved.groupid = 0
+            msgout.usermoved.append(usermoved)
+            await self.sendmessage(user, msgout)
         return self.clients[user]
     
     def removeuser(self, user : User):
@@ -176,9 +209,9 @@ class RoomHandler:
     def __init__(self):
         self.rooms = {}#dict jossa huoneet olioina, huoneen nimi on avain
     
-    async def messagehandler(self, user, msg): #välittää vietit huoneille
+    async def messagehandler(self, user : User, msg): #välittää vietit huoneille
         if user.getstate() != State.LOGGED_IN:
-            ##TODO//ERROR?
+            await user.senderr("login first")
             return
         if msg.HasField("joinroom"):
             await self.handleJoinRoom(user, msg.joinroom)
@@ -187,12 +220,12 @@ class RoomHandler:
         if room is not None:
             await room.handlemessage(user, msg)
     
-    async def handleJoinRoom(self, user, msg):
+    async def handleJoinRoom(self, user : User, msg):
         answer = testprotocol_pb2.FromServer()
         if not msg.roomname:
             answer.joinanswer.success = False
             answer.joinanswer.errmsg = "Empty name not allowed!"
-            await user.send(answer.SerializeToString())
+            await user.send(answer)
             return
 
         currentroom = self.rooms.get(user.room)
@@ -210,17 +243,17 @@ class RoomHandler:
         elif not room.verifypassword(msg.password):
             answer.joinanswer.success = False
             answer.joinanswer.errmsg = "Wrong password!"
-            await user.send(answer.SerializeToString())
+            await user.send(answer)
             return
 
         answer.joinanswer.success = True
         user.room = msg.roomname
-        uid = room.adduser(user)
+        uid = await room.adduser(user)
         answer.joinanswer.id = uid
 
-        await user.send(answer.SerializeToString())
+        await user.send(answer)
         
-    def handlelogout(self, user): #yhteyden katkaisu palvelimelta
+    def handlelogout(self, user : User): #yhteyden katkaisu palvelimelta
         room = self.rooms.get(user.room)
         if room is None:
             return
@@ -236,7 +269,7 @@ class LoginHandler():
             logger.info("Already logged in")
             resp.loginanswer.errmsg = "Already logged in"
             resp.loginanswer.success = False
-            await user.send(resp.SerializeToString())
+            await user.send(resp)
             return user
         if msg.logininfo.key and len(msg.logininfo.key) == 64 and msg.logininfo.key in self.users:
             olduser = user
@@ -255,7 +288,7 @@ class LoginHandler():
         resp.loginanswer.key = user.key
         resp.loginanswer.username = user.username
         resp.loginanswer.success = True
-        await user.send(resp.SerializeToString())
+        await user.send(resp)
         return user
 
     async def handleLogout(self, roomhandler : RoomHandler, user : User):
