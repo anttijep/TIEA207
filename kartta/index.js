@@ -170,13 +170,6 @@ function changeAccuracy() {
 		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
 		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
 
-		
-		console.log('Tile width (m): ' + (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028) + ' / Rounded zoom level: ' + currentZoomLevel);
-		console.log(kaava);
-		console.log('Exact zoom level: ' + map.getView().getZoom());
-
-
-
 		accuracyCircle.setRadius(kaava);
 		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 	}
