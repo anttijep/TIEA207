@@ -504,6 +504,7 @@ function openTools(){
 //document.getElementById("drawcircle").addEventListener("click", );
 document.getElementById("erase").addEventListener("click", clearAll);
 
+//debug menun avaus/sulku
 document.getElementById("debugmenu").style.display = "none";
 document.getElementById("settings").addEventListener("click", openDebugmenu)
 
@@ -521,3 +522,38 @@ function teamName(){
 	name = "";
 	document.getElementById("title").textContent = "Team: " + name;
 }
+
+//login ikkunan avaus/sulku
+document.getElementById("loginwindow").style.display = "none";
+document.getElementById("flexLR").style.display = "none";
+document.getElementById("openroomlogin").addEventListener("click", openLogin)
+
+function openLogin(){
+	openHamburger();
+	var x = document.getElementById("flexLR");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+  } else {
+		x.style.display = "block";
+  }
+  
+	var y = document.getElementById("loginwindow");
+	if (y.style.display === "block") {
+		y.style.display = "none";
+  } else {
+		y.style.display = "block";
+  }
+}
+/*
+function applyMapCover(){
+	var x = document.getElementById("flexLR");
+	if (x.style.display === "none") {
+		x.style.display = "block";
+	}
+}
+function removeMapCover(){
+	var x = document.getElementById("flexLR");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+	}
+}*/
