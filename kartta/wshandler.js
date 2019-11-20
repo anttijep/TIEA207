@@ -47,7 +47,7 @@ export class WSHandler {
 	}
 
 	sendPolygon(poly) {
-		var polygon = new proto.testi.proto.Polygon();
+		var polygon = new proto.testi.Polygon();
 		poly.forEach(arr=>{
 			var points = new proto.testi.PointArray();
 			arr.forEach(p=>{
