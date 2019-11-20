@@ -1,6 +1,6 @@
 var types = require('./testprotocol_pb');
 export class WSHandler {
-	constructor(hostname) {
+	constructor(hostname, open = null, error = null) {
 		this.ws = new WebSocket(hostname);
 		this.ws.binaryType = "arraybuffer";
 		this.onChatMessage = new Set();
@@ -15,6 +15,10 @@ export class WSHandler {
 
 		this.ws.onmessage = function(evnt) {
 			me.onMessage(evnt)};
+		if (open !== null)
+			this.ws.onopen = open;
+		if (error !== null)
+			this.ws.onerror = error;
 	}
 
 	sendLocation(lat, lon, acc) {
@@ -43,7 +47,7 @@ export class WSHandler {
 	}
 
 	sendPolygon(poly) {
-		var polygon = new testi.proto.Polygon();
+		var polygon = new proto.testi.proto.Polygon();
 		poly.forEach(arr=>{
 			var points = new proto.testi.PointArray();
 			arr.forEach(p=>{
