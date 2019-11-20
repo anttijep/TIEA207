@@ -72,7 +72,13 @@ class User:
         await self.send(err)
 
     async def send(self, msg):
-        await self.websocket.send(msg.SerializeToString())
+        if self.getstate() == State.DISCONNECTED:
+            #TODO: jotain
+            return
+        try:
+            await self.websocket.send(msg.SerializeToString())
+        except Exception as e:
+            logger.debug(e)
 
 class Room:
     """
@@ -254,6 +260,7 @@ class RoomHandler:
         await user.send(answer)
         
     def handlelogout(self, user : User): #yhteyden katkaisu palvelimelta
+        user.setstate(State.DISCONNECTED)
         room = self.rooms.get(user.room)
         if room is None:
             return
@@ -306,12 +313,16 @@ async def serv(websocket, path):
     user.setstate(State.CONNECTED)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
+
+
+
             msg = testprotocol_pb2.ToServer()
             msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
             logger.debug(msg)
             if msg.HasField("logininfo"):
                 user = await loginhandler.handleLogin(user, msg)
             await roomhandler.messagehandler(user, msg)
+
     except Exception as e:
         print(e)
         raise

@@ -15,7 +15,7 @@
 			<div id="debuginfo"> Location: </div>
 		</a>
 		<div id="links">
-			<a id="rooms">Huoneet</a>
+			<a id="openroomlogin">Kirjaudu huoneeseen</a>
 			<a id="teams">Ryhmät</a>
 			<a id="settings">Debug</a>
 			<a id="toolstoggle">Piirtotyökalut</a>
@@ -27,37 +27,56 @@
     
 	
 	<div id="map">
-		<div id="mapcovers">
-			<div id="loginwindow">
-				helou
-			</div>
-			<div id="debugmenu">
-				<form id="debugform">
-				  <label>Projection </label>
-				  <select id="projection">
-					<option value="EPSG:4326">EPSG:4326</option>
-					<option value="EPSG:3067">EPSG:3067</option>
-				  </select>
-				<form class="form-inline">
-				  <label>Geometry type &nbsp;</label>
-				  <select id="piirto">
-					<option value="None">None</option>
-					<option value="LineString">LineString</option>
-					<option value="Polygon">Polygon</option>
-					<option value="Circle">Circle</option> 
-				  </select>
-				  <button id="clear" >Clear</button> 
-				  <button id="test" type="button">test</button> 
-				</form>
-					<div>
-					  <label>Precision </label>
-					  <input id="precision" type="number" min="0" max="12" value="4"/>
+		<div id="flexLR"> <!-- löytyy varmasti parempikin tapa tehdä ikkunan keskitys, yolo -->
+			<div id="flexUD">
+				<div id="loginwindow">
+					<div id="loginwindowTop">Kirjautuminen huoneeseen</div>
+					<div id="loginwindowContent">
+						<form id="formRoomUsername">
+						  <label>Huonetunnus:</label>
+						  <input type="text" name="" value=""><br>
+						  <label>Käyttäjätunnus:</label>
+						  <input type="text" name="" value=""><br>
+						  <input type="checkbox" name="" value=""> Luo uusi huone <br>
+						  <button id="loginButton">Kirjaudu</button> 
+						</form>
+						<form id="formPassword">
+							
+							<legend>Huone tarvitsee salasanan. </legend>
+							<label>Salasana:</label>
+							<input type="text" name="" value=""><br>
+							<button id="passwordButton">Kirjaudu</button> 
+							 
+						</form>
 					</div>
-				</form>
-				<div id="mouse-position"></div>
+				</div>
 			</div>
 		</div>
-		
+		<div id="debugmenu">
+					<form id="debugform">
+					  <label>Projection </label>
+					  <select id="projection">
+						<option value="EPSG:4326">EPSG:4326</option>
+						<option value="EPSG:3067">EPSG:3067</option>
+					  </select>
+					<form class="form-inline">
+					  <label>Geometry type &nbsp;</label>
+					  <select id="piirto">
+						<option value="None">None</option>
+						<option value="LineString">LineString</option>
+						<option value="Polygon">Polygon</option>
+						<option value="Circle">Circle</option> 
+					  </select>
+					  <button id="clear" >Clear</button> 
+					  <button id="test" type="button">test</button> 
+					</form>
+						<div>
+						  <label>Precision </label>
+						  <input id="precision" type="number" min="0" max="12" value="4"/>
+						</div>
+					</form>
+					<div id="mouse-position"></div>
+				</div>
 		<div class="bottombar">
 			<div id="drawtools">
 				<a id="drawline">Viiva</a>
