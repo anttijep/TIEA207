@@ -364,12 +364,11 @@ function transformAndSendCoord(points){
 		wsh.sendLinestring(coordArray);
 	}
 	if(text == "Polygon"){
-		for(var i=0;i<points[0].length;i++){
-			helpArray = points[0]
-			trimmedCoord =helpArray[i];
-			coordArray[i]=transform(trimmedCoord,"EPSG:3067","EPSG:4326");
-		}
-		wsh.sendPolygon(coordArray);
+        var polyarray = [[]];
+        for (var i=0; i < points.length;++i) {
+            points[i].forEach(e=>polyarray[i].push(transform(e,"EPSG:3067","EPSG:4326")));
+        }
+        wsh.sendPolygon(polyarray);
 	}
 	if(text == "Circle"){
 		transformedCenter = transform(circleCenter,"EPSG:3067","EPSG:4326");
@@ -433,20 +432,20 @@ function handleLinestring(linestring){
 }
 
 function handlePolygon(polygon){
-	var linepoints = polygon.getPointsList();
-	console.log("linepoints");
-	console.log(linepoints);
-	for(var i=0;i<linepoints.length;i++){
-		linepoints[i]= transform(linepoints[i],"EPSG:4326","EPSG:3067");
-	}
-	var poly = new Polygon(points);
+    var polypoints = [[]];
+    var parrlist = polygon.getPointarrayList();
+    for (var i = 0; i < parrlist.length; ++i) {
+        parrlist[i].getPointsList().forEach(e=>{
+            var p = [e.getLongitude(), e.getLatitude()];
+            polypoints[i].push(transform(p, "EPSG:4326","EPSG:3067"));
+        });
+    }
+        
+	var poly = new Polygon(polypoints);
 	var polyfeat = new Feature({
-		geometry: polyfeat
+		geometry: poly
 	});
 	featureID++;
-  	circlefeat.setProperties({
-    id: featureID
-	});
 	source.addFeature(polyfeat);
 }
 
@@ -467,9 +466,8 @@ function drawReceivedDrawing(msg) {
 		linestringCoord= [];
 	});
 	msg.getCirclesList().forEach(circle =>handleCircle(circle));
-
+    msg.getPolysList().forEach(poly=>handlePolygon(poly));
 }
-//getPointsList().
 
 wsh.addReceiveDrawingListener(drawReceivedDrawing);
 
