@@ -72,7 +72,13 @@ class User:
         await self.send(err)
 
     async def send(self, msg):
-        await self.websocket.send(msg.SerializeToString())
+        if self.getstate() == State.DISCONNECTED:
+            #TODO: jotain
+            return
+        try:
+            await self.websocket.send(msg.SerializeToString())
+        except Exception as e:
+            logger.debug(e)
 
 class Room:
     """
@@ -254,6 +260,7 @@ class RoomHandler:
         await user.send(answer)
         
     def handlelogout(self, user : User): #yhteyden katkaisu palvelimelta
+        user.setstate(State.DISCONNECTED)
         room = self.rooms.get(user.room)
         if room is None:
             return

@@ -379,7 +379,7 @@ function transformAndSendCoord(points){
 setTimeout(function(){
     wsh.login("asd");
 	wsh.joinRoom("wasd");
-}, 10000);
+}, 1000);
 
 
 function handleCircle(circle){
