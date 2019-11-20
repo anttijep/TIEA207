@@ -28,7 +28,13 @@ import Select from 'ol/interaction/Select';
 
 var types = require('./testprotocol_pb');
 var hostname = "ws://127.0.0.1:5678";
-var wsh = new WSHandler(hostname);
+var wsh = new WSHandler(hostname, handleLogin);
+
+function handleLogin(e) {
+	wsh.login("testi");
+	wsh.joinRoom("testi");
+}
+
 var featureID = 0;
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
@@ -375,11 +381,6 @@ function transformAndSendCoord(points){
 
 	else {console.log("global center: "+transformedCenter+ "radius: " + circleRadius);}
 }
-
-setTimeout(function(){
-    wsh.login("asd");
-	wsh.joinRoom("wasd");
-}, 1000);
 
 
 function handleCircle(circle){
