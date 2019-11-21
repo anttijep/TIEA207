@@ -53,10 +53,10 @@ export class WSHandler {
 			arr.forEach(p=>{
 				var point = new proto.testi.DrawPoint();
 				point.setLongitude(p[0]);
-				point.setLongitude(p[1]);
+				point.setLatitude(p[1]);
 				points.getPointsList().push(point);
 			});
-			polygon.getPointarray().push(points);
+			polygon.getPointarrayList().push(points);
 		});
 		var msg = new proto.testi.ToServer();
 		var shape = new proto.testi.DrawShape();
