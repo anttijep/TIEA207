@@ -526,7 +526,6 @@ function sendShapeCoord(){
 //--------------KÄYTTÖLIITTYMÄN SKRIPTIT TÄSTÄ ALASPÄIN-----------------
 
 //piilotetaan turhat
-//document.getElementById("debugmenu").style.display = "none";
 
 
 
@@ -583,43 +582,60 @@ function teamName(){
 }
 
 //login ikkunan avaus/sulku
-document.getElementById("loginwindow").style.display = "none";
 document.getElementById("flexLR").style.display = "none";
-document.getElementById("openroomlogin").addEventListener("click", openLogin)
-document.getElementById("formPassword").style.display = "none";
-
-var loginButton = document.getElementById("loginButton")
-var passwordButton = document.getElementById("passwordButton");
+document.getElementById("selectusername").addEventListener("click", openLogin)
+var loginButton = document.getElementById("loginButton");
 
 function openLogin(){
 	openHamburger();
-	document.getElementById("formRoomUsername").style.display = "block";
-	document.getElementById("formPassword").style.display = "none";
+	document.getElementById("roomwindow").style.display = "none";
+	document.getElementById("loginwindow").style.display = "block";
+	document.getElementById("teamSelect").style.display = "none";
+	applyMapCover();
 	
-	loginButton.onclick = passwordEntry;//pitää muuttaa
-	
-	var x = document.getElementById("flexLR");
-	if (x.style.display === "block") {
-		x.style.display = "none";
-  } else {
-		x.style.display = "block";
-  }
-  
-	var y = document.getElementById("loginwindow");
-	if (y.style.display === "block") {
-		y.style.display = "none";
-  } else {
-		y.style.display = "block";
-  }
+	//loginButton.onclick = ;
 }
 
-//kutsutaan jos huoneseen tarvitsee salasanan
-function passwordEntry(){
-	document.getElementById("formRoomUsername").style.display = "none";
-	document.getElementById("formPassword").style.display = "block";
+//huoneenvalintaikkunan avaus/sulku
+document.getElementById("openroomlogin").addEventListener("click", openRoomLogin)
+
+
+function openRoomLogin(){
+	var roomLoginButton = document.getElementById("roomLoginButton");
+	var exitRoomLogin = document.getElementById("exitRoomLogin");
+	var checkbox = document.querySelector("input[name=createroomToggle]");
+	
+	openHamburger();
+	document.getElementById("loginwindow").style.display = "none";
+	document.getElementById("roomwindow").style.display = "block";
+	document.getElementById("teamSelect").style.display = "none";
+	applyMapCover();
+	
+	checkbox.addEventListener( 'change', function() {
+		if(this.checked) {
+			roomLoginButton.textContent = "Luo huone"
+		} else {
+			roomLoginButton.textContent = "Liity"
+		}
+	});
+	
+	//roomLoginButton.onclick = ;
+	exitRoomLogin.onclick = removeMapCover;
+}
+
+//ryhmänvalintaikkunan avaus/sulku
+document.getElementById("openteams").addEventListener("click", openTeamList)
+
+function openTeamList(){
+	openHamburger();
+	document.getElementById("roomwindow").style.display = "none";
+	document.getElementById("loginwindow").style.display = "none";
+	document.getElementById("teamSelect").style.display = "flex";
+	applyMapCover();
 	
 }
-/*
+
+
 function applyMapCover(){
 	var x = document.getElementById("flexLR");
 	if (x.style.display === "none") {
@@ -631,4 +647,12 @@ function removeMapCover(){
 	if (x.style.display === "block") {
 		x.style.display = "none";
 	}
-}*/
+}
+/*
+var x = document.getElementById("flexLR");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+  } else {
+		x.style.display = "block";
+  }
+*/

@@ -15,8 +15,9 @@
 			<div id="debuginfo"> Location: </div>
 		</a>
 		<div id="links">
-			<a id="openroomlogin">Kirjaudu huoneeseen</a>
-			<a id="teams">Ryhmät</a>
+			<a id="selectusername">Valitse käyttäjätunnus</a>
+			<a id="openroomlogin">Luo/Liity huoneeseen</a>
+			<a id="openteams">Ryhmät</a>
 			<a id="settings">Debug</a>
 			<a id="toolstoggle">Piirtotyökalut</a>
 		</div>
@@ -30,24 +31,40 @@
 		<div id="flexLR"> <!-- löytyy varmasti parempikin tapa tehdä ikkunan keskitys, yolo -->
 			<div id="flexUD">
 				<div id="loginwindow">
-					<div id="loginwindowTop">Kirjautuminen huoneeseen</div>
-					<div id="loginwindowContent">
-						<form id="formRoomUsername">
-						  <label>Huonetunnus:</label>
-						  <input type="text" name="" value=""><br>
-						  <label>Käyttäjätunnus:</label>
-						  <input type="text" name="" value=""><br>
-						  <input type="checkbox" name="" value=""> Luo uusi huone <br>
-						  <button id="loginButton">Kirjaudu</button> 
+					<div class="loginwindowTop">Käyttäjänimen valinta</div>
+					<div class="loginwindowContent">
+						<form id="formUsername" onSubmit="return false;">
+						  <label for="usernameInput">Käyttäjänimi:</label>
+							<input type="text" id="usernameInput" name="usernameInput" value=""><br>
+						  <button type="button" id="loginButton">Kirjaudu</button> 
 						</form>
-						<form id="formPassword">
-							
-							<legend>Huone tarvitsee salasanan. </legend>
-							<label>Salasana:</label>
-							<input type="text" name="" value=""><br>
-							<button id="passwordButton">Kirjaudu</button> 
-							 
+					</div>
+				</div>
+				<div id="roomwindow">
+					<div class="loginwindowTop">Luo/liity huoneeseen</div>
+					<div class="loginwindowContent">
+						<form id="formRoom" onSubmit="return false;">
+							<label for="roomnameInput">Huonetunnus:</label>
+							<input type="text" id="roomnameInput" name="roomnameInput" value=""><br>
+							<label for="passwordInput">Salasana:</label>
+							<input type="text" id="passwordInput" name="passwordInput" value=""><br>
+							<label for="createroomToggle">Luo uusi huone</label>
+							<input type="checkbox" id="createroomToggle" name="createroomToggle" value=""> <br>
+							<button type="button" id="roomLoginButton">Liity</button> 
+							<button type="button" id="exitRoomLogin">Peruuta</button> 
 						</form>
+					</div>
+				</div>
+				<div id="teamSelect">
+					<div class="loginwindowTop">Valitse ryhmä</div>
+					<div id="teamlistWindowContent">
+						<div id="teamlist">
+							<div class="teamlistElement">test
+								<button id="teamButton" type="button">Liity</button>
+							</div>
+						</div>
+						<div class="teamlistElement">test</div>
+						<div class="teamlistElement">test</div>
 					</div>
 				</div>
 			</div>
@@ -88,7 +105,6 @@
 	</div>
 	
 	<ul id="chattesti"></ul>
-	<!-- <div id="debuginfo"></div> -->
     <script type="text/javascript" src="./index.js"></script>
   </body>
 </html>
