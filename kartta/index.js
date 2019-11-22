@@ -204,7 +204,6 @@ wsh.addChatMessageListener(test);
 
 function updateLocation(msg) {
 	if (msg.getSenderid() === myId) return;
-	console.log(msg.getSenderid());
 	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
 	var lonlat = transform([msg.getLongitude(), msg.getLatitude()], "EPSG:4326", "EPSG:3067");
 	if (msg.getSenderid() in markerDict) {
@@ -219,7 +218,7 @@ function updateLocation(msg) {
 				}),
 				stroke: new Stroke({
 					color: '#000000',
-					width: 2
+					width: 3
 				})
 			})	
 		}));
