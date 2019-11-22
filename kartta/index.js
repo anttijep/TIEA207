@@ -41,7 +41,11 @@ function debugLogin(e) {
 	wsh.login("testi");
 	wsh.joinRoom("testi");
 }
-var grouplist = {};
+var grouplist = {
+	0:"-Unassigned-",
+	1:"testitiimi2",
+	2:"testitiimi3"
+};
 function onNewGroup(msg){
 	grouplist[msg.getId()] = msg.getName();
 }
@@ -676,11 +680,20 @@ function openTeamList(){
 	exitTeamWindow.onclick = removeMapCover;
 	
 	
-	var teamlist = document.getElementById("teamlist")
+	
 	function fetchTeamNames(){
+		var teamlist = document.getElementById("teamlist");
 		for (var key in grouplist){
 			var teamelement = document.createElement("div");
+			teamelement.className = "teamlistElement"
+			teamelement.id = "teamElement" + key;
+			teamelement.textContent = grouplist[key];
 			var teambutton = document.createElement("button");
+			teambutton.className = "teamButton";
+			teambutton.id = "teamButton" + key;
+			teambutton.textContent = "Liity";
+			teamelement.appendChild(teambutton);
+			teamlist.appendChild(teamelement);
 		}
 	}
 }
