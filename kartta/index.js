@@ -28,11 +28,15 @@ import Select from 'ol/interaction/Select';
 
 var types = require('./testprotocol_pb');
 var hostname = "ws://127.0.0.1:5678";
-var wsh = new WSHandler(hostname, handleLogin);
+var wsh = new WSHandler(hostname, debugLogin);
 
-function handleLogin(e) {
+function debugLogin(e) {
 	wsh.login("testi");
 	wsh.joinRoom("testi");
+}
+var grouplist = {};
+function onNewGroup(msg){
+	grouplist[msg.getId()] = msg.getName();
 }
 
 var featureID = 0;
@@ -523,9 +527,6 @@ function sendShapeCoord(){
 
 //--------------KÄYTTÖLIITTYMÄN SKRIPTIT TÄSTÄ ALASPÄIN-----------------
 
-//piilotetaan turhat
-
-
 
 //hampurilaisvalikon avaus/sulku
 document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
@@ -582,21 +583,28 @@ function teamName(){
 //login ikkunan avaus/sulku
 document.getElementById("flexLR").style.display = "none";
 document.getElementById("selectusername").addEventListener("click", openLogin)
-var loginButton = document.getElementById("loginButton");
 
 function openLogin(){
+	var loginButton = document.getElementById("loginButton");
 	openHamburger();
 	document.getElementById("roomwindow").style.display = "none";
 	document.getElementById("loginwindow").style.display = "block";
 	document.getElementById("teamSelect").style.display = "none";
 	applyMapCover();
 	
-	//loginButton.onclick = ;
+	loginButton.onclick = handleLogin;
+	
+	function handleLogin(e){
+	var username = document.getElementById("usernameInput").value;
+	wsh.login(username);
+	removeMapCover();
+	console.log("Kirjauduttu käyttäjänimellä: " + username);
+	}
 }
+
 
 //huoneenvalintaikkunan avaus/sulku
 document.getElementById("openroomlogin").addEventListener("click", openRoomLogin)
-
 
 function openRoomLogin(){
 	var roomLoginButton = document.getElementById("roomLoginButton");
@@ -617,8 +625,15 @@ function openRoomLogin(){
 		}
 	});
 	
-	//roomLoginButton.onclick = ;
+	roomLoginButton.onclick = handleRoomLogin;
 	exitRoomLogin.onclick = removeMapCover;
+	
+	function handleRoomLogin(){
+		var roomname = document.getElementById("roomnameInput").value;
+		var roompass = document.getElementById("passwordInput").value;
+		var createroom = document.getElementById("createroomToggle").value;
+		wsh.joinRoom(roomname, roompass, createroom);
+	}
 }
 
 
@@ -635,11 +650,18 @@ function openTeamList(){
 	fetchTeamNames();
 	
 	exitTeamWindow.onclick = removeMapCover;
+	
+	
+	var teamlist = document.getElementById("teamlist")
+	function fetchTeamNames(){
+		for (var key in grouplist){
+			var teamelement = document.createElement("div");
+			var teambutton = document.createElement("button");
+		}
+	}
 }
 
-function fetchTeamNames(){
-	//hakee joukkueiden nimet joukkuelistaan
-}
+
 
 
 
