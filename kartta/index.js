@@ -63,13 +63,10 @@ positionMarker.setStyle(new Style({
 		}),
 		stroke: new Stroke({
 			color: '#000000',
-			width: 4
+			width: 3
 		})
 	})	
 }));
-
-
-
 
 var dummysource = new VectorSource({wrapX: false});
 var source = new VectorSource({wrapX: false});
