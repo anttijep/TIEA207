@@ -30,6 +30,13 @@ var types = require('./testprotocol_pb');
 var hostname = "ws://127.0.0.1:5678";
 var wsh = new WSHandler(hostname, handleLogin);
 
+var myId = -1;
+function handleJoinMessage(msg) {
+	myId = msg.getId();
+	console.log(myId);
+}
+wsh.addJoinResultListener(handleJoinMessage);
+
 function handleLogin(e) {
 	wsh.login("testi");
 	wsh.joinRoom("testi");
@@ -117,16 +124,14 @@ if (navigator.geolocation) {
 		}
 		var debuginfo = document.getElementById("debuginfo");
 		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+		var lastPosition = myPosition;
 		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		var lastAccuracy = myAccuracy;
 		myAccuracy = position.coords.accuracy;
 		
 		changeAccuracy();
-		
-		// aina kun saadaan uusi sijaintitieto ja aikaa on kulunut 10 sekuntia, lähetetään tiedot palvelimelle
-		if (Date.now() - lastLocationUpdate > 10000) {
-			sendDataToServer();
-		}
+		if (myPosition[0] !== lastPosition[0] && myPosition[1] !== lastPosition[1] && myAccuracy !== lastAccuracy) scheduleUpdate();
 	});
 } else {
 	console.log("Geolocation API is not supported in your browser.");
@@ -198,6 +203,8 @@ wsh.addChatMessageListener(test);
 // end
 
 function updateLocation(msg) {
+	if (msg.getSenderid() === myId) return;
+	console.log(msg.getSenderid());
 	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
 	var lonlat = transform([msg.getLongitude(), msg.getLatitude()], "EPSG:4326", "EPSG:3067");
 	if (msg.getSenderid() in markerDict) {
@@ -218,8 +225,8 @@ function updateLocation(msg) {
 		}));
 		
 		markerDict[msg.getSenderid()] = markkeri;
+		markerLayer.push(markerDict[msg.getSenderid()]);
 		markkeri.setGeometry(lonlat ? new Point(lonlat) : null);
-
 	}
 }
 wsh.addLocationChangeListener(updateLocation);
@@ -258,15 +265,32 @@ fetch(capabilitiesUrl).then(function(response) {
 	}); */
 });
 
+var locationUpdating = false;
+
+function scheduleUpdate() {
+	if (locationUpdating == true) {
+		return;
+	}
+	locationUpdating = true;
+	sendPositionDataToServer();
+	
+}
 
 // Sijainnin ja sen tarkkuuden lähetys palvelimelle
-function sendDataToServer() {	
+function sendPositionDataToServer() {
+	var timeDiff = Date.now() - lastLocationUpdate;
+	if (timeDiff < 1000) {
+		setTimeout(sendPositionDataToServer, 1000 - timeDiff);
+		return;
+	}
 	lastLocationUpdate = Date.now();
 	var wCoords = transform(myPosition, "EPSG:3067", "EPSG:4326");
 	var lat = wCoords[0];
 	var lon = wCoords[1];
 	var acc = myAccuracy;	
 	wsh.sendLocation(lat, lon, acc);
+	locationUpdating = false;
+
 }
 
 var projectionSelect = document.getElementById('projection');
