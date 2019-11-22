@@ -111,6 +111,8 @@ html, body{
 	position: relative;
 	left: 25%;
 	max-width: 50%;
+	border-style: outset;
+	border-color: #444;
 }
 
 /*huoneenvalinta-ikkuna*/
@@ -120,6 +122,8 @@ html, body{
 	position: relative;
 	left: 25%;
 	max-width: 50%;
+	border-style: outset;
+	border-color: #444;
 	
 }
 #exitRoomLogin {
@@ -137,13 +141,21 @@ html, body{
 	max-height: 60%;
 	display: flex;
 	flex-direction: column;
+	border-style: outset;
+	border-color: #444;
+	border-width: ;
+}
+
+#exitTeamWindow {
+	position: relative;
+	right: 0px;
 }
 
 #teamlistWindowContent{
 	position: relative;
 	padding: 5px;
 	padding-left: 10px;
-	padding-right: 10px;
+	padding-right: 5px;
 	max-height: 100%;
 	overflow-y: auto;
 }
@@ -157,10 +169,12 @@ html, body{
 
 .teamlistElement{
 	height: 50px;
-	border: ;
+	border-style: groove none;
 	border-color: #555;
 	border-width: 3px;
-	margin: 1px;
+	margin: 0px;
+	font-weight: ;
+	background-color: #333;
 }
 
 .teamButton{

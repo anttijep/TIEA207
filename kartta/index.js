@@ -645,17 +645,26 @@ function openRoomLogin(){
 	exitRoomLogin.onclick = removeMapCover;
 }
 
+
 //ryhmänvalintaikkunan avaus/sulku
 document.getElementById("openteams").addEventListener("click", openTeamList)
 
 function openTeamList(){
+	var exitTeamWindow = document.getElementById("exitTeamWindow");
 	openHamburger();
 	document.getElementById("roomwindow").style.display = "none";
 	document.getElementById("loginwindow").style.display = "none";
 	document.getElementById("teamSelect").style.display = "flex";
 	applyMapCover();
+	fetchTeamNames();
 	
+	exitTeamWindow.onclick = removeMapCover;
 }
+
+function fetchTeamNames(){
+	//hakee joukkueiden nimet joukkuelistaan
+}
+
 
 
 function applyMapCover(){
