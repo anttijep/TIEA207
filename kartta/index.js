@@ -27,7 +27,7 @@ import CircleGeom from "ol/geom/Circle";
 import Select from 'ol/interaction/Select';
 
 var types = require('./testprotocol_pb');
-var hostname = "ws://127.0.0.1:5678";
+var hostname = "wss://4nxi.xyz:5678";
 var wsh = new WSHandler(hostname, debugLogin);
 
 var myId = -1;
@@ -123,20 +123,21 @@ console.log(lastLocationUpdate);
 if (navigator.geolocation) {
 	var firstCenter = true;
 	navigator.geolocation.watchPosition(function(position) {
-		if (firstCenter == true) {
-			firstCenter == false;
+		var lastPosition = myPosition;
+		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
+		var lastAccuracy = myAccuracy;
+		myAccuracy = position.coords.accuracy;
+
+		if (firstCenter) {
+			firstCenter = false;
 			view.setCenter(myPosition);
 		}
 		var debuginfo = document.getElementById("debuginfo");
 		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
-		var lastPosition = myPosition;
-		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		var lastAccuracy = myAccuracy;
-		myAccuracy = position.coords.accuracy;
 		
 		changeAccuracy();
-		if (myPosition[0] !== lastPosition[0] && myPosition[1] !== lastPosition[1] && myAccuracy !== lastAccuracy) scheduleUpdate();
+		if (myPosition[0] !== lastPosition[0] || myPosition[1] !== lastPosition[1] || myAccuracy !== lastAccuracy) scheduleUpdate();
 	});
 } else {
 	console.log("Geolocation API is not supported in your browser.");
@@ -189,6 +190,10 @@ function changeAccuracy() {
 		if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
 		else currentZoomLevel = Math.round(map.getView().getZoom());	
 		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
+		/**
+		 *  TODO: tää kaatuu poikkeuksiin aina välillä. Pari kertaakaa ainaki, ku oli zoomattuna sisään ja liikutti mappia
+		 *  tota scales[currentZoomLevel] voi myös kait olla undefined tässä vaiheessa taas, mutta emt vaikuttaako mihinkää
+		 */
 		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
 
 		accuracyCircle.setRadius(kaava);
@@ -289,8 +294,8 @@ function sendPositionDataToServer() {
 	}
 	lastLocationUpdate = Date.now();
 	var wCoords = transform(myPosition, "EPSG:3067", "EPSG:4326");
-	var lat = wCoords[0];
-	var lon = wCoords[1];
+	var lon = wCoords[0];
+	var lat = wCoords[1];
 	var acc = myAccuracy;	
 	wsh.sendLocation(lat, lon, acc);
 	locationUpdating = false;
