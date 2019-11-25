@@ -322,15 +322,15 @@ var points;
 var draw; // global so we can remove it later
 var circleCenter;
 var circleRadius;
-var fillRed = document.getElementsByName("fillRed");
-var fillGreen = document.getElementsByName("fillGreen");
-var fillBlue = document.getElementsByName("fillBlue");
-var fillAlpha = document.getElementsByName("fillAlpha");
-var strokeRed = document.getElementsByName("strokeRed");
-var strokeGreen = document.getElementsByName("strokeGreen");
-var strokeBlue = document.getElementsByName("strokeBlue");
-var strokeAlpha = document.getElementsByName("strokeAlpha");
-var strokeWidth =  document.getElementsByName("strokeWidth");
+var fillRed = document.getElementById("fillRed");
+var fillGreen = document.getElementById("fillGreen");
+var fillBlue = document.getElementById("fillBlue");
+var fillAlpha = document.getElementById("fillAlpha");
+var strokeRed = document.getElementById("strokeRed");
+var strokeGreen = document.getElementById("strokeGreen");
+var strokeBlue = document.getElementById("strokeBlue");
+var strokeAlpha = document.getElementById("strokeAlpha");
+var strokeWidth =  document.getElementById("strokeWidth");
 function addInteraction() {
   var text = typeSelect.options[typeSelect.selectedIndex].text;
   var value = typeSelect.value;
@@ -431,8 +431,8 @@ function transformAndSendCoord(points){
 	var trimmedCoord;
 	var helpArray;
 	var transformedCenter;
-	var fillColor = rgbaToInt(fillRed.value,fillGreen.value,fillBlue.value,fillAlpha.value);
-	var strokeColor = rgbaToInt(strokeRed.value,strokeGreen.value,strokeBlue.value,strokeAlpha.value);
+	var fillColor = rgbaToInt(parseInt(fillRed.value),parseInt(fillGreen.value),parseInt(fillBlue.value),parseInt(fillAlpha.value));
+	var strokeColor = rgbaToInt(parseInt(strokeRed.value),parseInt(strokeGreen.value),parseInt(strokeBlue.value),parseInt(strokeAlpha.value));
 	var width = strokeWidth;
 	if(text == "LineString"){
 		for(var i=0;i<points.length;i++){
@@ -565,7 +565,13 @@ function intToRgba(int){
 }
 
 function rgbaToInt(red,green,blue,alpha){
-	var rgb = (red << 24) + (green << 16) + (blue << 8) + (alpha);
+	//debugger;
+	var r = red & 0xFF;
+	var g = green & 0xFF;
+	var b = blue & 0xFF;
+	var a = alpha & 0xFF;
+
+	var rgb = (r << 24) + (g << 16) + (b << 8) + (a);
 	return rgb;
 }
 
