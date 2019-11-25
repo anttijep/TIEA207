@@ -28,11 +28,26 @@ import Select from 'ol/interaction/Select';
 
 var types = require('./testprotocol_pb');
 var hostname = "ws://127.0.0.1:5678";
-var wsh = new WSHandler(hostname, handleLogin);
+var wsh = new WSHandler(hostname, debugLogin);
 
-function handleLogin(e) {
+var myId = -1;
+function handleJoinMessage(msg) {
+	myId = msg.getId();
+	console.log(myId);
+}
+wsh.addJoinResultListener(handleJoinMessage);
+
+function debugLogin(e) {
 	wsh.login("testi");
 	wsh.joinRoom("testi");
+}
+var grouplist = {
+	0:"-Unassigned-",
+	1:"testitiimi2",
+	2:"testitiimi3"
+};
+function onNewGroup(msg){
+	grouplist[msg.getId()] = msg.getName();
 }
 
 var featureID = 0;
@@ -52,13 +67,10 @@ positionMarker.setStyle(new Style({
 		}),
 		stroke: new Stroke({
 			color: '#000000',
-			width: 4
+			width: 3
 		})
 	})	
 }));
-
-
-
 
 var dummysource = new VectorSource({wrapX: false});
 var source = new VectorSource({wrapX: false});
@@ -111,22 +123,21 @@ console.log(lastLocationUpdate);
 if (navigator.geolocation) {
 	var firstCenter = true;
 	navigator.geolocation.watchPosition(function(position) {
-		if (firstCenter == true) {
-			firstCenter == false;
+		var lastPosition = myPosition;
+		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
+		var lastAccuracy = myAccuracy;
+		myAccuracy = position.coords.accuracy;
+
+		if (firstCenter) {
+			firstCenter = false;
 			view.setCenter(myPosition);
 		}
 		var debuginfo = document.getElementById("debuginfo");
 		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
-		myPosition = transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3067");
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		myAccuracy = position.coords.accuracy;
 		
 		changeAccuracy();
-		
-		// aina kun saadaan uusi sijaintitieto ja aikaa on kulunut 10 sekuntia, lähetetään tiedot palvelimelle
-		if (Date.now() - lastLocationUpdate > 10000) {
-			sendDataToServer();
-		}
+		if (myPosition[0] !== lastPosition[0] || myPosition[1] !== lastPosition[1] || myAccuracy !== lastAccuracy) scheduleUpdate();
 	});
 } else {
 	console.log("Geolocation API is not supported in your browser.");
@@ -179,6 +190,10 @@ function changeAccuracy() {
 		if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
 		else currentZoomLevel = Math.round(map.getView().getZoom());	
 		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
+		/**
+		 *  TODO: tää kaatuu poikkeuksiin aina välillä. Pari kertaakaa ainaki, ku oli zoomattuna sisään ja liikutti mappia
+		 *  tota scales[currentZoomLevel] voi myös kait olla undefined tässä vaiheessa taas, mutta emt vaikuttaako mihinkää
+		 */
 		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
 
 		accuracyCircle.setRadius(kaava);
@@ -198,6 +213,7 @@ wsh.addChatMessageListener(test);
 // end
 
 function updateLocation(msg) {
+	if (msg.getSenderid() === myId) return;
 	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
 	var lonlat = transform([msg.getLongitude(), msg.getLatitude()], "EPSG:4326", "EPSG:3067");
 	if (msg.getSenderid() in markerDict) {
@@ -212,14 +228,14 @@ function updateLocation(msg) {
 				}),
 				stroke: new Stroke({
 					color: '#000000',
-					width: 2
+					width: 3
 				})
 			})	
 		}));
 		
 		markerDict[msg.getSenderid()] = markkeri;
+		markerLayer.push(markerDict[msg.getSenderid()]);
 		markkeri.setGeometry(lonlat ? new Point(lonlat) : null);
-
 	}
 }
 wsh.addLocationChangeListener(updateLocation);
@@ -258,15 +274,32 @@ fetch(capabilitiesUrl).then(function(response) {
 	}); */
 });
 
+var locationUpdating = false;
+
+function scheduleUpdate() {
+	if (locationUpdating == true) {
+		return;
+	}
+	locationUpdating = true;
+	sendPositionDataToServer();
+	
+}
 
 // Sijainnin ja sen tarkkuuden lähetys palvelimelle
-function sendDataToServer() {	
+function sendPositionDataToServer() {
+	var timeDiff = Date.now() - lastLocationUpdate;
+	if (timeDiff < 1000) {
+		setTimeout(sendPositionDataToServer, 1000 - timeDiff);
+		return;
+	}
 	lastLocationUpdate = Date.now();
 	var wCoords = transform(myPosition, "EPSG:3067", "EPSG:4326");
-	var lat = wCoords[0];
-	var lon = wCoords[1];
+	var lon = wCoords[0];
+	var lat = wCoords[1];
 	var acc = myAccuracy;	
 	wsh.sendLocation(lat, lon, acc);
+	locationUpdating = false;
+
 }
 
 var projectionSelect = document.getElementById('projection');
@@ -603,9 +636,6 @@ function sendShapeCoord(){
 
 //--------------KÄYTTÖLIITTYMÄN SKRIPTIT TÄSTÄ ALASPÄIN-----------------
 
-//piilotetaan turhat
-
-
 
 //hampurilaisvalikon avaus/sulku
 document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
@@ -662,21 +692,28 @@ function teamName(){
 //login ikkunan avaus/sulku
 document.getElementById("flexLR").style.display = "none";
 document.getElementById("selectusername").addEventListener("click", openLogin)
-var loginButton = document.getElementById("loginButton");
 
 function openLogin(){
+	var loginButton = document.getElementById("loginButton");
 	openHamburger();
 	document.getElementById("roomwindow").style.display = "none";
 	document.getElementById("loginwindow").style.display = "block";
 	document.getElementById("teamSelect").style.display = "none";
 	applyMapCover();
 	
-	//loginButton.onclick = ;
+	loginButton.onclick = handleLogin;
+	
+	function handleLogin(e){
+	var username = document.getElementById("usernameInput").value;
+	wsh.login(username);
+	removeMapCover();
+	console.log("Kirjauduttu käyttäjänimellä: " + username);
+	}
 }
+
 
 //huoneenvalintaikkunan avaus/sulku
 document.getElementById("openroomlogin").addEventListener("click", openRoomLogin)
-
 
 function openRoomLogin(){
 	var roomLoginButton = document.getElementById("roomLoginButton");
@@ -697,21 +734,53 @@ function openRoomLogin(){
 		}
 	});
 	
-	//roomLoginButton.onclick = ;
+	roomLoginButton.onclick = handleRoomLogin;
 	exitRoomLogin.onclick = removeMapCover;
+	
+	function handleRoomLogin(){
+		var roomname = document.getElementById("roomnameInput").value;
+		var roompass = document.getElementById("passwordInput").value;
+		var createroom = document.getElementById("createroomToggle").value;
+		wsh.joinRoom(roomname, roompass, createroom);
+	}
 }
+
 
 //ryhmänvalintaikkunan avaus/sulku
 document.getElementById("openteams").addEventListener("click", openTeamList)
 
 function openTeamList(){
+	var exitTeamWindow = document.getElementById("exitTeamWindow");
 	openHamburger();
 	document.getElementById("roomwindow").style.display = "none";
 	document.getElementById("loginwindow").style.display = "none";
 	document.getElementById("teamSelect").style.display = "flex";
 	applyMapCover();
+	fetchTeamNames();
 	
+	exitTeamWindow.onclick = removeMapCover;
+	
+	
+	
+	function fetchTeamNames(){
+		var teamlist = document.getElementById("teamlist");
+		for (var key in grouplist){
+			var teamelement = document.createElement("div");
+			teamelement.className = "teamlistElement"
+			teamelement.id = "teamElement" + key;
+			teamelement.textContent = grouplist[key];
+			var teambutton = document.createElement("button");
+			teambutton.className = "teamButton";
+			teambutton.id = "teamButton" + key;
+			teambutton.textContent = "Liity";
+			teamelement.appendChild(teambutton);
+			teamlist.appendChild(teamelement);
+		}
+	}
 }
+
+
+
 
 
 function applyMapCover(){

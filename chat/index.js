@@ -157,6 +157,20 @@ joingroupb.onclick = joingroup;
 function joingroup(e) {
 	wsh.joinGroup(1);
 }
+var editgroupb = document.getElementById("editgroup");
+editgroupb.onclick = editgroup;
+
+function editgroup(e) {
+	wsh.editGroup(1, "edit", 0xff0000ff);
+}
+
+function onGroupEdit(msg) {
+	var message = document.createElement('li');
+	var s = msg.getId() + " group name: " + msg.getName() + ", color: " + msg.getUsercolor();
+	message.appendChild(document.createTextNode(s));
+	messageselement.appendChild(message);
+}
+wsh.addEditGroupListener(onGroupEdit);
 
 var textbox = document.getElementById('textbox');
 textbox.addEventListener("keyup", function(evnt) {
@@ -169,7 +183,6 @@ textbox.addEventListener("keyup", function(evnt) {
 
 
 function textboxClick(evnt) {
-    //var bytes = proto.testi.Chatmessage.prototype.serializeBinary(textbox.value);
     var bytes = textbox.value;
     wsh.sendChatMessage(bytes);
 	evnt.preventDefault();
