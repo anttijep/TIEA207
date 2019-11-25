@@ -10,6 +10,7 @@ export class WSHandler {
 		this.onLoginResult = new Set();
 		this.onJoinResult = new Set();
 		this.onNewGroup = new Set();
+		this.onEditGroup = new Set();
 		this.onUserMoved = new Set();
 		var me = this;
 
@@ -126,6 +127,20 @@ export class WSHandler {
 		this.ws.send(msg.serializeBinary());
 	}
 
+	editGroup(groupid, name = null, usercolor = null) {
+		var msg = new proto.testi.ToServer();
+		var group = new proto.testi.EditGroup();
+		group.setId(groupid);
+		if (name != null) {
+			group.setName(name);
+		}
+		if (usercolor != null) {
+			group.setUsercolor(usercolor);
+		}
+		msg.setEditgroup(group);
+		this.ws.send(msg.serializeBinary());
+	}
+
 	onMessage(evnt) {
 		var msg = proto.testi.FromServer.deserializeBinary(evnt.data);
 		console.log(msg);
@@ -141,6 +156,7 @@ export class WSHandler {
 			this.onJoinResult.forEach(f=>f(msg.getJoinanswer()));
 		}
 		msg.getNewgroupsList().forEach(e=>that.onNewGroup.forEach(f=>f(e)));
+		msg.getEditgroupsList().forEach(e=>that.onEditGroup.forEach(f=>f(e)));
 		msg.getUsermovedList().forEach(e=>that.onUserMoved.forEach(f=>f(e)));
 		msg.getChatmsgList().forEach(e=>that.onChatMessage.forEach(f=>f(e)));
 		msg.getLocationsList().forEach(e=>that.onLocationChange.forEach(f=>f(e)));
@@ -181,6 +197,12 @@ export class WSHandler {
 	}
 	removeNewGroupListener(func) {
 		this.onNewGroup.delete(func);
+	}
+	addEditGroupListener(func) {
+		this.onEditGroup.add(func);
+	}
+	removeEditGroupListener(func) {
+		this.onEditGroup.delete(func);
 	}
 	addUserMovedListener(func) {
 		this.onUserMoved.add(func);

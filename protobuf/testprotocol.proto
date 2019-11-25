@@ -46,7 +46,7 @@ message Location {
   int32 senderID = 1;
   double latitude = 2;
   double longitude = 3;
-  int32 accuracy = 4;
+  double accuracy = 4;
 }
 //CHAT&&LOCATION END
 
@@ -54,7 +54,8 @@ message FromServer {
   repeated Chatmessage chatmsg = 1;
   repeated Location locations = 2;
   repeated DrawShape shapes = 3;
-  repeated NewGroup newgroups = 5;
+  repeated NewGroup newgroups = 4;
+  repeated EditGroup editgroups = 5;
   repeated UserMoved usermoved = 6;
   LoginAnswer loginanswer = 16;
   JoinRoomAnswer joinanswer = 17;
@@ -70,16 +71,19 @@ message ToServer {
   JoinRoom joinroom = 6;
   CreateGroup creategroup = 7;
   JoinGroup joingroup = 8;
+  EditGroup editgroup = 9;
 }
 
 // GROUPS
 message CreateGroup {
   string name = 1;
+  uint32 color = 2;
 }
 
 message UserMoved {
   int32 userid = 1;
   int32 groupid = 2;
+  string name = 3;
 }
 
 message JoinGroup {
@@ -89,6 +93,12 @@ message JoinGroup {
 message NewGroup {
   int32 id = 1;
   string name = 2;
+  uint32 usercolor = 3;
+}
+message EditGroup {
+  int32 id = 1;
+  string name = 2;
+  uint32 usercolor = 3;
 }
 
 // LOGIN&&JOIN

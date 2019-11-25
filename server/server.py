@@ -49,7 +49,7 @@ class User:
         self.state = State.UNKNOWN
         self.websocket = None
         self.room = None
-        self.location = [0,0]
+        self.location = None
 
     def setsocket(self, websocket):
         self.websocket = websocket
@@ -65,6 +65,10 @@ class User:
 
     def getlocation(self):
         return self.location
+    def getusername(self):
+        return self.username
+    def setusername(self, username):
+        self.username = username
 
     async def senderr(self, errmsg):
         err = testprotocol_pb2.FromServer()
@@ -80,6 +84,19 @@ class User:
         except Exception as e:
             logger.debug(e)
 
+class Group:
+    def __init__(self, name, color):
+        self.name = name
+        self.color = color
+    def setcolor(self, color):
+        self.color = color
+    def getcolor(self):
+        return self.color
+    def setname(self, name):
+        self.name = name
+    def getname(self):
+        return self.name
+
 class Room:
     """
     huone johon voi liittyä ja jossa olevien viestit (location, chattiviestit jne...)
@@ -87,7 +104,8 @@ class Room:
     """
     def __init__(self):
         self.clients = {}
-        self.groups = {0:"unassigned"}
+        self.defaultusercolor = 0xff00ff
+        self.groups = {0:Group("unassigned", self.defaultusercolor)}
         self.usergroup = {}
         self.nextgroupid = 1
         self.admins = {} #adminit
@@ -134,7 +152,7 @@ class Room:
             loc = msg.location
             loc.senderID = self.clients[user]
             msgout.locations.append(loc)
-            user.setlocation([loc.latitude, loc.longitude])
+            user.setlocation([loc.latitude, loc.longitude,loc.accuracy])
             
         if msg.HasField("shape"):
             relay = True
@@ -152,31 +170,90 @@ class Room:
             msgout.shapes.append(shape)
 
         if msg.HasField("creategroup"):
-            if msg.creategroup.name and msg.creategroup.name not in self.groups.values():
-                relay = True
-                self.groups[self.nextgroupid] = msg.creategroup.name
-                newgroup = testprotocol_pb2.NewGroup()
-                newgroup.id = self.nextgroupid
-                newgroup.name = msg.creategroup.name
-                msgout.newgroups.append(newgroup)
-                self.nextgroupid += 1
+            if msg.creategroup.name:
+                exists = False
+                for x in self.groups.values():
+                    if x.getname() == msg.creategroup.name:
+                        await user.senderr("group with that name already exists")
+                        exists = True
+                        break
+
+                if not exists:
+                    relay = True
+                    self.groups[self.nextgroupid] = Group(msg.creategroup.name, msg.creategroup.color or self.defaultusercolor)
+                    newgroup = testprotocol_pb2.NewGroup()
+                    newgroup.id = self.nextgroupid
+                    newgroup.name = msg.creategroup.name
+                    newgroup.usercolor = msg.creategroup.color or self.defaultusercolor
+                    msgout.newgroups.append(newgroup)
+                    self.nextgroupid += 1
             else:
                 await user.senderr("invalid group name")
 
         if msg.HasField("joingroup"):
-            if self.usergroup[user] != msg.joingroup.id and msg.joingroup.id in self.groups:
-                self.usergroup[user] = msg.joingroup.id
+            usermoved = self.moveuser(user, msg.joingroup.id)
+            if usermoved is not None:
                 relay = True
-                usermoved = testprotocol_pb2.UserMoved()
-                usermoved.userid = self.clients[user]
-                usermoved.groupid = msg.joingroup.id
                 msgout.usermoved.append(usermoved)
             else:
-                await user.senderr("invalid group")
+                await user.senderr("error joining group")
+
+        if msg.HasField("editgroup"):
+            editgroup = self.editgroup(user, msg.editgroup)
+            if editgroup is not None:
+                relay = True
+                msgout.editgroups.append(editgroup)
+            else:
+                await user.senderr("error editing group")
 
         if relay:
             await self.sendmessage(user, msgout)
-        
+
+    def getallinfo(self, msgout):
+        for i in self.groups:
+            group = testprotocol_pb2.NewGroup()
+            group.id = i
+            group.name = self.groups[i].getname()
+            group.usercolor = self.groups[i].getcolor()
+            msgout.newgroups.append(group)
+        for i in self.clients:
+            usermoved = testprotocol_pb2.UserMoved()
+            usermoved.userid = self.clients[i]
+            usermoved.groupid = self.usergroup[i]
+            usermoved.name = i.getusername()
+            msgout.usermoved.append(usermoved)
+
+            location = testprotocol_pb2.Location()
+            location.senderID = self.clients[i]
+            loc = i.getlocation()
+            if loc is not None:
+                location.latitude = loc[0]
+                location.longitude = loc[1]
+                location.accuracy = loc[2]
+                msgout.locations.append(location)
+
+    def editgroup(self, user : User, msg):
+        edit = False
+        if msg.id in self.groups:
+            if msg.name:
+                self.groups[msg.id].setname(msg.name)
+                edit = True
+            if msg.usercolor:
+                self.groups[msg.id].setcolor(msg.usercolor)
+                edit = True
+        if edit:
+            return msg
+        return None
+
+    def moveuser(self, user : User, groupid):
+        if self.usergroup[user] != groupid and groupid in self.groups:
+            self.usergroup[user] = groupid
+            usermoved = testprotocol_pb2.UserMoved()
+            usermoved.userid = self.clients[user]
+            usermoved.groupid = groupid
+            return usermoved
+        return None
+
     async def adduser(self, user : User):
         if not user in self.clients:
             self.clients[user] = self.counter()
@@ -199,7 +276,7 @@ class Room:
     def verifypassword(self, password):
         return True
     
-    def setpassword(self, user : User):#asettaa huoneelle salasanan
+    def setpassword(self, user : User, password):#asettaa huoneelle salasanan
         pass
         #miten salasana tallennetaan? missä muodossa? mihin?
     
@@ -256,6 +333,7 @@ class RoomHandler:
         user.room = msg.roomname
         uid = await room.adduser(user)
         answer.joinanswer.id = uid
+        room.getallinfo(answer)
 
         await user.send(answer)
         
@@ -288,7 +366,7 @@ class LoginHandler():
             self.users[user.key] = user
 
         if msg.logininfo.username:
-            user.username = msg.logininfo.username
+            user.setusername(msg.logininfo.username)
         user.state = State.LOGGED_IN
         resp = testprotocol_pb2.FromServer()
 
@@ -313,9 +391,6 @@ async def serv(websocket, path):
     user.setstate(State.CONNECTED)
     try:
         async for message in websocket:		#palvelimen juttelu clientin kanssa
-
-
-
             msg = testprotocol_pb2.ToServer()
             msg.ParseFromString(message)	#clientiltä tullut viesti parsetaan auki
             logger.debug(msg)
