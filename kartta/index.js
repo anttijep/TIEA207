@@ -27,7 +27,7 @@ import CircleGeom from "ol/geom/Circle";
 import Select from 'ol/interaction/Select';
 
 var types = require('./testprotocol_pb');
-var hostname = "wss://4nxi.xyz:5678";
+var hostname = "ws://127.0.0.1:5678";
 var wsh = new WSHandler(hostname, debugLogin);
 
 var myId = -1;
