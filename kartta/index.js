@@ -322,6 +322,15 @@ var points;
 var draw; // global so we can remove it later
 var circleCenter;
 var circleRadius;
+var fillRed = document.getElementById("fillRed");
+var fillGreen = document.getElementById("fillGreen");
+var fillBlue = document.getElementById("fillBlue");
+var fillAlpha = document.getElementById("fillAlpha");
+var strokeRed = document.getElementById("strokeRed");
+var strokeGreen = document.getElementById("strokeGreen");
+var strokeBlue = document.getElementById("strokeBlue");
+var strokeAlpha = document.getElementById("strokeAlpha");
+var strokeWidth =  document.getElementById("strokeWidth");
 function addInteraction() {
   var text = typeSelect.options[typeSelect.selectedIndex].text;
   var value = typeSelect.value;
@@ -337,7 +346,6 @@ function addInteraction() {
     	circleRadius = e.feature.getGeometry().getRadius();
     	console.log("center "+circleCenter + " " + "radius "+circleRadius);
     	points = null;
-
     }
     else {
     points = e.feature.getGeometry().getCoordinates();
@@ -355,12 +363,45 @@ function addInteraction() {
       map.addInteraction(draw);
       dummysource.clear();     
   }
+ }
 
-}
+var select = null;
+var selectSingleclick = new Select();
+var selectElement = document.getElementById('remove');
+
+var changeInteraction = function() {
+  map.removeInteraction(draw);
+  if (select !== null) {
+    map.removeInteraction(select);
+  }
+  var value = selectElement.value;
+  if (value == 'remove') {
+    select = selectSingleclick;
+  }
+  else {
+    select = null;
+  }
+  if (select !== null) {
+    map.addInteraction(select);
+    select.on('select', function(e) {
+   		var feats = e.target.getFeatures().getArray();
+    	console.log("features" + feats)
+    	for(var i=0; i<feats.length;i++){
+    		source.removeFeature(feats[i]);
+   	}
+    	
+    });
+  }
+
+};
+
+selectElement.onchange = changeInteraction;
+
 /**
  * Handle change event.
  */
 typeSelect.onchange = function() {
+  map.removeInteraction(select);
   map.removeInteraction(draw);
   addInteraction();
 };
@@ -383,12 +424,16 @@ function drawTest(){
 }
 
 function transformAndSendCoord(points){
+	debugger;
 	var coordArray=[];
 	var selected = document.getElementById("piirto");
 	var text = selected.options[selected.selectedIndex].text;
 	var trimmedCoord;
 	var helpArray;
 	var transformedCenter;
+	var fillColor = rgbaToInt(parseInt(fillRed.value),parseInt(fillGreen.value),parseInt(fillBlue.value),parseInt(fillAlpha.value));
+	var strokeColor = rgbaToInt(parseInt(strokeRed.value),parseInt(strokeGreen.value),parseInt(strokeBlue.value),parseInt(strokeAlpha.value));
+	var width = strokeWidth;
 	if(text == "LineString"){
 		for(var i=0;i<points.length;i++){
 			trimmedCoord =points[i];
@@ -405,7 +450,7 @@ function transformAndSendCoord(points){
 	}
 	if(text == "Circle"){
 		transformedCenter = transform(circleCenter,"EPSG:3067","EPSG:4326");
-		wsh.sendCircle(transformedCenter,circleRadius);
+		wsh.sendCircle(transformedCenter,circleRadius,fillColor,strokeColor,width);
 
 	}
 	console.log("global coordinates");
@@ -421,13 +466,18 @@ function handleCircle(circle){
 	var radius = circle.getRadius();
 	var circle = new CircleGeom(center,radius);
 	var circlefeat = new Feature();
+	var fillColorInt = circle.getFill().getColor();
+	var fillColor = intToRgba(fillColorInt);
+	var strokeColorInt = circle.getStroke().getColor();
+	var strokeColor = intToRgba(strokeColorInt);
+	var width = circle.getStroke().getWidth();
 	circlefeat.setStyle(new Style({
    		fill: new Fill({
-      		color: 'rgba(255,255,0,0.5)'
+      		color: setRGBAFill(fillColor[0],fillColor[1],fillColor[2],fillColor[3])
     		}),
    			stroke: new Stroke({
-   			color: 'yellow',
-    		width: 7
+   			color: setRGBAFill(strokeColor[0],strokeColor[1],strokeColor[2],strokeColor[3]),
+    		width: setWidth(width)
     		})
   	}));
   		featureID++;
@@ -504,8 +554,39 @@ function drawReceivedDrawing(msg) {
 
 wsh.addReceiveDrawingListener(drawReceivedDrawing);
 
+function intToRgba(int){
+	var red = (int >> 24) & 0xFF;
+	var green = int >> 16 & 0xFF;
+	var blue = int >> 8 & 0xFF;
+	var alpha = int >>0 & 0xFF;
+	var array = [red,green,blue,alpha];
+	return array;
 
+}
 
+function rgbaToInt(red,green,blue,alpha){
+	//debugger;
+	var r = red & 0xFF;
+	var g = green & 0xFF;
+	var b = blue & 0xFF;
+	var a = alpha & 0xFF;
+
+	var rgb = (r << 24) + (g << 16) + (b << 8) + (a);
+	return rgb;
+}
+
+function setRGBAFill(red, green, blue, alpha){
+	var color = "rgba("+red+","+green+","+blue+","+alpha+")";
+	return color;
+}
+
+function setRGBAStroke(red,green,blue,alpha){
+	var color = "rgba("+red+","+green+","+blue+","+alpha+")";
+}
+
+function setWidth(width){
+	return width;
+}
 
 function sendShapeCoord(){
 	var shape;
@@ -547,6 +628,11 @@ function sendShapeCoord(){
 	}
 	else return;
 }
+
+
+
+
+
 
 //resolution.onchange = function(){
 //	debugger;

@@ -11,19 +11,33 @@ message PointArray{
   repeated DrawPoint points = 1;
 }
 
+message Fill{
+  int32 color = 1;
+}
+
+message Stroke{
+  int32 color = 1;
+  int32 width = 2;
+}
+
 message Polygon{
   repeated PointArray pointarray = 1;
   int32 id = 2;
+  Stroke stroke = 3;
+  Fill fill = 4;
 }
 
 message Circle{
   DrawPoint center = 1;
   double radius = 2;
   int32 id = 3;
+  Stroke stroke = 4;
+  Fill fill = 5;
 }
 message Linestring {
   PointArray pointarray = 1;
   int32 id = 2;
+  Stroke stroke = 3;
 }
 
 message DrawShape {
@@ -71,6 +85,9 @@ message ToServer {
   JoinRoom joinroom = 6;
   CreateGroup creategroup = 7;
   JoinGroup joingroup = 8;
+
+  Fill fill = 11;
+  Stroke stroke = 10;
   EditGroup editgroup = 9;
 }
 

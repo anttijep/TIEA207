@@ -32,18 +32,26 @@ export class WSHandler {
 		this.ws.send(msg.serializeBinary());
 	}
 
-	sendCircle(center, radius) {
+	sendCircle(center, radius, fillcolor, strokecolor,width) {
 
 		var circle = new proto.testi.Circle();
 		var point = new proto.testi.DrawPoint();
+		var fill = new proto.testi.Fill();
+		var stroke = new proto.testi.Stroke();
 		point.setLongitude(center[0]);
 		point.setLatitude(center[1]);
 		circle.setCenter(point);
 		circle.setRadius(radius);
+		fill.setColor(fillcolor);
+		stroke.setColor(strokecolor);
+		stroke.setWidth(width);
 		var shape = new proto.testi.DrawShape();
 		shape.getCirclesList().push(circle);
 		var msg = new proto.testi.ToServer();
 		msg.setShape(shape);
+		msg.setFill(fill);
+		msg.setStroke(stroke);
+		//kaatuu seuraavassa
 		this.ws.send(msg.serializeBinary());
 	}
 
