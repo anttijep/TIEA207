@@ -38,9 +38,10 @@ function handleJoinMessage(msg) {
 wsh.addJoinResultListener(handleJoinMessage);
 
 function debugLogin(e) {
-	wsh.login("testi");
+	//wsh.login("testi");
 	wsh.joinRoom("testi");
 }
+
 var grouplist = {
 	0:"-Unassigned-",
 	1:"testitiimi2",
@@ -181,19 +182,22 @@ var map = new Map({
 		view: view
 	});
 
-map.on('moveend', function(event) {
+/* map.on('moveend', function(event) {
 	changeAccuracy();
-});
+}); */
 
 function changeAccuracy() {
+	if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
+	else currentZoomLevel = Math.round(map.getView().getZoom());	
+	// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
+	/**
+	 *  TODO: tää kaatuu poikkeuksiin aina välillä. Pari kertaakaa ainaki, ku oli zoomattuna sisään ja liikutti mappia
+	 *  tota scales[currentZoomLevel] voi myös kait olla undefined tässä vaiheessa taas, mutta emt vaikuttaako mihinkää
+	 *	---------
+	 *	28.11. scales check siirretty alemmas, tarkistetaan onko määritelty juuri ennen käyttöä. testailua vaaditaan
+	 *	Firefox antaa jostain syystä lähimmillä zoomitasoilla NS_ERROR_FAILURE
+	 */
 	if (scales[currentZoomLevel] != undefined) {
-		if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
-		else currentZoomLevel = Math.round(map.getView().getZoom());	
-		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
-		/**
-		 *  TODO: tää kaatuu poikkeuksiin aina välillä. Pari kertaakaa ainaki, ku oli zoomattuna sisään ja liikutti mappia
-		 *  tota scales[currentZoomLevel] voi myös kait olla undefined tässä vaiheessa taas, mutta emt vaikuttaako mihinkää
-		 */
 		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
 
 		accuracyCircle.setRadius(kaava);
@@ -699,6 +703,8 @@ function teamName(){
 document.getElementById("flexLR").style.display = "none";
 document.getElementById("selectusername").addEventListener("click", openLogin)
 
+wsh.addLoginResultListener(onLogin);
+
 function openLogin(){
 	var loginButton = document.getElementById("loginButton");
 	openHamburger();
@@ -708,15 +714,21 @@ function openLogin(){
 	applyMapCover();
 	
 	loginButton.onclick = handleLogin;
-	
-	function handleLogin(e){
-	var username = document.getElementById("usernameInput").value;
-	wsh.login(username);
-	removeMapCover();
-	console.log("Kirjauduttu käyttäjänimellä: " + username);
-	}
 }
 
+function handleLogin(e){
+	var username = document.getElementById("usernameInput").value;
+	var key = document.cookie.key;
+	wsh.login(username, key);
+	removeMapCover();
+	console.log("Kirjauduttu käyttäjänimellä: " + username);
+}
+	
+function onLogin(msg) {
+	console.log(msg.getUsername() + " / " + msg.getKey());
+	document.cookie = "username=" + msg.getUsername();
+	document.cookie = "key=" + msg.getKey();
+}
 
 //huoneenvalintaikkunan avaus/sulku
 document.getElementById("openroomlogin").addEventListener("click", openRoomLogin)
