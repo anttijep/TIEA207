@@ -730,6 +730,18 @@ function openDebugmenu(){
   }
 }
 
+document.getElementById("chatwindow").style.display = "none";
+document.getElementById("chattoggle").addEventListener("click", openChat)
+
+function openChat(){
+	var x = document.getElementById("chatwindow");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+  } else {
+		x.style.display = "block";
+  }
+}
+
 //TODO: funktio joka hakee käyttäjän tämänhetkisen joukkueen nimen
 function teamName(){
 	name = "";
