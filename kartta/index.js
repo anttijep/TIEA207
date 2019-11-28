@@ -27,7 +27,7 @@ import CircleGeom from "ol/geom/Circle";
 import Select from 'ol/interaction/Select';
 
 var types = require('./testprotocol_pb');
-var hostname = "ws://127.0.0.1:5678";
+var hostname = process.env.HOSTNAME ? process.env.HOSTNAME : "ws://127.0.0.1:5678";
 var wsh = new WSHandler(hostname, debugLogin);
 
 var myId = -1;
@@ -811,6 +811,7 @@ function openTeamList(){
 	
 	function fetchTeamNames(){
 		var teamlist = document.getElementById("teamlist");
+		teamlist.innerHTML = '';
 		for (var key in grouplist){
 			var teamelement = document.createElement("div");
 			teamelement.className = "teamlistElement"

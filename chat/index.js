@@ -1,6 +1,6 @@
 
 import { WSHandler } from "../kartta/wshandler";
-var hostname = "ws://127.0.0.1:5678";
+var hostname = process.env.HOSTNAME ? process.env.HOSTNAME : "ws://127.0.0.1:5678";
 
 var wsh = new WSHandler(hostname);
 
