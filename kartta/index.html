@@ -20,6 +20,7 @@
 			<a id="openteams">Ryhmät</a>
 			<a id="settings">Debug</a>
 			<a id="toolstoggle">Piirtotyökalut</a>
+			<a id="chattoggle">Chat</a>
 		</div>
 		<a id="hamburger" class="icon">
 			<i class="fa fa-bars"></i> <!-- cloudflaresta importattu ikoni ^^^^ pitää ehkä korvata toisella -->
@@ -92,18 +93,18 @@
 					  <label>
 					  	Fill
 					  </label>
-					  <input type="number" name="fillRed" id="fillRed">
-					  <input type="number" name="fillGreen" id="fillGreen">
-					  <input type="number" name="fillBlue" id ="fillBlue">
-					  <input type="number" name="fillAlpha" id = "fillAlpha">
+					  <input type="number" name="fillRed" >
+					  <input type="number" name="fillGreen" >
+					  <input type="number" name="fillBlue" >
+					  <input type="number" name="fillAlpha" >
 					  <label>
 					  	Stroke
 					  </label>
-					  <input type="number" name="strokeRed" id = "strokeRed">
-					  <input type="number" name="strokeGreen" id ="strokeGreen">
-					  <input type="number" name="strokeBlue" id = "strokeBlue">
-					  <input type="number" name="strokeAlpha" id = "strokeAlpha">
-					  <input type="number" name="strokeWidth" id = "strokeWidth">
+					  <input type="number" name="strokeRed" >
+					  <input type="number" name="strokeGreen" >
+					  <input type="number" name="strokeBlue" >
+					  <input type="number" name="strokeAlpha" >
+					  <input type="number" name="strokeWidth" >
 					</form>
 						<div>
 						  <label>Precision </label>
@@ -113,11 +114,53 @@
 					<div id="mouse-position"></div>
 				</div>
 		<div class="bottombar">
+		<div id="linestringSettings">
+					  <label>
+					  	Stroke
+					  </label>
+					  <a id="strokeredlabel" >Red</a>
+					  <input type="number" name="strokeRed" id = "strokeRed" value = "150" max ="255">
+					  <label>Green</label>
+					  <input type="number" name="strokeGreen" id ="strokeGreen" value = "200" max ="255">
+					  <label>Blue</label>
+					  <input type="number" name="strokeBlue" id = "strokeBlue" value = "250" max ="255">
+					  <label>Opacity</label>
+					  <input type="number" name="strokeAlpha" id = "strokeAlpha" max="10" value ="10">
+					  <label>Width</label>
+					  <input type="number" name="strokeWidth" id = "strokeWidth" value ="7" max ="15"> 
+		</div>
+		<div id="PolyCircleSettings">
+					  <label>
+					  	Fill
+					  </label>
+					  <a>Red</a>
+					  <input type="number" name="fillRed" id="fillRed" value= "100" max ="255">
+					  <label>Green</label>
+					  <input type="number" name="fillGreen" id="fillGreen" value="25" max ="255">
+					  <label>Blue</label>
+					  <input type="number" name="fillBlue" id ="fillBlue" value="200" max ="255">
+					  <label>Opacity</label>
+					  <input type="number" name="fillAlpha" id = "fillAlpha" max="10" value ="5">
+		</div>
 			<div id="drawtools">
 				<a id="drawline">Viiva</a>
 				<a id="drawpoly">Polygoni</a>
 				<a id="drawcircle">Ympyrä</a>
 				<a id="erase">Pyyhi</a>
+			</div>
+			<div id="chatwindow">
+				<dl id="messages"></dl>
+				<hr id="line">
+				<form id="sendmessage">
+					<div id="chatInputContainer">
+						<select id="chatselect">
+							<option value="room">Huone</option>
+							<option value="group">Ryhmä</option>
+						</select>
+						<input type="text" name="message" id="messagefield" autocomplete="off"/>
+						<button type="button" id="messagesendbutton">Lähetä </button>
+					</div>
+				</form>
 			</div>
 		</div>
 	</div>

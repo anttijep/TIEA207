@@ -234,3 +234,69 @@ html, body{
 	font-size: 18px;
 	color: white;
 }
+
+
+.bottombar #linestringSettings{
+	background: #333;
+	display: flex;
+	justify-content: space-evenly;
+	font-size: 18px;
+	color: white;
+}
+
+.bottombar #PolyCircleSettings{
+	background: #333;
+	display: flex;
+	justify-content: space-evenly;
+	font-size: 18px;
+	color: white;
+}
+
+#chatwindow{
+	z-index: 1;
+	bottom: 0px;
+	width: 100%;
+	
+}
+
+#messages{
+	background-color: white;
+	margin: 0px;
+	max-height: 400px;
+	font-size: 16px;
+	overflow-y: scroll;
+}
+
+#line{
+	margin: 0px;
+}
+
+#sendmessage{
+	height: 40px;
+}
+
+#chatInputContainer{
+	display: flex;
+	height: inherit;
+}
+
+#chatselect{
+	background-color: #333;
+	color: white;
+	font-weight: bold;
+}
+
+#messagefield{
+	flex-grow: 1;
+	font-size: 18px;
+	background-color: white;
+}
+
+#messagesendbutton{
+	width: 70px;
+	color: white;
+	background-color: #193b78;
+	font-weight: bold;
+}
+
+
