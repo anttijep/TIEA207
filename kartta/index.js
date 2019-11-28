@@ -439,14 +439,14 @@ function transformAndSendCoord(points){
 			trimmedCoord =points[i];
 			coordArray[i]=transform(trimmedCoord,"EPSG:3067","EPSG:4326");
 		}
-		wsh.sendLinestring(coordArray);
+		wsh.sendLinestring(coordArray, strokeColor, width);
 	}
 	if(text == "Polygon"){
         var polyarray = [[]];
         for (var i=0; i < points.length;++i) {
             points[i].forEach(e=>polyarray[i].push(transform(e,"EPSG:3067","EPSG:4326")));
         }
-        wsh.sendPolygon(polyarray);
+        wsh.sendPolygon(polyarray,fillColor,strokeColor,width);
 	}
 	if(text == "Circle"){
 		transformedCenter = transform(circleCenter,"EPSG:3067","EPSG:4326");
@@ -475,10 +475,10 @@ function handleCircle(circle){
 
 	circlefeat.setStyle(new Style({
    		fill: new Fill({
-      		color: setRGBAFill(fillColor[0],fillColor[1],fillColor[2],fillColor[3])
+      		color: setRGBAFill(fillColor[0],fillColor[1],fillColor[2],fillColor[3]/10)
     		}),
    			stroke: new Stroke({
-   			color: setRGBAFill(strokeColor[0],strokeColor[1],strokeColor[2],strokeColor[3]),
+   			color: setRGBAFill(strokeColor[0],strokeColor[1],strokeColor[2],strokeColor[3]/10),
     		width: setWidth(width)
     		})
   	}));
@@ -494,17 +494,21 @@ function handleCircle(circle){
 }
 
 function handleLinestring(linestring){
-	//var linepoints = [];
-	console.log(linestring);
-	//for(var i=0;i<linepoints.length;i++){
-	//	linepoints[i]= transform([linestring.getLongitude(),linestring.getLatitude()],"EPSG:4326","EPSG:3067");
-	//}
-	console.log("linepoints");
-	//console.log(linepoints);
+	var linestringCoord = [];
+	linestring.getPointarray().getPointsList().forEach(coord=>transformLinestring(coord,linestringCoord))
+	var strokeColorInt = linestring.getStroke().getColor();
+	var width = linestring.getStroke().getWidth();
+	var strokeColor = intToRgba(strokeColorInt);
 	var linestring = new LineString(linestringCoord);
 	var linefeat = new Feature({
 		geometry: linestring
 	});
+	linefeat.setStyle(new Style({
+   			stroke: new Stroke({
+   			color: setRGBAFill(strokeColor[0],strokeColor[1],strokeColor[2],strokeColor[3]/10),
+    		width: setWidth(width)
+    		})
+  	}));
 	featureID++;
 	linefeat.setId(featureID);
 
@@ -518,6 +522,11 @@ function handleLinestring(linestring){
 
 function handlePolygon(polygon){
     var polypoints = [[]];
+    var fillColorInt = polygon.getFill().getColor();
+	var fillColor = intToRgba(fillColorInt);
+	var strokeColorInt = polygon.getStroke().getColor();
+	var strokeColor = intToRgba(strokeColorInt);
+	var width = polygon.getStroke().getWidth();
     var parrlist = polygon.getPointarrayList();
     for (var i = 0; i < parrlist.length; ++i) {
         parrlist[i].getPointsList().forEach(e=>{
@@ -530,26 +539,30 @@ function handlePolygon(polygon){
 	var polyfeat = new Feature({
 		geometry: poly
 	});
+	polyfeat.setStyle(new Style({
+   		fill: new Fill({
+      		color: setRGBAFill(fillColor[0],fillColor[1],fillColor[2],fillColor[3]/10)
+    		}),
+   			stroke: new Stroke({
+   			color: setRGBAFill(strokeColor[0],strokeColor[1],strokeColor[2],strokeColor[3]/10),
+    		width: setWidth(width)
+    		})
+  	}));
 	featureID++;
 	source.addFeature(polyfeat);
 }
 
-var linestringCoord = [];
 
-function transformLinestring(coord){
-	linestringCoord.push(transform([coord.getLongitude(),coord.getLatitude()],"EPSG:4326","EPSG:3067"));
+
+function transformLinestring(coord,array){
+	array.push(transform([coord.getLongitude(),coord.getLatitude()],"EPSG:4326","EPSG:3067"));
 }
 
 
 
 function drawReceivedDrawing(msg) {
-	msg.getLinestringsList().forEach(lstrings=>{
-		lstrings.getPointarray().getPointsList().forEach(coord=>transformLinestring(coord))
-		console.log("linestring points\n########################################\n##################################");
-		console.log(linestringCoord);
-		handleLinestring(linestringCoord);
-		linestringCoord= [];
-	});
+	msg.getLinestringsList().forEach(lstrings=> handleLinestring(lstrings));
+
 	msg.getCirclesList().forEach(circle =>handleCircle(circle));
     msg.getPolysList().forEach(poly=>handlePolygon(poly));
 }
@@ -644,6 +657,7 @@ document.getElementById("drawcircle").onclick = function(){
 }
 
 function selectPolygonElement(){
+	openPoly();
 	if (typeSelect.value =="Polygon") {
 		typeSelect.value ="None";
 		typeSelect.onchange();
@@ -665,6 +679,7 @@ function selectLineStringElement(){
 }
 
 function selectCircleElement(){
+	openCircle();
 	if (typeSelect.value =="Circle") {
 		typeSelect.value ="None";
 		typeSelect.onchange();
@@ -672,6 +687,16 @@ function selectCircleElement(){
 	}
 	typeSelect.value = "Circle";
 	typeSelect.onchange();
+}
+
+function selectErase(){
+	if (selectElement.value == "remove"){
+		selectElement.value = "none";
+		selectElement.onchange();
+		return;
+	}
+	selectElement.value="remove";
+	selectElement.onchange();
 }
 
 
@@ -715,7 +740,7 @@ function openTools(){
 //document.getElementById("drawline").addEventListener("click", );
 //document.getElementById("drawpoly").addEventListener("click", );
 //document.getElementById("drawcircle").addEventListener("click", );
-document.getElementById("erase").addEventListener("click", clearAll);
+document.getElementById("erase").addEventListener("click", selectErase);
 
 //debug menun avaus/sulku
 document.getElementById("debugmenu").style.display = "none";
@@ -729,6 +754,46 @@ function openDebugmenu(){
 		x.style.display = "block";
   }
 }
+
+function openLinestringColor(){
+	var x = document.getElementById("linestringSettings");
+	if (x.style.display === "flex") {
+		x.style.display = "none";
+  } else {
+		x.style.display = "flex";
+  }
+}
+document.getElementById("linestringSettings").style.display = "none";
+document.getElementById("drawline").addEventListener("click",openLinestringColor);
+document.getElementById("PolyCircleSettings").style.display = "none";
+
+function openPoly(){
+	var y = document.getElementById("PolyCircleSettings");
+	var x = document.getElementById("linestringSettings");
+	if (typeSelect.value == "Polygon") {
+		x.style.display = "none";
+		y.style.display = "none";
+  } else {
+		x.style.display = "flex";
+		y.style.display = "flex";
+  }
+}
+
+function openCircle(){
+	var y = document.getElementById("PolyCircleSettings");
+	var x = document.getElementById("linestringSettings");
+	if (typeSelect.value == "Circle") {
+		x.style.display = "none";
+		y.style.display = "none";
+  } else {
+		x.style.display = "flex";
+		y.style.display = "flex";
+  }
+}
+//document.getElementById("drawpoly").addEventListener("click",openPoly);
+//document.getElementById("drawcircle").addEventListener("click",openPoly);
+
+//document.getElementById("drawline").addEventListener("click",openLinestringColor);
 
 //TODO: funktio joka hakee käyttäjän tämänhetkisen joukkueen nimen
 function teamName(){

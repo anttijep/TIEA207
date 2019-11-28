@@ -57,8 +57,15 @@ export class WSHandler {
 		this.ws.send(msg.serializeBinary());
 	}
 
-	sendPolygon(poly) {
+	sendPolygon(poly,fillcolor,strokecolor,width) {
 		var polygon = new proto.testi.Polygon();
+		var fill = new proto.testi.Fill();
+		var stroke = new proto.testi.Stroke();
+		stroke.setColor(strokecolor);
+		stroke.setWidth(width);
+		fill.setColor(fillcolor);
+		polygon.setFill(fill);
+		polygon.setStroke(stroke);
 		poly.forEach(arr=>{
 			var points = new proto.testi.PointArray();
 			arr.forEach(p=>{
@@ -76,10 +83,13 @@ export class WSHandler {
 		this.ws.send(msg.serializeBinary());
 	}
 
-	sendLinestring(array) {
+	sendLinestring(array,strokeColor,width) {
 		var msg = new proto.testi.ToServer();
 		var shape = new proto.testi.DrawShape();
 		var points = new proto.testi.PointArray();
+		var stroke = new proto.testi.Stroke();
+		stroke.setColor(strokeColor);
+		stroke.setWidth(width);
 		array.forEach(e=>{
 			var point = new proto.testi.DrawPoint();
 			point.setLongitude(e[0]);
@@ -88,6 +98,7 @@ export class WSHandler {
 		});
 		var linestring = new proto.testi.Linestring();
 		linestring.setPointarray(points);
+		linestring.setStroke(stroke);
 		shape.getLinestringsList().push(linestring);
 		msg.setShape(shape);
 		this.ws.send(msg.serializeBinary());
