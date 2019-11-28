@@ -770,6 +770,7 @@ function openTeamList(){
 	
 	function fetchTeamNames(){
 		var teamlist = document.getElementById("teamlist");
+		teamlist.innerHTML = '';
 		for (var key in grouplist){
 			var teamelement = document.createElement("div");
 			teamelement.className = "teamlistElement"
