@@ -424,7 +424,7 @@ function drawTest(){
 }
 
 function transformAndSendCoord(points){
-	debugger;
+	//debugger;
 	var coordArray=[];
 	var selected = document.getElementById("piirto");
 	var text = selected.options[selected.selectedIndex].text;
@@ -433,7 +433,7 @@ function transformAndSendCoord(points){
 	var transformedCenter;
 	var fillColor = rgbaToInt(parseInt(fillRed.value),parseInt(fillGreen.value),parseInt(fillBlue.value),parseInt(fillAlpha.value));
 	var strokeColor = rgbaToInt(parseInt(strokeRed.value),parseInt(strokeGreen.value),parseInt(strokeBlue.value),parseInt(strokeAlpha.value));
-	var width = strokeWidth;
+	var width = parseInt(strokeWidth.value);
 	if(text == "LineString"){
 		for(var i=0;i<points.length;i++){
 			trimmedCoord =points[i];
@@ -460,17 +460,19 @@ function transformAndSendCoord(points){
 }
 
 
+
 function handleCircle(circle){
 	//circleCenter = [circle.getCenter().getLongitude(),circle.getCenter().getLatitude()];
 	var center = transform([circle.getCenter().getLongitude(),circle.getCenter().getLatitude()],"EPSG:4326","EPSG:3067");
 	var radius = circle.getRadius();
-	var circle = new CircleGeom(center,radius);
-	var circlefeat = new Feature();
 	var fillColorInt = circle.getFill().getColor();
 	var fillColor = intToRgba(fillColorInt);
 	var strokeColorInt = circle.getStroke().getColor();
 	var strokeColor = intToRgba(strokeColorInt);
 	var width = circle.getStroke().getWidth();
+	var circle = new CircleGeom(center,radius);
+	var circlefeat = new Feature();
+
 	circlefeat.setStyle(new Style({
    		fill: new Fill({
       		color: setRGBAFill(fillColor[0],fillColor[1],fillColor[2],fillColor[3])
@@ -629,9 +631,48 @@ function sendShapeCoord(){
 	else return;
 }
 
+document.getElementById("drawline").onclick = function(){
+	selectLineStringElement();
+}
 
+document.getElementById("drawpoly").onclick = function(){
+	selectPolygonElement();
+}
 
+document.getElementById("drawcircle").onclick = function(){
+	selectCircleElement();
+}
 
+function selectPolygonElement(){
+	if (typeSelect.value =="Polygon") {
+		typeSelect.value ="None";
+		typeSelect.onchange();
+		return;
+	}
+	typeSelect.value = "Polygon";
+	typeSelect.onchange();
+}
+
+function selectLineStringElement(){
+	if (typeSelect.value =="LineString") {
+		typeSelect.value ="None";
+		typeSelect.onchange();
+		return;
+	}
+
+	typeSelect.value = "LineString";
+	typeSelect.onchange();
+}
+
+function selectCircleElement(){
+	if (typeSelect.value =="Circle") {
+		typeSelect.value ="None";
+		typeSelect.onchange();
+		return;
+	}
+	typeSelect.value = "Circle";
+	typeSelect.onchange();
+}
 
 
 //resolution.onchange = function(){

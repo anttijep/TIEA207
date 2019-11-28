@@ -45,12 +45,14 @@ export class WSHandler {
 		fill.setColor(fillcolor);
 		stroke.setColor(strokecolor);
 		stroke.setWidth(width);
+		circle.setFill(fill);
+		circle.setStroke(stroke);
 		var shape = new proto.testi.DrawShape();
 		shape.getCirclesList().push(circle);
 		var msg = new proto.testi.ToServer();
 		msg.setShape(shape);
-		msg.setFill(fill);
-		msg.setStroke(stroke);
+		//msg.setFill(fill);
+		//msg.setStroke(stroke);
 		//kaatuu seuraavassa
 		this.ws.send(msg.serializeBinary());
 	}
