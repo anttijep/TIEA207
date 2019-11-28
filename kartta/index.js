@@ -730,16 +730,41 @@ function openDebugmenu(){
   }
 }
 
+
+//Chat ikkunan avaus/sulku
 document.getElementById("chatwindow").style.display = "none";
 document.getElementById("chattoggle").addEventListener("click", openChat)
 
 function openChat(){
 	var x = document.getElementById("chatwindow");
+	var i;
+	for (i = 0; i < 25; i++) {
+	  addToChat2("käyttäjä2", i, "#96e27d");
+	}
+	addToChat("käyttäjä", "testiviesti", "#96e27d");
+	addToChat2("käyttäjä2", "testiviesti", "#96e27d");
 	if (x.style.display === "block") {
 		x.style.display = "none";
   } else {
 		x.style.display = "block";
   }
+  
+}
+
+function addToChat(sender, messagetext, color){
+	var x = document.getElementById("messages");
+	var message = document.createElement("li");
+	message.textContent = sender + ": " + messagetext;
+	message.style = "background-color: #96e27d;";
+	x.appendChild(message);
+}
+
+function addToChat2(sender, messagetext, color){
+	var x = document.getElementById("messages");
+	var message = document.createElement("li");
+	message.textContent = sender + ": " + messagetext;
+	message.style = "background-color: white;";
+	x.appendChild(message);
 }
 
 //TODO: funktio joka hakee käyttäjän tämänhetkisen joukkueen nimen
