@@ -803,10 +803,17 @@ function openCircle(){
 
 //Chat ikkunan avaus/sulku
 document.getElementById("chatwindow").style.display = "none";
-document.getElementById("chattoggle").addEventListener("click", openChat)
+document.getElementById("chattoggle").addEventListener("click", openChat);
+document.getElementById("chatminimize").addEventListener("click", chatMinimize);
 
 function openChat(){
+	openHamburger();
+	document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
 	var x = document.getElementById("chatwindow");
+	var y = document.getElementById("messages");
+
+	y.style.display = "block";
+	
 	var i;
 	for (i = 0; i < 25; i++) {
 	  addToChat2("käyttäjä2", i, "#96e27d");
@@ -818,24 +825,37 @@ function openChat(){
   } else {
 		x.style.display = "block";
   }
-  
+}
+
+function chatMinimize(){
+	var x = document.getElementById("messages");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+		document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
+  } else {
+		x.style.display = "block";
+		document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
+  }
 }
 
 function addToChat(sender, messagetext, color){
 	var x = document.getElementById("messages");
 	var message = document.createElement("li");
 	message.textContent = sender + ": " + messagetext;
+	message.className = "chatmessage";
 	message.style = "background-color: #96e27d;";
 	x.appendChild(message);
+	x.scrollTop = x.scrollHeight; //MUISTA TÄMÄ
 }
 
 function addToChat2(sender, messagetext, color){
 	var x = document.getElementById("messages");
 	var message = document.createElement("li");
 	message.textContent = sender + ": " + messagetext;
-	message.style = "background-color: white;";
+	message.className = "chatmessage";
 	x.appendChild(message);
 }
+
 
 
 //TODO: funktio joka hakee käyttäjän tämänhetkisen joukkueen nimen
