@@ -57,12 +57,17 @@
 					</div>
 				</div>
 				<div id="teamSelect">
-					<div class="loginwindowTop">Valitse ryhmä</div>
+					<div class="loginwindowTop">Valitse ryhmä
+						<button type="button" id="teamEditButton">Muokkaa Ryhmiä</button> 
+					</div>
 					<div id="teamlistWindowContent">
+						<div class="teamlistElement" id="modelTeamElement">Luo uusi ryhmä,
+								<button id="createTeamButton" type="button">Luo Ryhmä</button><br>
+								<label for="teamnameInput">Ryhmän nimi:</label>
+								<input type="text" id="teamnameInput" name="teamnameInput" value="">
+							</div>
 						<div id="teamlist">
-							<!--<div class="teamlistElement">-Unassigned-
-								<button class="teamButton" type="button">Liity</button>
-							</div>-->
+							
 						</div>
 					</div>
 					<button type="button" id="exitTeamWindow">Peruuta</button> 
