@@ -935,6 +935,8 @@ document.getElementById("openteams").addEventListener("click", openTeamList)
 
 function openTeamList(){
 	var exitTeamWindow = document.getElementById("exitTeamWindow");
+	var editTeams = document.getElementById("teamEditButton");
+	
 	openHamburger();
 	document.getElementById("roomwindow").style.display = "none";
 	document.getElementById("loginwindow").style.display = "none";
@@ -942,21 +944,53 @@ function openTeamList(){
 	applyMapCover();
 	fetchTeamNames();
 	
+	var z = document.getElementById("modelTeamElement");
+	z.style.display = "none";
+	var x = document.getElementsByClassName("teamButton");
+	for (var i = 0; i < x.length; i++) {
+		x[i].style.display = "block";
+	}
+	
 	exitTeamWindow.onclick = removeMapCover;
+	editTeams.onclick = toggleTeamEdit;
+	
+	function toggleTeamEdit(){
+		var y = document.getElementsByClassName("delteamButton");
+		if (x[0].style.display === "block") {
+			z.style.display = "block";
+			for (var i = 0; i < x.length; i++) {
+				x[i].style.display = "none";
+				y[i].style.display = "block";
+			}
+		} else {
+			z.style.display = "none";
+			for (var i = 0; i < x.length; i++) {
+				x[i].style.display = "block";
+				y[i].style.display = "none";
+			}
+		}
+	}
 	
 	function fetchTeamNames(){
 		var teamlist = document.getElementById("teamlist");
 		teamlist.innerHTML = '';
 		for (var key in grouplist){
 			var teamelement = document.createElement("div");
-			teamelement.className = "teamlistElement"
+			teamelement.className = "teamlistElement";
 			teamelement.id = "teamElement" + key;
 			teamelement.textContent = grouplist[key];
 			var teambutton = document.createElement("button");
 			teambutton.className = "teamButton";
 			teambutton.id = "teamButton" + key;
 			teambutton.textContent = "Liity";
+			var delteambutton = document.createElement("button");
+			delteambutton.className = "delteamButton";
+			delteambutton.id = "delteamButton" + key;
+			delteambutton.textContent = "Poista";
+			delteambutton.style.display = "none";
+			
 			teamelement.appendChild(teambutton);
+			teamelement.appendChild(delteambutton);
 			teamlist.appendChild(teamelement);
 		}
 	}
