@@ -120,7 +120,6 @@ var view = new View({
 var parser = new WMTSCapabilities();
 var scales = [];
 var lastLocationUpdate = Date.now();
-console.log(lastLocationUpdate);
 
 if (navigator.geolocation) {
 	var firstCenter = true;
@@ -965,8 +964,6 @@ document.getElementById("roomwindow").style.display = "none";
 
 document.getElementById("selectusername").addEventListener("click", openLogin)
 
-wsh.addLoginResultListener(onLogin);
-
 function openLogin(){
 	var loginButton = document.getElementById("loginButton");
 	openHamburger();
@@ -998,6 +995,8 @@ function onLogin(msg) {
 	window.localStorage.setItem("key", msg.getKey());
 }
 
+wsh.addLoginResultListener(onLogin);
+
 
 //huoneenvalintaikkunan avaus/sulku
 document.getElementById("openroomlogin").addEventListener("click", openRoomLogin)
@@ -1023,15 +1022,14 @@ function openRoomLogin(){
 	
 	roomLoginButton.onclick = handleRoomLogin;
 	exitRoomLogin.onclick = removeMapCover;
-	
-	function handleRoomLogin(){//kutsutaan kun login nappia painetaan
-		var roomname = document.getElementById("roomnameInput").value;
-		var roompass = document.getElementById("passwordInput").value;
-		var createroom = document.getElementById("createroomToggle").value;
-		wsh.joinRoom(roomname, roompass, createroom);
-	}
 }
 
+function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
+		var roomname = document.getElementById("roomnameInput").value;
+		var roompass = document.getElementById("passwordInput").value;
+		var createroom = document.getElementById("createroomToggle").checked;
+		wsh.joinRoom(roomname, roompass, createroom);
+	}
 
 //ryhmänvalintaikkunan avaus/sulku
 document.getElementById("openteams").addEventListener("click", openTeamList)
