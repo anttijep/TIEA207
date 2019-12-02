@@ -235,7 +235,18 @@ html, body{
 	color: white;
 }
 
-
+.bottombar #color-picker-container{
+	background: #333;
+	display: inline-block;
+	font-size: 10px;
+	color: white;
+}
+.bottombar #color-picker-stroke{
+	background: #333;
+	display: inline-block;
+	font-size: 10px;
+	color: white;
+}
 .bottombar #linestringSettings{
 	background: #333;
 	display: flex;

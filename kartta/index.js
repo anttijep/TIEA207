@@ -25,6 +25,8 @@ import Polygon from 'ol/geom/Polygon';
 import LineString from "ol/geom/LineString";
 import CircleGeom from "ol/geom/Circle";
 import Select from 'ol/interaction/Select';
+import iro from '@jaames/iro';
+
 
 var types = require('./testprotocol_pb');
 var hostname = process.env.HOSTNAME ? process.env.HOSTNAME : "ws://127.0.0.1:5678";
@@ -371,6 +373,8 @@ var selectElement = document.getElementById('remove');
 
 var changeInteraction = function() {
   map.removeInteraction(draw);
+  document.getElementById("linestringSettings").style.display = "none";
+  document.getElementById("PolyCircleSettings").style.display = "none";
   if (select !== null) {
     map.removeInteraction(select);
   }
@@ -386,9 +390,11 @@ var changeInteraction = function() {
     select.on('select', function(e) {
    		var feats = e.target.getFeatures().getArray();
     	console.log("features" + feats)
-    	for(var i=0; i<feats.length;i++){
-    		source.removeFeature(feats[i]);
-   	}
+    	source.removeFeature(e.selected[0]);
+    	//source.removeFeature(e.feature);
+   // 	for(var i=0; i<feats.length;i++){
+   // 		source.removeFeature(feats[i]);
+   	//}
     	
     });
   }
@@ -423,6 +429,13 @@ function drawTest(){
     source.addFeature(feature);
 }
 
+var PickerFillred = 255;
+var PickerFillgreen = 255;
+var PickerFillBlue = 255;
+var	PickerStrokered = 255;
+var	PickerStrokegreen = 255;
+var	PickerStrokeBlue = 255;
+
 function transformAndSendCoord(points){
 	//debugger;
 	var coordArray=[];
@@ -431,8 +444,8 @@ function transformAndSendCoord(points){
 	var trimmedCoord;
 	var helpArray;
 	var transformedCenter;
-	var fillColor = rgbaToInt(parseInt(fillRed.value),parseInt(fillGreen.value),parseInt(fillBlue.value),parseInt(fillAlpha.value));
-	var strokeColor = rgbaToInt(parseInt(strokeRed.value),parseInt(strokeGreen.value),parseInt(strokeBlue.value),parseInt(strokeAlpha.value));
+	var fillColor = rgbaToInt(parseInt(PickerFillred),parseInt(PickerFillgreen),parseInt(PickerFillBlue),5);
+	var strokeColor = rgbaToInt(parseInt(PickerStrokered),parseInt(PickerStrokegreen),parseInt(PickerStrokeBlue),10);
 	var width = parseInt(strokeWidth.value);
 	if(text == "LineString"){
 		for(var i=0;i<points.length;i++){
@@ -603,6 +616,7 @@ function setWidth(width){
 	return width;
 }
 
+
 function sendShapeCoord(){
 	var shape;
 	var selected = document.getElementById("piirto");
@@ -690,13 +704,22 @@ function selectCircleElement(){
 }
 
 function selectErase(){
+	var strokepanel = document.getElementById("strokeColorPalette");
+	var fillpanel = document.getElementById("fillColorPalette");
 	if (selectElement.value == "remove"){
 		selectElement.value = "none";
 		selectElement.onchange();
+		document.getElementById("erase").style.backgroundColor = defaultbackgroundColor;
 		return;
 	}
 	selectElement.value="remove";
 	selectElement.onchange();
+	document.getElementById("erase").style.backgroundColor = selectedbackgroundColor;
+	document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
+	document.getElementById("drawpoly").style.backgroundColor = defaultbackgroundColor;
+	document.getElementById("drawline").style.backgroundColor = defaultbackgroundColor;
+	strokepanel.style.display = "none";
+	fillpanel.style.display = "none";
 }
 
 
@@ -708,6 +731,8 @@ function selectErase(){
 
 //--------------KÄYTTÖLIITTYMÄN SKRIPTIT TÄSTÄ ALASPÄIN-----------------
 
+var defaultbackgroundColor = "#333";
+var selectedbackgroundColor = "#01ff00";
 
 //hampurilaisvalikon avaus/sulku
 document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
@@ -736,6 +761,25 @@ function openTools(){
 		x.style.display = "flex";
   }
 }
+
+
+function changePaletteColor(){
+document.getElementById("fillColorPalette").style.backgroundColor = "rgb("+fillRed.value+", "+ fillGreen.value+", "+ fillBlue.value+")";
+document.getElementById("strokeColorPalette").style.backgroundColor = "rgb("+strokeRed.value+", "+ strokeGreen.value+", "+ strokeBlue.value+")";	
+}
+var trueFill = document.getElementById("color-picker-container");
+trueFill.style.display = "none";
+var trueStroke = document.getElementById("color-picker-stroke");
+trueStroke.style.display = "none";
+var colorElements = document.querySelectorAll('[name="colorChange"]');
+for (var i = 0; i < colorElements.length; i++) {
+  colorElements[i].addEventListener('change', changePaletteColor);
+}
+document.getElementById("strokeColorPalette").style.display = "none";
+document.getElementById("fillColorPalette").style.display = "none";
+
+document.getElementById("strokeColorPalette").style.backgroundColor = "rgb("+strokeRed.value+", "+ strokeGreen.value+", "+ strokeBlue.value+")";
+document.getElementById("fillColorPalette").style.backgroundColor = "rgb("+fillRed.value+", "+ fillGreen.value+", "+ fillBlue.value+")";
 //työkalupalkin tapahtumankuuntelijat
 //document.getElementById("drawline").addEventListener("click", );
 //document.getElementById("drawpoly").addEventListener("click", );
@@ -755,40 +799,92 @@ function openDebugmenu(){
   }
 }
 
-
 function openLinestringColor(){
+	var strokepanel = document.getElementById("strokeColorPalette");
+	var fillpanel = document.getElementById("fillColorPalette");
 	var x = document.getElementById("linestringSettings");
 	if (x.style.display === "flex") {
 		x.style.display = "none";
+		document.getElementById("drawline").style.backgroundColor = defaultbackgroundColor;
+		strokepanel.style.display = "none";
+		trueStroke.style.display = "none";
+
+
   } else {
 		x.style.display = "flex";
+		document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
+		document.getElementById("drawpoly").style.backgroundColor = defaultbackgroundColor;
+		document.getElementById("drawline").style.backgroundColor = selectedbackgroundColor;
+		document.getElementById("erase").style.backgroundColor = defaultbackgroundColor;
+		trueStroke.style.display = "inline-block";
+		colorPickerStroke.resize(150);
+		strokepanel.style.display = "block";
   }
 }
+
+
 document.getElementById("linestringSettings").style.display = "none";
 document.getElementById("drawline").addEventListener("click",openLinestringColor);
 document.getElementById("PolyCircleSettings").style.display = "none";
 
 function openPoly(){
+	
 	var y = document.getElementById("PolyCircleSettings");
 	var x = document.getElementById("linestringSettings");
+	var strokepanel = document.getElementById("strokeColorPalette");
+	var fillpanel = document.getElementById("fillColorPalette");
 	if (typeSelect.value == "Polygon") {
 		x.style.display = "none";
 		y.style.display = "none";
+		strokepanel.style.display = "none";
+		fillpanel.style.display = "none";
+		document.getElementById("drawpoly").style.backgroundColor = defaultbackgroundColor;
+		colorPicker.resize(1);
+		trueFill.style.display = "none";
+		trueStroke.style.display = "none";
+
   } else {
 		x.style.display = "flex";
 		y.style.display = "flex";
+		strokepanel.style.display = "flex";
+		fillpanel.style.display = "flex";
+		document.getElementById("drawpoly").style.backgroundColor = selectedbackgroundColor;
+		document.getElementById("drawline").style.backgroundColor = defaultbackgroundColor;
+		document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
+		document.getElementById("erase").style.backgroundColor = defaultbackgroundColor;
+		trueFill.style.display = "inline-block";
+		colorPicker.resize(150);
+		trueStroke.style.display = "inline-block";
+		colorPickerStroke.resize(150);
   }
 }
 
 function openCircle(){
+	var strokepanel = document.getElementById("strokeColorPalette");
+	var fillpanel = document.getElementById("fillColorPalette");
 	var y = document.getElementById("PolyCircleSettings");
 	var x = document.getElementById("linestringSettings");
 	if (typeSelect.value == "Circle") {
 		x.style.display = "none";
 		y.style.display = "none";
+		strokepanel.style.display = "none";
+		fillpanel.style.display = "none";
+		document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
+		colorPicker.resize(1);
+		trueStroke.style.display = "inline-block";
+		
+		trueStroke.style.display = "none";
   } else {
+ 		strokepanel.style.display = "flex";
+		fillpanel.style.display = "flex";
 		x.style.display = "flex";
 		y.style.display = "flex";
+		document.getElementById("drawcircle").style.backgroundColor = selectedbackgroundColor;
+		document.getElementById("drawpoly").style.backgroundColor = defaultbackgroundColor;
+		document.getElementById("drawline").style.backgroundColor = defaultbackgroundColor;
+		document.getElementById("erase").style.backgroundColor = defaultbackgroundColor;
+		colorPicker.resize(150);
+		colorPickerStroke.resize(150);
   }
 }
 //document.getElementById("drawpoly").addEventListener("click",openPoly);
@@ -955,3 +1051,33 @@ var x = document.getElementById("flexLR");
 		x.style.display = "block";
   }
 */
+
+var colorPickerStroke = new iro.ColorPicker("#color-picker-stroke",{
+	width: 1,
+	color: "#f00",
+	});
+
+var colorPicker = new iro.ColorPicker('#color-picker-container',{
+	width: 1,
+	color: "#f00",
+	});
+
+function onColorChange(color,changes){
+	console.log(color.rgbaString);
+	var col = color.rgba;
+	console.log(col["r"]);
+	PickerFillred = col["r"];
+	PickerFillgreen = col["g"];
+	PickerFillBlue = col["b"];
+}
+function onColorChangeStroke(color,changes){
+	console.log(color.rgbaString);
+	var col = color.rgba;
+	console.log(col["r"]);
+	PickerStrokered = col["r"];
+	PickerStrokegreen = col["g"];
+	PickerStrokeBlue = col["b"];
+}
+
+colorPicker.on("color:change",onColorChange);
+colorPickerStroke.on("color:change",onColorChangeStroke);
