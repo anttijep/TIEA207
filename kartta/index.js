@@ -860,6 +860,9 @@ function teamName(){
 
 //login ikkunan avaus/sulku
 document.getElementById("flexLR").style.display = "none";
+document.getElementById("teamSelect").style.display = "none";
+document.getElementById("roomwindow").style.display = "none";
+
 document.getElementById("selectusername").addEventListener("click", openLogin)
 
 wsh.addLoginResultListener(onLogin);
