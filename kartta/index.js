@@ -182,9 +182,9 @@ var map = new Map({
 		view: view
 	});
 
-/* map.on('moveend', function(event) {
+map.on('zoomend', function(event) {
 	changeAccuracy();
-}); */
+});
 
 function changeAccuracy() {
 	if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
@@ -863,7 +863,7 @@ function openLogin(){
 
 function handleLogin(e){
 	var username = document.getElementById("usernameInput").value;
-	var key = document.cookie.key;
+	var key = window.localStorage.getItem("key");
 	wsh.login(username, key);
 	removeMapCover();
 	console.log("Kirjauduttu käyttäjänimellä: " + username);
@@ -871,8 +871,8 @@ function handleLogin(e){
 	
 function onLogin(msg) {
 	console.log(msg.getUsername() + " / " + msg.getKey());
-	document.cookie = "username=" + msg.getUsername();
-	document.cookie = "key=" + msg.getKey();
+	window.localStorage.setItem("username", msg.getUsername());
+	window.localStorage.setItem("key", msg.getKey());
 }
 
 //huoneenvalintaikkunan avaus/sulku
