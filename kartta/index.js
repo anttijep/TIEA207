@@ -318,6 +318,7 @@ var vectorLayerSource = vector.getSource();
 var vectorLayerFeatures =vectorLayerSource.getFeatures();
 
 var typeSelect = document.getElementById('piirto');
+typeSelect.value = "None";
 var points;
 var draw; // global so we can remove it later
 var circleCenter;
@@ -368,6 +369,7 @@ function addInteraction() {
 var select = null;
 var selectSingleclick = new Select();
 var selectElement = document.getElementById('remove');
+selectElement.value = "none";
 
 var changeInteraction = function() {
   map.removeInteraction(draw);
@@ -680,6 +682,7 @@ function selectPolygonElement(){
 }
 
 function selectLineStringElement(){
+	openLinestringColor();
 	if (typeSelect.value =="LineString") {
 		typeSelect.value ="None";
 		typeSelect.onchange();
@@ -702,22 +705,20 @@ function selectCircleElement(){
 }
 
 function selectErase(){
-	var strokepanel = document.getElementById("strokeColorPalette");
-	var fillpanel = document.getElementById("fillColorPalette");
 	if (selectElement.value == "remove"){
 		selectElement.value = "none";
 		selectElement.onchange();
 		document.getElementById("erase").style.backgroundColor = defaultbackgroundColor;
 		return;
 	}
+	else{
 	selectElement.value="remove";
 	selectElement.onchange();
 	document.getElementById("erase").style.backgroundColor = selectedbackgroundColor;
 	document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
 	document.getElementById("drawpoly").style.backgroundColor = defaultbackgroundColor;
 	document.getElementById("drawline").style.backgroundColor = defaultbackgroundColor;
-	strokepanel.style.display = "none";
-	fillpanel.style.display = "none";
+}
 }
 
 
@@ -798,54 +799,35 @@ function openDebugmenu(){
 }
 
 function openLinestringColor(){
-	var strokepanel = document.getElementById("strokeColorPalette");
-	var fillpanel = document.getElementById("fillColorPalette");
-	var x = document.getElementById("linestringSettings");
-	if (x.style.display === "flex") {
-		x.style.display = "none";
+	if (typeSelect.value == "LineString") {
 		document.getElementById("drawline").style.backgroundColor = defaultbackgroundColor;
-		strokepanel.style.display = "none";
 		trueStroke.style.display = "none";
 
 
   } else {
-		x.style.display = "flex";
 		document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
 		document.getElementById("drawpoly").style.backgroundColor = defaultbackgroundColor;
 		document.getElementById("drawline").style.backgroundColor = selectedbackgroundColor;
 		document.getElementById("erase").style.backgroundColor = defaultbackgroundColor;
 		trueStroke.style.display = "inline-block";
+		trueFill.style.display = "none";
 		colorPickerStroke.resize(150);
-		strokepanel.style.display = "block";
   }
 }
 
 
 document.getElementById("linestringSettings").style.display = "none";
-document.getElementById("drawline").addEventListener("click",openLinestringColor);
 document.getElementById("PolyCircleSettings").style.display = "none";
 
 function openPoly(){
 	
-	var y = document.getElementById("PolyCircleSettings");
-	var x = document.getElementById("linestringSettings");
-	var strokepanel = document.getElementById("strokeColorPalette");
-	var fillpanel = document.getElementById("fillColorPalette");
 	if (typeSelect.value == "Polygon") {
-		x.style.display = "none";
-		y.style.display = "none";
-		strokepanel.style.display = "none";
-		fillpanel.style.display = "none";
 		document.getElementById("drawpoly").style.backgroundColor = defaultbackgroundColor;
 		colorPicker.resize(1);
 		trueFill.style.display = "none";
 		trueStroke.style.display = "none";
 
   } else {
-		x.style.display = "flex";
-		y.style.display = "flex";
-		strokepanel.style.display = "flex";
-		fillpanel.style.display = "flex";
 		document.getElementById("drawpoly").style.backgroundColor = selectedbackgroundColor;
 		document.getElementById("drawline").style.backgroundColor = defaultbackgroundColor;
 		document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
@@ -858,31 +840,21 @@ function openPoly(){
 }
 
 function openCircle(){
-	var strokepanel = document.getElementById("strokeColorPalette");
-	var fillpanel = document.getElementById("fillColorPalette");
-	var y = document.getElementById("PolyCircleSettings");
-	var x = document.getElementById("linestringSettings");
 	if (typeSelect.value == "Circle") {
-		x.style.display = "none";
-		y.style.display = "none";
-		strokepanel.style.display = "none";
-		fillpanel.style.display = "none";
 		document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
 		colorPicker.resize(1);
-		trueStroke.style.display = "inline-block";
+		trueStroke.style.display = "none";
 		
 		trueStroke.style.display = "none";
   } else {
- 		strokepanel.style.display = "flex";
-		fillpanel.style.display = "flex";
-		x.style.display = "flex";
-		y.style.display = "flex";
 		document.getElementById("drawcircle").style.backgroundColor = selectedbackgroundColor;
 		document.getElementById("drawpoly").style.backgroundColor = defaultbackgroundColor;
 		document.getElementById("drawline").style.backgroundColor = defaultbackgroundColor;
 		document.getElementById("erase").style.backgroundColor = defaultbackgroundColor;
 		colorPicker.resize(150);
 		colorPickerStroke.resize(150);
+		trueStroke.style.display = "inline-block";
+		trueFill.style.display = "inline-block";
   }
 }
 //document.getElementById("drawpoly").addEventListener("click",openPoly);
