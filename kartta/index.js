@@ -814,7 +814,7 @@ function openChat(){
 	for (i = 0; i < 25; i++) {
 	  addToChat2("käyttäjä2", i, "#96e27d");
 	}
-	addToChat("käyttäjä", "testiviesti", "#96e27d");
+	addToChat("user", "testiviesti", "#96e27d", "user", "Group");
 	addToChat2("käyttäjä2", "testiviesti", "#96e27d");
 	if (x.style.display === "block") {
 		x.style.display = "none";
@@ -834,12 +834,15 @@ function chatMinimize(){
   }
 }
 
-function addToChat(sender, messagetext, color){
+//lisää viestin chattiin
+function addToChat(sender, messagetext, color, chat){
 	var x = document.getElementById("messages");
 	var message = document.createElement("li");
 	message.textContent = sender + ": " + messagetext;
 	message.className = "chatmessage";
-	message.style = "background-color: #96e27d;";
+	if (sender == "user"){
+		message.style = "background-color: " + color + ";";
+	}
 	x.appendChild(message);
 	x.scrollTop = x.scrollHeight; //MUISTA TÄMÄ
 }
