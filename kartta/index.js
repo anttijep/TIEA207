@@ -28,7 +28,7 @@ import Select from 'ol/interaction/Select';
 
 var types = require('./testprotocol_pb');
 var hostname = process.env.HOSTNAME ? process.env.HOSTNAME : "ws://127.0.0.1:5678";
-var wsh = new WSHandler(hostname, debugLogin);
+var wsh = new WSHandler(hostname);
 
 var myId = -1;
 function handleJoinMessage(msg) {
@@ -38,8 +38,8 @@ function handleJoinMessage(msg) {
 wsh.addJoinResultListener(handleJoinMessage);
 
 function debugLogin(e) {
-	//wsh.login("testi");
-	wsh.joinRoom("testi");
+/* 	wsh.login("testi"); */
+	//wsh.joinRoom("testi");
 }
 
 var grouplist = {
@@ -136,8 +136,8 @@ if (navigator.geolocation) {
 		var debuginfo = document.getElementById("debuginfo");
 		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		
-		changeAccuracy();
 		if (myPosition[0] !== lastPosition[0] || myPosition[1] !== lastPosition[1] || myAccuracy !== lastAccuracy) scheduleUpdate();
 	});
 } else {
@@ -182,28 +182,6 @@ var map = new Map({
 		view: view
 	});
 
-map.on('zoomend', function(event) {
-	changeAccuracy();
-});
-
-function changeAccuracy() {
-	if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
-	else currentZoomLevel = Math.round(map.getView().getZoom());	
-	// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
-	/**
-	 *  TODO: tää kaatuu poikkeuksiin aina välillä. Pari kertaakaa ainaki, ku oli zoomattuna sisään ja liikutti mappia
-	 *  tota scales[currentZoomLevel] voi myös kait olla undefined tässä vaiheessa taas, mutta emt vaikuttaako mihinkää
-	 *	---------
-	 *	28.11. scales check siirretty alemmas, tarkistetaan onko määritelty juuri ennen käyttöä. testailua vaaditaan
-	 *	Firefox antaa jostain syystä lähimmillä zoomitasoilla NS_ERROR_FAILURE
-	 */
-	if (scales[currentZoomLevel] != undefined) {
-		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
-
-		accuracyCircle.setRadius(kaava);
-		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-	}
-};
 
 // esim. chat eventtien lukeminen
 function test(msg) {
@@ -288,6 +266,22 @@ function scheduleUpdate() {
 	sendPositionDataToServer();
 	
 }
+
+map.on('moveend', function(event) {
+	changeAccuracy();
+});
+
+function changeAccuracy() {
+	if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
+	else currentZoomLevel = Math.round(map.getView().getZoom());	
+	// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
+	if (scales[currentZoomLevel] != undefined) {
+		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
+
+		accuracyCircle.setRadius(kaava);
+		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+	}
+};
 
 // Sijainnin ja sen tarkkuuden lähetys palvelimelle
 function sendPositionDataToServer() {
@@ -885,6 +879,7 @@ function handleLogin(e){
 	var username = document.getElementById("usernameInput").value;
 	var key = window.localStorage.getItem("key");
 	wsh.login(username, key);
+	wsh.joinRoom("testi");
 	removeMapCover();
 	console.log("Kirjauduttu käyttäjänimellä: " + username);
 }
