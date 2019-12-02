@@ -121,11 +121,11 @@ export class WSHandler {
 		this.ws.send(msg.serializeBinary());
 	}
 
-	login(username, key = "") {
+	login(username, key) {
 		var msg = new proto.testi.ToServer();
 		var logininfo = new proto.testi.SendLoginInfo();
 		logininfo.setUsername(username);
-		if (key !== "") {
+		if (key !== undefined) {
 			logininfo.setKey(key);
 		}
 		msg.setLogininfo(logininfo);

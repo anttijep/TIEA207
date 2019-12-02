@@ -30,7 +30,7 @@ import iro from '@jaames/iro';
 
 var types = require('./testprotocol_pb');
 var hostname = process.env.HOSTNAME ? process.env.HOSTNAME : "ws://127.0.0.1:5678";
-var wsh = new WSHandler(hostname, debugLogin);
+var wsh = new WSHandler(hostname);
 
 var myId = -1;
 function handleJoinMessage(msg) {
@@ -40,9 +40,10 @@ function handleJoinMessage(msg) {
 wsh.addJoinResultListener(handleJoinMessage);
 
 function debugLogin(e) {
-	wsh.login("testi");
-	wsh.joinRoom("testi");
+/* 	wsh.login("testi"); */
+	//wsh.joinRoom("testi");
 }
+
 var grouplist = {
 	0:"-Unassigned-",
 	1:"testitiimi2",
@@ -137,8 +138,8 @@ if (navigator.geolocation) {
 		var debuginfo = document.getElementById("debuginfo");
 		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		
-		changeAccuracy();
 		if (myPosition[0] !== lastPosition[0] || myPosition[1] !== lastPosition[1] || myAccuracy !== lastAccuracy) scheduleUpdate();
 	});
 } else {
@@ -183,23 +184,22 @@ var map = new Map({
 		view: view
 	});
 
-map.on('moveend', function(event) {
-	changeAccuracy();
-});
+map.on('moveend', changeAccuracy);
 
 function changeAccuracy() {
-	if (scales[currentZoomLevel] != undefined) {
-		if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
-		else currentZoomLevel = Math.round(map.getView().getZoom());	
-		// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
-		/**
-		 *  TODO: tää kaatuu poikkeuksiin aina välillä. Pari kertaakaa ainaki, ku oli zoomattuna sisään ja liikutti mappia
-		 *  tota scales[currentZoomLevel] voi myös kait olla undefined tässä vaiheessa taas, mutta emt vaikuttaako mihinkää
-		 */
-		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
-
-		accuracyCircle.setRadius(kaava);
-		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+	var scaleIndex = parseInt(view.getZoom());
+	if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) scaleIndex = Math.ceil(map.getView().getZoom());
+	else scaleIndex = Math.round(map.getView().getZoom());	
+	// tile span metreinä (scales[scaleIndex].TileWidth * scales[scaleIndex].ScaleDenominator * 0.00028)
+	if (scales[scaleIndex] != undefined) {
+		try	{
+			var kaava = (myAccuracy / (scales[scaleIndex].ScaleDenominator * 0.00028));
+			accuracyCircle.setRadius(kaava);
+			accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		} catch {
+			// tänne päädyttäessä accuracyCirclen radius on todennäköisesti liian suuri OpenLayersin piirrettäväksi
+			accuracyCircle.setRadius(0);
+		}
 	}
 };
 
@@ -895,39 +895,62 @@ function openCircle(){
 
 //Chat ikkunan avaus/sulku
 document.getElementById("chatwindow").style.display = "none";
-document.getElementById("chattoggle").addEventListener("click", openChat)
+document.getElementById("chattoggle").addEventListener("click", openChat);
+document.getElementById("chatminimize").addEventListener("click", chatMinimize);
 
 function openChat(){
+	openHamburger();
+	document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
 	var x = document.getElementById("chatwindow");
+	var y = document.getElementById("messages");
+
+	y.style.display = "block";
+	
 	var i;
 	for (i = 0; i < 25; i++) {
 	  addToChat2("käyttäjä2", i, "#96e27d");
 	}
-	addToChat("käyttäjä", "testiviesti", "#96e27d");
+	addToChat("user", "testiviesti", "#96e27d", "user", "Group");
 	addToChat2("käyttäjä2", "testiviesti", "#96e27d");
 	if (x.style.display === "block") {
 		x.style.display = "none";
   } else {
 		x.style.display = "block";
   }
-  
 }
 
-function addToChat(sender, messagetext, color){
+function chatMinimize(){
+	var x = document.getElementById("messages");
+	if (x.style.display === "block") {
+		x.style.display = "none";
+		document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
+  } else {
+		x.style.display = "block";
+		document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
+  }
+}
+
+//lisää viestin chattiin
+function addToChat(sender, messagetext, color, chat){
 	var x = document.getElementById("messages");
 	var message = document.createElement("li");
 	message.textContent = sender + ": " + messagetext;
-	message.style = "background-color: #96e27d;";
+	message.className = "chatmessage";
+	if (sender == "user"){
+		message.style = "background-color: " + color + ";";
+	}
 	x.appendChild(message);
+	x.scrollTop = x.scrollHeight; //MUISTA TÄMÄ
 }
 
 function addToChat2(sender, messagetext, color){
 	var x = document.getElementById("messages");
 	var message = document.createElement("li");
 	message.textContent = sender + ": " + messagetext;
-	message.style = "background-color: white;";
+	message.className = "chatmessage";
 	x.appendChild(message);
 }
+
 
 
 //TODO: funktio joka hakee käyttäjän tämänhetkisen joukkueen nimen
@@ -938,7 +961,12 @@ function teamName(){
 
 //login ikkunan avaus/sulku
 document.getElementById("flexLR").style.display = "none";
+document.getElementById("teamSelect").style.display = "none";
+document.getElementById("roomwindow").style.display = "none";
+
 document.getElementById("selectusername").addEventListener("click", openLogin)
+
+wsh.addLoginResultListener(onLogin);
 
 function openLogin(){
 	var loginButton = document.getElementById("loginButton");
@@ -949,13 +977,21 @@ function openLogin(){
 	applyMapCover();
 	
 	loginButton.onclick = handleLogin;
-	
-	function handleLogin(e){
+}
+
+function handleLogin(e){
 	var username = document.getElementById("usernameInput").value;
-	wsh.login(username);
+	var key = window.localStorage.getItem("key");
+	wsh.login(username, key);
+	wsh.joinRoom("testi");
 	removeMapCover();
 	console.log("Kirjauduttu käyttäjänimellä: " + username);
-	}
+}
+	
+function onLogin(msg) {
+	console.log(msg.getUsername() + " / " + msg.getKey());
+	window.localStorage.setItem("username", msg.getUsername());
+	window.localStorage.setItem("key", msg.getKey());
 }
 
 
@@ -984,7 +1020,7 @@ function openRoomLogin(){
 	roomLoginButton.onclick = handleRoomLogin;
 	exitRoomLogin.onclick = removeMapCover;
 	
-	function handleRoomLogin(){
+	function handleRoomLogin(){//kutsutaan kun login nappia painetaan
 		var roomname = document.getElementById("roomnameInput").value;
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").value;
@@ -998,6 +1034,8 @@ document.getElementById("openteams").addEventListener("click", openTeamList)
 
 function openTeamList(){
 	var exitTeamWindow = document.getElementById("exitTeamWindow");
+	var editTeams = document.getElementById("teamEditButton");
+	
 	openHamburger();
 	document.getElementById("roomwindow").style.display = "none";
 	document.getElementById("loginwindow").style.display = "none";
@@ -1005,28 +1043,57 @@ function openTeamList(){
 	applyMapCover();
 	fetchTeamNames();
 	
+	var z = document.getElementById("modelTeamElement");
+	z.style.display = "none";
+	var x = document.getElementsByClassName("teamButton");
+	for (var i = 0; i < x.length; i++) {
+		x[i].style.display = "block";
+	}
+	
 	exitTeamWindow.onclick = removeMapCover;
+	editTeams.onclick = toggleTeamEdit;
 	
-	
+	function toggleTeamEdit(){
+		var y = document.getElementsByClassName("delteamButton");
+		if (x[0].style.display === "block") {
+			z.style.display = "block";
+			for (var i = 0; i < x.length; i++) {
+				x[i].style.display = "none";
+				y[i].style.display = "block";
+			}
+		} else {
+			z.style.display = "none";
+			for (var i = 0; i < x.length; i++) {
+				x[i].style.display = "block";
+				y[i].style.display = "none";
+			}
+		}
+	}
 	
 	function fetchTeamNames(){
 		var teamlist = document.getElementById("teamlist");
 		teamlist.innerHTML = '';
 		for (var key in grouplist){
 			var teamelement = document.createElement("div");
-			teamelement.className = "teamlistElement"
+			teamelement.className = "teamlistElement";
 			teamelement.id = "teamElement" + key;
 			teamelement.textContent = grouplist[key];
 			var teambutton = document.createElement("button");
 			teambutton.className = "teamButton";
 			teambutton.id = "teamButton" + key;
 			teambutton.textContent = "Liity";
+			var delteambutton = document.createElement("button");
+			delteambutton.className = "delteamButton";
+			delteambutton.id = "delteamButton" + key;
+			delteambutton.textContent = "Poista";
+			delteambutton.style.display = "none";
+			
 			teamelement.appendChild(teambutton);
+			teamelement.appendChild(delteambutton);
 			teamlist.appendChild(teamelement);
 		}
 	}
 }
-
 
 
 
