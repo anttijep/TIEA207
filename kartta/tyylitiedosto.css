@@ -256,7 +256,16 @@ html, body{
 	z-index: 1;
 	bottom: 0px;
 	width: 100%;
-	
+	padding-top: 2px;
+	background-color: #444;
+}
+
+#chatminimize{
+	height: 20px;
+	background-color: #193b78;
+	display: flex;
+	justify-content: center;
+	color: ;
 }
 
 #messages{
@@ -265,6 +274,18 @@ html, body{
 	max-height: 400px;
 	font-size: 16px;
 	overflow-y: scroll;
+}
+
+.chatmessage{
+	
+}
+
+#messages>li:nth-child(odd){
+	background-color: #e9e9e9;
+}
+
+#messages>li:nth-child(even){
+	
 }
 
 #line{
