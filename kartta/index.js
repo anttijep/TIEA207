@@ -392,7 +392,8 @@ var changeInteraction = function() {
     map.addInteraction(select);
     select.on('select', function(e) {
 		var featuret = source.getFeatures();
-		if (featuret.length > 0 && e.selected[0].getId != "pysyva") source.removeFeature(e.selected[0]);
+		debugger;
+		if (featuret.length > 0 && e.selected[0].getId() != "pysyva") source.removeFeature(e.selected[0]);
 		console.log(source);
     	//source.removeFeature(e.feature);
    // 	for(var i=0; i<feats.length;i++){
@@ -952,7 +953,7 @@ function openLogin(){
 
 function handleLogin(e){
 	var username = document.getElementById("usernameInput").value;
-	var key = window.localStorage.getItem("key");
+	var key = window.sessionStorage.getItem("key");
 	wsh.login(username, key);
 	
 	//---- ensin huoneeseen liittyminen, sitten sijainti palvelimelle
@@ -966,8 +967,8 @@ function handleLogin(e){
 	
 function onLogin(msg) {
 	console.log(msg.getUsername() + " / " + msg.getKey());
-	window.localStorage.setItem("username", msg.getUsername());
-	window.localStorage.setItem("key", msg.getKey());
+	window.sessionStorage.setItem("username", msg.getUsername());
+	window.sessionStorage.setItem("key", msg.getKey());
 }
 
 wsh.addLoginResultListener(onLogin);
