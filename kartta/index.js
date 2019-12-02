@@ -182,6 +182,24 @@ var map = new Map({
 		view: view
 	});
 
+map.on('moveend', changeAccuracy);
+
+function changeAccuracy() {
+	var scaleIndex = parseInt(view.getZoom());
+	if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) scaleIndex = Math.ceil(map.getView().getZoom());
+	else scaleIndex = Math.round(map.getView().getZoom());	
+	// tile span metreinä (scales[scaleIndex].TileWidth * scales[scaleIndex].ScaleDenominator * 0.00028)
+	if (scales[scaleIndex] != undefined) {
+		try	{
+			var kaava = (myAccuracy / (scales[scaleIndex].ScaleDenominator * 0.00028));
+			accuracyCircle.setRadius(kaava);
+			accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+		} catch {
+			// tänne päädyttäessä accuracyCirclen radius on todennäköisesti liian suuri OpenLayersin piirrettäväksi
+			accuracyCircle.setRadius(0);
+		}
+	}
+};
 
 // esim. chat eventtien lukeminen
 function test(msg) {
@@ -266,22 +284,6 @@ function scheduleUpdate() {
 	sendPositionDataToServer();
 	
 }
-
-map.on('moveend', function(event) {
-	changeAccuracy();
-});
-
-function changeAccuracy() {
-	if ((map.getView().getZoom()) - Math.floor(map.getView().getZoom()) > 0.35) currentZoomLevel = Math.ceil(map.getView().getZoom());
-	else currentZoomLevel = Math.round(map.getView().getZoom());	
-	// tile span metreinä (scales[currentZoomLevel].TileWidth * scales[currentZoomLevel].ScaleDenominator * 0.00028)
-	if (scales[currentZoomLevel] != undefined) {
-		var kaava = (myAccuracy / (scales[currentZoomLevel].ScaleDenominator * 0.00028));
-
-		accuracyCircle.setRadius(kaava);
-		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-	}
-};
 
 // Sijainnin ja sen tarkkuuden lähetys palvelimelle
 function sendPositionDataToServer() {
