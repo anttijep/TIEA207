@@ -91,7 +91,6 @@ var vector = new VectorLayer({
 // https://openlayers.org/en/latest/doc/faq.html#why-is-the-order-of-a-coordinate-lon-lat-and-not-lat-lon-
 var myPosition = transform([25.749498121, 62.241677684], "EPSG:4326", "EPSG:3067");
 var myAccuracy = 0;
-var currentZoomLevel = 10;
 
 var accuracyCircle = new Circle({
 		radius: myAccuracy,
@@ -112,7 +111,7 @@ accuracyMarker.setStyle(new Style({
 var view = new View({
 			projection: projection,
 			center: myPosition,
-			zoom: currentZoomLevel,
+			zoom: 10,
 			maxZoom:18
 		});
 
@@ -881,7 +880,12 @@ function handleLogin(e){
 	var username = document.getElementById("usernameInput").value;
 	var key = window.localStorage.getItem("key");
 	wsh.login(username, key);
+	
+	//---- ensin huoneeseen liittyminen, sitten sijainti palvelimelle
 	wsh.joinRoom("testi");
+	sendPositionDataToServer();
+	//----
+	
 	removeMapCover();
 	console.log("Kirjauduttu käyttäjänimellä: " + username);
 }
