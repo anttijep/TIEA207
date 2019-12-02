@@ -392,7 +392,6 @@ var changeInteraction = function() {
     map.addInteraction(select);
     select.on('select', function(e) {
 		var featuret = source.getFeatures();
-		debugger;
 		if (featuret.length > 0 && e.selected[0].getId() != "pysyva") source.removeFeature(e.selected[0]);
 		console.log(source);
     	//source.removeFeature(e.feature);
