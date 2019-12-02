@@ -61,6 +61,7 @@ var capabilitiesUrl = 'https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts/
 var markerDict = {};
 // Markerin piirtäminen
 var positionMarker = new Feature();
+positionMarker.setId("pysyva");
 var omaVari = "#ffff00";	// oman sijainnin ja tarkkuuden väri
 positionMarker.setStyle(new Style({
 	image: new Circle({
@@ -106,6 +107,7 @@ var accuracyCircle = new Circle({
 	});
 
 var accuracyMarker = new Feature();
+accuracyMarker.setId("pysyva");
 accuracyMarker.setStyle(new Style({
 	image: accuracyCircle
 }));
@@ -220,6 +222,7 @@ function updateLocation(msg) {
 		markerDict[msg.getSenderid()].setGeometry(lonlat ? new Point(lonlat) : null);
 	} else {
 		var markkeri = new Feature();
+		markkeri.setId("pysyva");
 		markkeri.setStyle(new Style({
 				image: new Circle({
 				radius: 12,
@@ -388,9 +391,9 @@ var changeInteraction = function() {
   if (select !== null) {
     map.addInteraction(select);
     select.on('select', function(e) {
-   		var feats = e.target.getFeatures().getArray();
-    	console.log("features" + feats)
-    	source.removeFeature(e.selected[0]);
+		var featuret = source.getFeatures();
+		if (featuret.length > 0 && e.selected[0].getId != "pysyva") source.removeFeature(e.selected[0]);
+		console.log(source);
     	//source.removeFeature(e.feature);
    // 	for(var i=0; i<feats.length;i++){
    // 		source.removeFeature(feats[i]);
