@@ -895,6 +895,7 @@ function onLogin(msg) {
 	document.cookie = "key=" + msg.getKey();
 }
 
+
 //huoneenvalintaikkunan avaus/sulku
 document.getElementById("openroomlogin").addEventListener("click", openRoomLogin)
 
@@ -920,7 +921,7 @@ function openRoomLogin(){
 	roomLoginButton.onclick = handleRoomLogin;
 	exitRoomLogin.onclick = removeMapCover;
 	
-	function handleRoomLogin(){
+	function handleRoomLogin(){//kutsutaan kun login nappia painetaan
 		var roomname = document.getElementById("roomnameInput").value;
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").value;
@@ -943,8 +944,6 @@ function openTeamList(){
 	
 	exitTeamWindow.onclick = removeMapCover;
 	
-	
-	
 	function fetchTeamNames(){
 		var teamlist = document.getElementById("teamlist");
 		teamlist.innerHTML = '';
@@ -962,7 +961,6 @@ function openTeamList(){
 		}
 	}
 }
-
 
 
 
