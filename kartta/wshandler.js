@@ -110,13 +110,14 @@ export class WSHandler {
 		this.ws.send(resp.serializeBinary());
 	}
 
-	joinRoom(room, password = "", create = null){
+	joinRoom(room, password, create){	// room ja password stringejä, create boolean
 		var msg = new proto.testi.ToServer();
 		var join = new proto.testi.JoinRoom();
 		join.setRoomname(room);
 		join.setPassword(password);
-		if (create !== null)
-			join.setCreateroom(create);
+		if (create === true)
+			join.setCreateroom(true);
+		else join.setCreateroom(false);
 		msg.setJoinroom(join);
 		this.ws.send(msg.serializeBinary());
 	}
@@ -164,7 +165,6 @@ export class WSHandler {
 
 	onMessage(evnt) {
 		var msg = proto.testi.FromServer.deserializeBinary(evnt.data);
-		console.log(msg);
 		var err = msg.getErrmsg();
 		if (err !== "")
 			console.log(err);

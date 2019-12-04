@@ -61,6 +61,7 @@ var capabilitiesUrl = 'https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts/
 var markerDict = {};
 // Markerin piirtäminen
 var positionMarker = new Feature();
+positionMarker.setId("pysyva");
 var omaVari = "#ffff00";	// oman sijainnin ja tarkkuuden väri
 positionMarker.setStyle(new Style({
 	image: new Circle({
@@ -93,7 +94,6 @@ var vector = new VectorLayer({
 // https://openlayers.org/en/latest/doc/faq.html#why-is-the-order-of-a-coordinate-lon-lat-and-not-lat-lon-
 var myPosition = transform([25.749498121, 62.241677684], "EPSG:4326", "EPSG:3067");
 var myAccuracy = 0;
-var currentZoomLevel = 10;
 
 var accuracyCircle = new Circle({
 		radius: myAccuracy,
@@ -107,6 +107,7 @@ var accuracyCircle = new Circle({
 	});
 
 var accuracyMarker = new Feature();
+accuracyMarker.setId("pysyva");
 accuracyMarker.setStyle(new Style({
 	image: accuracyCircle
 }));
@@ -114,14 +115,13 @@ accuracyMarker.setStyle(new Style({
 var view = new View({
 			projection: projection,
 			center: myPosition,
-			zoom: currentZoomLevel,
+			zoom: 10,
 			maxZoom:18
 		});
 
 var parser = new WMTSCapabilities();
 var scales = [];
 var lastLocationUpdate = Date.now();
-console.log(lastLocationUpdate);
 
 if (navigator.geolocation) {
 	var firstCenter = true;
@@ -222,6 +222,7 @@ function updateLocation(msg) {
 		markerDict[msg.getSenderid()].setGeometry(lonlat ? new Point(lonlat) : null);
 	} else {
 		var markkeri = new Feature();
+		markkeri.setId("pysyva");
 		markkeri.setStyle(new Style({
 				image: new Circle({
 				radius: 12,
@@ -390,9 +391,9 @@ var changeInteraction = function() {
   if (select !== null) {
     map.addInteraction(select);
     select.on('select', function(e) {
-   		var feats = e.target.getFeatures().getArray();
-    	console.log("features" + feats)
-    	source.removeFeature(e.selected[0]);
+		var featuret = source.getFeatures();
+		if (featuret.length > 0 && e.selected[0].getId() != "pysyva") source.removeFeature(e.selected[0]);
+		console.log(source);
     	//source.removeFeature(e.feature);
    // 	for(var i=0; i<feats.length;i++){
    // 		source.removeFeature(feats[i]);
@@ -940,8 +941,6 @@ document.getElementById("roomwindow").style.display = "none";
 
 document.getElementById("selectusername").addEventListener("click", openLogin)
 
-wsh.addLoginResultListener(onLogin);
-
 function openLogin(){
 	var loginButton = document.getElementById("loginButton");
 	openHamburger();
@@ -955,18 +954,25 @@ function openLogin(){
 
 function handleLogin(e){
 	var username = document.getElementById("usernameInput").value;
-	var key = window.localStorage.getItem("key");
+	var key = window.sessionStorage.getItem("key");
 	wsh.login(username, key);
+	
+	//---- ensin huoneeseen liittyminen, sitten sijainti palvelimelle
 	wsh.joinRoom("testi");
+	sendPositionDataToServer();
+	//----
+	
 	removeMapCover();
 	console.log("Kirjauduttu käyttäjänimellä: " + username);
 }
 	
 function onLogin(msg) {
 	console.log(msg.getUsername() + " / " + msg.getKey());
-	window.localStorage.setItem("username", msg.getUsername());
-	window.localStorage.setItem("key", msg.getKey());
+	window.sessionStorage.setItem("username", msg.getUsername());
+	window.sessionStorage.setItem("key", msg.getKey());
 }
+
+wsh.addLoginResultListener(onLogin);
 
 
 //huoneenvalintaikkunan avaus/sulku
@@ -993,15 +999,14 @@ function openRoomLogin(){
 	
 	roomLoginButton.onclick = handleRoomLogin;
 	exitRoomLogin.onclick = removeMapCover;
-	
-	function handleRoomLogin(){//kutsutaan kun login nappia painetaan
-		var roomname = document.getElementById("roomnameInput").value;
-		var roompass = document.getElementById("passwordInput").value;
-		var createroom = document.getElementById("createroomToggle").value;
-		wsh.joinRoom(roomname, roompass, createroom);
-	}
 }
 
+function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
+		var roomname = document.getElementById("roomnameInput").value;
+		var roompass = document.getElementById("passwordInput").value;
+		var createroom = document.getElementById("createroomToggle").checked;
+		wsh.joinRoom(roomname, roompass, createroom);
+	}
 
 //ryhmänvalintaikkunan avaus/sulku
 document.getElementById("openteams").addEventListener("click", openTeamList)
