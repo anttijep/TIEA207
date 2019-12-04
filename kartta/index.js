@@ -720,6 +720,8 @@ function selectErase(){
 	document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
 	document.getElementById("drawpoly").style.backgroundColor = defaultbackgroundColor;
 	document.getElementById("drawline").style.backgroundColor = defaultbackgroundColor;
+	colorPickerStroke.style.display="none";
+	colorPicker.style.display="none";
 }
 }
 
