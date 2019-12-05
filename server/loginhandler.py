@@ -18,11 +18,12 @@ class LoginHandler():
             resp.loginanswer.success = False
             await user.send(resp)
             return user
-        if msg.logininfo.key and len(msg.logininfo.key) == 64 and msg.logininfo.key in self.users:
+        if msg.logininfo.key and msg.logininfo.key in self.users:
             olduser = user
             user = self.users[msg.logininfo.key]
             user.setsocket(olduser.getsocket())
             resp.loginanswer.oldroom = user.room
+            user.room = None
         else:
             user.key = secrets.token_hex(32)
             self.users[user.key] = user
@@ -39,6 +40,6 @@ class LoginHandler():
         return user
 
     async def handleLogout(self, roomhandler : RoomHandler, user : User):
-        roomhandler.handlelogout(user)
+        await roomhandler.handlelogout(user)
 
 

@@ -2,6 +2,7 @@ from user import User, State
 from room import Room
 import testprotocol_pb2
 import logging
+import asyncio
 
 logger = logging.getLogger("server")
 
@@ -24,14 +25,17 @@ class RoomHandler:
         answer = testprotocol_pb2.FromServer()
         if not msg.roomname:
             answer.joinanswer.success = False
-            answer.joinanswer.errmsg = "Empty name not allowed!"
+            answer.errmsg = "Empty name not allowed!"
             await user.send(answer)
             return
 
-        currentroom = self.rooms.get(user.room)
+        if msg.roomname == user.room:
+            answer.joinanswer.success = False
+            answer.errmsg = "Already in that room"
+            await user.send(answer)
+            return
+
         room = self.rooms.get(msg.roomname)
-        if currentroom is not None and currentroom != room:
-            currentroom.removeuser(user)
 
         if room is None:
             logger.info("Creating room: " + msg.roomname)
@@ -46,18 +50,25 @@ class RoomHandler:
             await user.send(answer)
             return
 
+        tasks = []
+        currentroom = self.rooms.get(user.room)
+        if currentroom is not None and currentroom != room:
+            tasks.append(currentroom.removeuser(user))
+
+
         answer.joinanswer.success = True
         user.room = msg.roomname
-        uid = await room.adduser(user)
+        uid = room.adduser(user)
         answer.joinanswer.id = uid
         room.getallinfo(answer)
-
-        await user.send(answer)
+        tasks.append(user.send(answer))
+        tasks.append(room.notifyjoin(user))
+        await asyncio.gather(*tasks)
         
-    def handlelogout(self, user : User): #yhteyden katkaisu palvelimelta
+    async def handlelogout(self, user : User): #yhteyden katkaisu palvelimelta
         user.setstate(State.DISCONNECTED)
         room = self.rooms.get(user.room)
         if room is None:
             return
-        #room.removeuser(user)
+        await room.removeuser(user)
         

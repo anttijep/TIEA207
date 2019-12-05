@@ -172,24 +172,35 @@ class Room:
             return usermoved
         return None
 
-    async def adduser(self, user : User):
+    def adduser(self, user : User):
         if not user in self.clients:
             self.clients[user] = self.counter()
         if not user in self.usergroup:
             self.usergroup[user] = 0
-            msgout = testprotocol_pb2.FromServer()
-            usermoved = testprotocol_pb2.UserMoved()
-            usermoved.userid = self.clients[user]
-            usermoved.groupid = 0
-            msgout.usermoved.append(usermoved)
-            await self.sendmessage(user, msgout)
         return self.clients[user]
+
+    async def notifyjoin(self, user : User):
+        msgout = testprotocol_pb2.FromServer()
+        usermoved = testprotocol_pb2.UserMoved()
+        usermoved.userid = self.clients[user]
+        usermoved.groupid = self.usergroup[user]
+        msgout.usermoved.append(usermoved)
+        await self.sendmessage(user, msgout)
     
-    def removeuser(self, user : User):
+    async def removeuser(self, user : User):
         """
         poistaa käyttäjän huoneesta
         """
+        if user not in self.clients:
+            return
+        uid = self.clients[user]
         del self.clients[user]
+        msgout = testprotocol_pb2.FromServer()
+        userleft = testprotocol_pb2.UserMoved()
+        userleft.disconnected = True
+        userleft.userid = uid
+        msgout.usermoved.append(userleft)
+        await self.sendmessage(user, msgout)
 
     def verifypassword(self, password):
         return True
