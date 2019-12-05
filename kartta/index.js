@@ -61,7 +61,6 @@ var capabilitiesUrl = 'https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts/
 var markerDict = {};
 // Markerin piirtäminen
 var positionMarker = new Feature();
-positionMarker.setId("pysyva");
 var omaVari = "#ffff00";	// oman sijainnin ja tarkkuuden väri
 positionMarker.setStyle(new Style({
 	image: new Circle({
@@ -107,7 +106,6 @@ var accuracyCircle = new Circle({
 	});
 
 var accuracyMarker = new Feature();
-accuracyMarker.setId("pysyva");
 accuracyMarker.setStyle(new Style({
 	image: accuracyCircle
 }));
@@ -216,13 +214,13 @@ wsh.addChatMessageListener(test);
 
 function updateLocation(msg) {
 	if (msg.getSenderid() === myId) return;
-	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
+	//var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
 	var lonlat = transform([msg.getLongitude(), msg.getLatitude()], "EPSG:4326", "EPSG:3067");
 	if (msg.getSenderid() in markerDict) {
 		markerDict[msg.getSenderid()].setGeometry(lonlat ? new Point(lonlat) : null);
+		console.log("Pallo pitäisi piirtyä tänne: " + lonlat);
 	} else {
 		var markkeri = new Feature();
-		markkeri.setId("pysyva");
 		markkeri.setStyle(new Style({
 				image: new Circle({
 				radius: 12,
@@ -235,11 +233,11 @@ function updateLocation(msg) {
 				})
 			})	
 		}));
-		
 		markerDict[msg.getSenderid()] = markkeri;
 		markerLayer.push(markerDict[msg.getSenderid()]);
 		markkeri.setGeometry(lonlat ? new Point(lonlat) : null);
 	}
+	console.log(markerDict);
 }
 wsh.addLocationChangeListener(updateLocation);
 

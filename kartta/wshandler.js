@@ -128,7 +128,7 @@ export class WSHandler {
 		logininfo.setUsername(username);
 		if (key !== undefined) {
 			logininfo.setKey(key);
-		}
+		} else key = "";
 		msg.setLogininfo(logininfo);
 		this.ws.send(msg.serializeBinary());
 	}
