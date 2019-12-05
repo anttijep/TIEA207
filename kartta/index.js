@@ -391,9 +391,13 @@ var changeInteraction = function() {
   if (select !== null) {
     map.addInteraction(select);
     select.on('select', function(e) {
-		var featuret = source.getFeatures();
-		if (featuret.length > 0 && e.selected[0].getId() != "pysyva") source.removeFeature(e.selected[0]);
-		console.log(source);
+		if (selectSingleclick.getLayer(e.selected[0]) == vector){
+			source.removeFeature(e.selected[0]);	
+		} 
+		else {
+			selectSingleclick.getFeatures().clear();
+		}
+
     	//source.removeFeature(e.feature);
    // 	for(var i=0; i<feats.length;i++){
    // 		source.removeFeature(feats[i]);
@@ -721,8 +725,8 @@ function selectErase(){
 	document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
 	document.getElementById("drawpoly").style.backgroundColor = defaultbackgroundColor;
 	document.getElementById("drawline").style.backgroundColor = defaultbackgroundColor;
-	colorPickerStroke.style.display="none";
-	colorPicker.style.display="none";
+	trueStroke.style.display="none";
+	trueFill.style.display="none";
 }
 }
 
@@ -766,6 +770,7 @@ function openTools(){
   }
 }
 
+document.getElementById("clearAll").addEventListener("click",clearAll);
 
 function changePaletteColor(){
 document.getElementById("fillColorPalette").style.backgroundColor = "rgb("+fillRed.value+", "+ fillGreen.value+", "+ fillBlue.value+")";
