@@ -218,7 +218,6 @@ function updateLocation(msg) {
 	var lonlat = transform([msg.getLongitude(), msg.getLatitude()], "EPSG:4326", "EPSG:3067");
 	if (msg.getSenderid() in markerDict) {
 		markerDict[msg.getSenderid()].setGeometry(lonlat ? new Point(lonlat) : null);
-		console.log("Pallo pitäisi piirtyä tänne: " + lonlat);
 	} else {
 		var markkeri = new Feature();
 		markkeri.setStyle(new Style({
@@ -237,9 +236,17 @@ function updateLocation(msg) {
 		markerLayer.push(markerDict[msg.getSenderid()]);
 		markkeri.setGeometry(lonlat ? new Point(lonlat) : null);
 	}
-	console.log(markerDict);
 }
 wsh.addLocationChangeListener(updateLocation);
+
+// käyttäjän siirtäminen ryhmästä toiseen ja disconnectaamisen händläys?
+/*function userMove(msg) {
+	if (msg.getDisconnected() == true) {
+		markerDict.splice(markerDict.indexOf(msg.getUserid()), 1);	/** TODO: mieti onko userid sama kuin senderid **/ 
+	/*}
+}
+wsh.addUserMovedListener(userMove);*/
+
 
 fetch(capabilitiesUrl).then(function(response) {
 	return response.text();
@@ -870,12 +877,32 @@ function openCircle(){
 
 //document.getElementById("drawline").addEventListener("click",openLinestringColor);
 
-
 //Chat ikkunan avaus/sulku
 document.getElementById("chatwindow").style.display = "none";
 document.getElementById("chattoggle").addEventListener("click", openChat);
 document.getElementById("chatminimize").addEventListener("click", chatMinimize);
 
+var sendButton = document.getElementById("messagesendbutton");
+sendButton.onclick = textBoxClick;
+ 
+function addToChatFromServer(msg) {	/** TODO **/
+	var s = msg.getSenderid();
+	var m = msg.getMsg();
+	addToChat(s, m, "#96e27d", "Group");
+}
+ 
+wsh.addChatMessageListener(addToChatFromServer);
+
+function textBoxClick(e) {
+	e.preventDefault();
+	var user = window.sessionStorage.getItem("username");
+	if (user == undefined) return;
+	var textbox = document.getElementById("messagefield");
+	var bytes = textbox.value;
+	wsh.sendChatMessage(bytes);
+	textbox.value = "";
+}
+ 
 function openChat(){
 	openHamburger();
 	document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
