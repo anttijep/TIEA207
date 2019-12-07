@@ -240,12 +240,13 @@ function updateLocation(msg) {
 wsh.addLocationChangeListener(updateLocation);
 
 // käyttäjän siirtäminen ryhmästä toiseen ja disconnectaamisen händläys?
-/*function userMove(msg) {
+function userMove(msg) {
 	if (msg.getDisconnected() == true) {
-		markerDict.splice(markerDict.indexOf(msg.getUserid()), 1);	/** TODO: mieti onko userid sama kuin senderid **/ 
-	/*}
+		markerLayer.remove(markerDict[msg.getUserid()]);
+    /** TODO: poista käyttäjä vielä markerDictistä? **/
+	}
 }
-wsh.addUserMovedListener(userMove);*/
+wsh.addUserMovedListener(userMove);
 
 
 fetch(capabilitiesUrl).then(function(response) {
