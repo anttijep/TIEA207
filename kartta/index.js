@@ -860,7 +860,7 @@ function openCircle(){
 		document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
 		colorPicker.resize(1);
 		trueStroke.style.display = "none";
-		
+		trueFill.style.display = "none";
 		trueStroke.style.display = "none";
   } else {
 		document.getElementById("drawcircle").style.backgroundColor = selectedbackgroundColor;
