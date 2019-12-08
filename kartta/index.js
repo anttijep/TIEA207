@@ -771,7 +771,8 @@ function openTools(){
 	var x = document.getElementById("drawtools");
 	if (x.style.display === "flex") {
 		x.style.display = "none";
-		colorpickers.style.display = "none"
+		colorpickers.style.display = "inline-block"
+		typeSelect.value ="None";
   } else {
 		x.style.display = "flex";
 		colorpickers.style.display = "block"
@@ -876,10 +877,7 @@ function openCircle(){
 		trueFill.style.display = "inline-block";
   }
 }
-//document.getElementById("drawpoly").addEventListener("click",openPoly);
-//document.getElementById("drawcircle").addEventListener("click",openPoly);
 
-//document.getElementById("drawline").addEventListener("click",openLinestringColor);
 
 //Chat ikkunan avaus/sulku
 document.getElementById("chatwindow").style.display = "none";
@@ -909,11 +907,11 @@ function textBoxClick(e) {
  
 function openChat(){
 	openHamburger();
-	document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
+	document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
 	var x = document.getElementById("chatwindow");
 	var y = document.getElementById("messages");
 
-	y.style.display = "block";
+	y.style.display = "none";
 	
 	var i;
 	for (i = 0; i < 25; i++) {
@@ -923,8 +921,10 @@ function openChat(){
 	addToChat2("käyttäjä2", "testiviesti", "#96e27d");
 	if (x.style.display === "block") {
 		x.style.display = "none";
+		colorpickers.style.bottom = "21px";
   } else {
 		x.style.display = "block";
+		colorpickers.style.bottom = "85px";
   }
 }
 
