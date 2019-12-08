@@ -771,8 +771,10 @@ function openTools(){
 	var x = document.getElementById("drawtools");
 	if (x.style.display === "flex") {
 		x.style.display = "none";
+		colorpickers.style.display = "none"
   } else {
 		x.style.display = "flex";
+		colorpickers.style.display = "block"
   }
 }
 
@@ -782,6 +784,7 @@ function changePaletteColor(){
 document.getElementById("fillColorPalette").style.backgroundColor = "rgb("+fillRed.value+", "+ fillGreen.value+", "+ fillBlue.value+")";
 document.getElementById("strokeColorPalette").style.backgroundColor = "rgb("+strokeRed.value+", "+ strokeGreen.value+", "+ strokeBlue.value+")";	
 }
+var colorpickers = document.getElementById("colorpickers");
 var trueFill = document.getElementById("color-picker-container");
 trueFill.style.display = "none";
 var trueStroke = document.getElementById("color-picker-stroke");
