@@ -22,8 +22,9 @@ class LoginHandler():
             olduser = user
             user = self.users[msg.logininfo.key]
             user.setsocket(olduser.getsocket())
-            resp.loginanswer.oldroom = user.room
-            user.room = None
+            if user.room is not None:
+                resp.loginanswer.oldroom = user.room
+                user.room = None
         else:
             user.key = secrets.token_hex(32)
             self.users[user.key] = user
