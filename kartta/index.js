@@ -957,7 +957,7 @@ function addToChat(sender, messagetext, color, chat){
 		message.style = "background-color: " + color + ";";
 	}
 	x.appendChild(message);
-	x.scrollTop = x.scrollHeight; //MUISTA TÄMÄ
+	x.scrollTop = x.scrollHeight; //MUISTA TÄMÄ - scrollaa viimeisimmän viestin näkyviin
 }
 
 
