@@ -45,6 +45,7 @@ message DrawShape {
   repeated Linestring linestrings = 2;
   repeated Polygon polys = 3;
   repeated Circle circles = 4;
+  repeated int32 deleteids = 5;
 }
 
 // DRAW END
@@ -86,8 +87,6 @@ message ToServer {
   CreateGroup creategroup = 7;
   JoinGroup joingroup = 8;
 
-  Fill fill = 11;
-  Stroke stroke = 10;
   EditGroup editgroup = 9;
 }
 

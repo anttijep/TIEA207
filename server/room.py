@@ -76,13 +76,13 @@ class Room:
             relay = True
             shape = msg.shape
             shape.senderID = self.clients[user]
-            for i in msg.shape.linestrings:
+            for i in shape.linestrings:
                 i.id = self.drawcounter()
                 self.drawings["linestrings"][i.id] = i
-            for i in msg.shape.polys:
+            for i in shape.polys:
                 i.id = self.drawcounter()
                 self.drawings["polygons"][i.id] = i
-            for i in msg.shape.circles:
+            for i in shape.circles:
                 i.id = self.drawcounter()
                 self.drawings["circles"][i.id] = i
             msgout.shapes.append(shape)
