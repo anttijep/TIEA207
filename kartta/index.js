@@ -204,10 +204,6 @@ var map = new Map({
 		view: view
 	});
 
-var ext = view.calculateExtent(map.getSize());
-console.log(ext);
-view.fit(ext);
-
 /* map.on('moveend', changeAccuracy);
 
 function changeAccuracy() {
@@ -930,6 +926,11 @@ function openCircle(){
 document.getElementById("chatwindow").style.display = "none";
 document.getElementById("chattoggle").addEventListener("click", openChat);
 document.getElementById("chatminimize").addEventListener("click", chatMinimize);
+
+document.getElementById("sendmessage").onsubmit = function (e) {
+	e.preventDefault();
+	textBoxClick(e);
+};
 
 var sendButton = document.getElementById("messagesendbutton");
 sendButton.onclick = textBoxClick;
