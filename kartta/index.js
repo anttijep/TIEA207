@@ -763,6 +763,7 @@ document.getElementById("drawtools").style.display = "none"; //piirtotyökalut k
 document.getElementById("toolstoggle").addEventListener("click", openTools)
 
 function openTools(){
+	openHamburger();
 	var x = document.getElementById("drawtools");
 	if (x.style.display === "flex") {
 		x.style.display = "none";
@@ -805,6 +806,7 @@ document.getElementById("debugmenu").style.display = "none";
 document.getElementById("settings").addEventListener("click", openDebugmenu)
 
 function openDebugmenu(){
+	openHamburger();
 	var x = document.getElementById("debugmenu");
 	if (x.style.display === "block") {
 		x.style.display = "none";
