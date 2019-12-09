@@ -35,7 +35,6 @@ var wsh = new WSHandler(hostname);
 var myId = -1;
 function handleJoinMessage(msg) {
 	myId = msg.getId();
-	console.log(myId);
 }
 wsh.addJoinResultListener(handleJoinMessage);
 
@@ -61,7 +60,6 @@ var capabilitiesUrl = 'https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts/
 var markerDict = {};
 // Markerin piirtäminen
 var positionMarker = new Feature();
-positionMarker.setId("pysyva");
 var omaVari = "#ffff00";	// oman sijainnin ja tarkkuuden väri
 positionMarker.setStyle(new Style({
 	image: new Circle({
@@ -107,7 +105,6 @@ var accuracyCircle = new Circle({
 	});
 
 var accuracyMarker = new Feature();
-accuracyMarker.setId("pysyva");
 accuracyMarker.setStyle(new Style({
 	image: accuracyCircle
 }));
@@ -138,8 +135,8 @@ if (navigator.geolocation) {
 		var debuginfo = document.getElementById("debuginfo");
 		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		
+		//accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+ 	
 		if (myPosition[0] !== lastPosition[0] || myPosition[1] !== lastPosition[1] || myAccuracy !== lastAccuracy) scheduleUpdate();
 	});
 } else {
@@ -158,10 +155,24 @@ var mousePositionControl = new MousePosition({
 	undefinedHTML: '&nbsp;'
 });
 
+var geolocation = new Geolocation({
+  trackingOptions: {
+    enableHighAccuracy: true
+  },
+  projection: view.getProjection()
+});
+
+geolocation.setTracking(true);
+
+var accuracyFeature = new Feature();
+geolocation.on('change:accuracyGeometry', function() {
+  accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
+});
+
 var markerLayer = new Collection();
 var accuracyLayer = new Collection();
 markerLayer.push(positionMarker);
-accuracyLayer.push(accuracyMarker);
+accuracyLayer.push(accuracyFeature);
 
 var map = new Map({
 		controls: defaultControls().extend([mousePositionControl]),
@@ -173,7 +184,6 @@ var map = new Map({
 				zIndex: 5
 			}),
 			new VectorLayer({
-				opacity: 0.3,
 				source: new VectorSource({
 					features: accuracyLayer
 				}),
@@ -184,7 +194,8 @@ var map = new Map({
 		view: view
 	});
 
-map.on('moveend', changeAccuracy);
+
+/* map.on('moveend', changeAccuracy);
 
 function changeAccuracy() {
 	var scaleIndex = parseInt(view.getZoom());
@@ -201,7 +212,7 @@ function changeAccuracy() {
 			accuracyCircle.setRadius(0);
 		}
 	}
-};
+}; */
 
 // esim. chat eventtien lukeminen
 function test(msg) {
@@ -215,14 +226,12 @@ wsh.addChatMessageListener(test);
 // end
 
 function updateLocation(msg) {
-	if (msg.getSenderid() === myId) return;
-	var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
+	if (msg.getSenderid() === myId || window.sessionStorage.key !== undefined) return;
 	var lonlat = transform([msg.getLongitude(), msg.getLatitude()], "EPSG:4326", "EPSG:3067");
 	if (msg.getSenderid() in markerDict) {
 		markerDict[msg.getSenderid()].setGeometry(lonlat ? new Point(lonlat) : null);
 	} else {
 		var markkeri = new Feature();
-		markkeri.setId("pysyva");
 		markkeri.setStyle(new Style({
 				image: new Circle({
 				radius: 12,
@@ -235,13 +244,22 @@ function updateLocation(msg) {
 				})
 			})	
 		}));
-		
 		markerDict[msg.getSenderid()] = markkeri;
 		markerLayer.push(markerDict[msg.getSenderid()]);
 		markkeri.setGeometry(lonlat ? new Point(lonlat) : null);
 	}
 }
 wsh.addLocationChangeListener(updateLocation);
+
+// käyttäjän siirtäminen ryhmästä toiseen ja disconnectaamisen händläys?
+function userMove(msg) {
+	if (msg.getDisconnected() == true) {
+		markerLayer.remove(markerDict[msg.getUserid()]);
+    /** TODO: poista käyttäjä vielä markerDictistä? **/
+	}
+}
+wsh.addUserMovedListener(userMove);
+
 
 fetch(capabilitiesUrl).then(function(response) {
 	return response.text();
@@ -348,12 +366,10 @@ function addInteraction() {
     if(text=="Circle"){
     	circleCenter = e.feature.getGeometry().getCenter();
     	circleRadius = e.feature.getGeometry().getRadius();
-    	console.log("center "+circleCenter + " " + "radius "+circleRadius);
     	points = null;
     }
     else {
     points = e.feature.getGeometry().getCoordinates();
-    console.log(e.feature.getGeometry().getCoordinates());
 }
     //var feature = new Feature({
     //        geometry: new Polygon(points)
@@ -473,10 +489,6 @@ function transformAndSendCoord(points){
 		wsh.sendCircle(transformedCenter,circleRadius,fillColor,strokeColor,width);
 
 	}
-	console.log("global coordinates");
-	if(text =="LineString" || text == "Polygon") console.log(coordArray);
-
-	else {console.log("global center: "+transformedCenter+ "radius: " + circleRadius);}
 }
 
 
@@ -506,11 +518,6 @@ function handleCircle(circle){
   		circlefeat.setId(featureID);
   		circlefeat.setGeometry(circle);
 		source.addFeature(circlefeat);
-		console.log("circle features");
-		console.log(source.getFeatures());
-		console.log("circleID");
-		console.log(circlefeat.getId());		
-
 }
 
 function handleLinestring(linestring){
@@ -533,11 +540,6 @@ function handleLinestring(linestring){
 	linefeat.setId(featureID);
 
 	source.addFeature(linefeat);
-	console.log("linestring features");
-	console.log(source.getFeatures());
-	console.log("linestringID");
-	console.log(linefeat.getId());
-
 }
 
 function handlePolygon(polygon){
@@ -646,7 +648,6 @@ function sendShapeCoord(){
 	if(text=="Circle"){
 		
 		var circle = new CircleGeom(circleCenter,circleRadius);
-		console.log("center "+circleCenter + " " + "radius "+circleRadius);
 		//circle.setCenterAndRadius(circleCenter,circleRadius);
 		var circlefeat = new Feature();
 		circlefeat.setStyle(new Style({
@@ -765,8 +766,11 @@ function openTools(){
 	var x = document.getElementById("drawtools");
 	if (x.style.display === "flex") {
 		x.style.display = "none";
+		colorpickers.style.display = "inline-block"
+		typeSelect.value ="None";
   } else {
 		x.style.display = "flex";
+		colorpickers.style.display = "block"
   }
 }
 
@@ -776,6 +780,7 @@ function changePaletteColor(){
 document.getElementById("fillColorPalette").style.backgroundColor = "rgb("+fillRed.value+", "+ fillGreen.value+", "+ fillBlue.value+")";
 document.getElementById("strokeColorPalette").style.backgroundColor = "rgb("+strokeRed.value+", "+ strokeGreen.value+", "+ strokeBlue.value+")";	
 }
+var colorpickers = document.getElementById("colorpickers");
 var trueFill = document.getElementById("color-picker-container");
 trueFill.style.display = "none";
 var trueStroke = document.getElementById("color-picker-stroke");
@@ -854,7 +859,7 @@ function openCircle(){
 		document.getElementById("drawcircle").style.backgroundColor = defaultbackgroundColor;
 		colorPicker.resize(1);
 		trueStroke.style.display = "none";
-		
+		trueFill.style.display = "none";
 		trueStroke.style.display = "none";
   } else {
 		document.getElementById("drawcircle").style.backgroundColor = selectedbackgroundColor;
@@ -867,10 +872,6 @@ function openCircle(){
 		trueFill.style.display = "inline-block";
   }
 }
-//document.getElementById("drawpoly").addEventListener("click",openPoly);
-//document.getElementById("drawcircle").addEventListener("click",openPoly);
-
-//document.getElementById("drawline").addEventListener("click",openLinestringColor);
 
 
 //Chat ikkunan avaus/sulku
@@ -878,13 +879,34 @@ document.getElementById("chatwindow").style.display = "none";
 document.getElementById("chattoggle").addEventListener("click", openChat);
 document.getElementById("chatminimize").addEventListener("click", chatMinimize);
 
+var sendButton = document.getElementById("messagesendbutton");
+sendButton.onclick = textBoxClick;
+ 
+function addToChatFromServer(msg) {	/** TODO **/
+	var s = msg.getSenderid();
+	var m = msg.getMsg();
+	addToChat(s, m, "#96e27d", "Group");
+}
+ 
+wsh.addChatMessageListener(addToChatFromServer);
+
+function textBoxClick(e) {
+	e.preventDefault();
+	var user = window.sessionStorage.getItem("username");
+	if (user == undefined) return;
+	var textbox = document.getElementById("messagefield");
+	var bytes = textbox.value;
+	wsh.sendChatMessage(bytes);
+	textbox.value = "";
+}
+ 
 function openChat(){
 	openHamburger();
-	document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
+	document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
 	var x = document.getElementById("chatwindow");
 	var y = document.getElementById("messages");
 
-	y.style.display = "block";
+	y.style.display = "none";
 	
 	var i;
 	for (i = 0; i < 25; i++) {
@@ -894,8 +916,10 @@ function openChat(){
 	addToChat2("käyttäjä2", "testiviesti", "#96e27d");
 	if (x.style.display === "block") {
 		x.style.display = "none";
+		colorpickers.style.bottom = "21px";
   } else {
 		x.style.display = "block";
+		colorpickers.style.bottom = "85px";
   }
 }
 
@@ -968,11 +992,9 @@ function handleLogin(e){
 	//----
 	
 	removeMapCover();
-	console.log("Kirjauduttu käyttäjänimellä: " + username);
 }
 	
 function onLogin(msg) {
-	console.log(msg.getUsername() + " / " + msg.getKey());
 	window.sessionStorage.setItem("username", msg.getUsername());
 	window.sessionStorage.setItem("key", msg.getKey());
 }
@@ -1136,17 +1158,13 @@ var colorPicker = new iro.ColorPicker('#color-picker-container',{
 	});
 
 function onColorChange(color,changes){
-	console.log(color.rgbaString);
 	var col = color.rgba;
-	console.log(col["r"]);
 	PickerFillred = col["r"];
 	PickerFillgreen = col["g"];
 	PickerFillBlue = col["b"];
 }
 function onColorChangeStroke(color,changes){
-	console.log(color.rgbaString);
 	var col = color.rgba;
-	console.log(col["r"]);
 	PickerStrokered = col["r"];
 	PickerStrokegreen = col["g"];
 	PickerStrokeBlue = col["b"];

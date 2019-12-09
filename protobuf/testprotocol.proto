@@ -101,6 +101,7 @@ message UserMoved {
   int32 userid = 1;
   int32 groupid = 2;
   string name = 3;
+  bool disconnected = 4;
 }
 
 message JoinGroup {

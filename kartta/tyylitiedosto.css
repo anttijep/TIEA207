@@ -262,19 +262,30 @@ html, body{
 	justify-content: space-evenly;
 	font-size: 18px;
 	color: white;
+	z-index: 0;
 }
 
-.bottombar #color-picker-container{
+#colorpickers{
+	position: absolute;
+	z-index: 1;
+	max-width: 310px;
+	bottom: 20px;
+	background-color: #333;
+	color: white;
+}
+
+#color-picker-container{
 	background: #333;
 	display: inline-block;
 	font-size: 10px;
 	color: white;
 }
-.bottombar #color-picker-stroke{
+#color-picker-stroke{
 	background: #333;
 	display: inline-block;
 	font-size: 10px;
 	color: white;
+	padding-left: 2px;
 }
 .bottombar #linestringSettings{
 	background: #333;
@@ -282,6 +293,7 @@ html, body{
 	justify-content: space-evenly;
 	font-size: 18px;
 	color: white;
+	
 }
 
 .bottombar #PolyCircleSettings{
@@ -290,6 +302,7 @@ html, body{
 	justify-content: space-evenly;
 	font-size: 18px;
 	color: white;
+	
 }
 
 #chatwindow{
