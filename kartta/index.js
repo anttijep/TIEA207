@@ -1052,7 +1052,10 @@ wsh.addLoginResultListener(onLogin);
 
 
 //huoneenvalintaikkunan avaus/sulku
-document.getElementById("openroomlogin").addEventListener("click", openRoomLogin);
+document.getElementById("openroomlogin").addEventListener("click", function(e) {
+	openRoomLogin();
+	document.getElementById("roomnameInput").focus();
+	});
 
 function openRoomLogin(){
 	var roomLoginButton = document.getElementById("roomLoginButton");
