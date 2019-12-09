@@ -132,8 +132,8 @@ if (navigator.geolocation) {
 			firstCenter = false;
 			view.setCenter(myPosition);
 		}
-		var debuginfo = document.getElementById("debuginfo");
-		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+		tbAccuracy = position.coords.accuracy;
+		updateTopBar();
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		//accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
  	
@@ -743,6 +743,21 @@ function selectErase(){
 var defaultbackgroundColor = "#333";
 var selectedbackgroundColor = "#01ff00";
 
+
+//Yläpalkin päivitya
+var tbAccuracy;
+var tbTeam = "tbTeam";
+var tbUser = "tbUser";
+var tbRoom = "tbRoom";
+
+function updateTopBar(){
+	var title = document.getElementById("title");
+	var subtitle = document.getElementById("debuginfo");
+	title.textContent = "Team: " + tbTeam
+	subtitle.textContent = "User: " + tbUser + " | Room: " + tbRoom + " | Acc: " + tbAccuracy;
+}
+
+
 //hampurilaisvalikon avaus/sulku
 document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
 document.getElementById("hamburger").addEventListener("click", openHamburger);
@@ -996,6 +1011,8 @@ function handleLogin(e){
 function onLogin(msg) {
 	window.sessionStorage.setItem("username", msg.getUsername());
 	window.sessionStorage.setItem("key", msg.getKey());
+	tbUser = msg.getUsername();
+	updateTopBar();
 }
 
 wsh.addLoginResultListener(onLogin);
@@ -1032,6 +1049,8 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").checked;
 		wsh.joinRoom(roomname, roompass, createroom);
+		tbRoom = roomname;
+		updateTopBar();
 	}
 
 //ryhmänvalintaikkunan avaus/sulku
