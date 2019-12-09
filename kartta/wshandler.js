@@ -165,7 +165,6 @@ export class WSHandler {
 
 	onMessage(evnt) {
 		var msg = proto.testi.FromServer.deserializeBinary(evnt.data);
-		console.log(msg)
 		var err = msg.getErrmsg();
 		if (err !== "")
 			console.log(err);

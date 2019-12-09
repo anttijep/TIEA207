@@ -35,7 +35,6 @@ var wsh = new WSHandler(hostname);
 var myId = -1;
 function handleJoinMessage(msg) {
 	myId = msg.getId();
-	console.log(myId);
 }
 wsh.addJoinResultListener(handleJoinMessage);
 
@@ -354,12 +353,10 @@ function addInteraction() {
     if(text=="Circle"){
     	circleCenter = e.feature.getGeometry().getCenter();
     	circleRadius = e.feature.getGeometry().getRadius();
-    	console.log("center "+circleCenter + " " + "radius "+circleRadius);
     	points = null;
     }
     else {
     points = e.feature.getGeometry().getCoordinates();
-    console.log(e.feature.getGeometry().getCoordinates());
 }
     //var feature = new Feature({
     //        geometry: new Polygon(points)
@@ -479,10 +476,6 @@ function transformAndSendCoord(points){
 		wsh.sendCircle(transformedCenter,circleRadius,fillColor,strokeColor,width);
 
 	}
-	console.log("global coordinates");
-	if(text =="LineString" || text == "Polygon") console.log(coordArray);
-
-	else {console.log("global center: "+transformedCenter+ "radius: " + circleRadius);}
 }
 
 
@@ -512,11 +505,6 @@ function handleCircle(circle){
   		circlefeat.setId(featureID);
   		circlefeat.setGeometry(circle);
 		source.addFeature(circlefeat);
-		console.log("circle features");
-		console.log(source.getFeatures());
-		console.log("circleID");
-		console.log(circlefeat.getId());		
-
 }
 
 function handleLinestring(linestring){
@@ -539,11 +527,6 @@ function handleLinestring(linestring){
 	linefeat.setId(featureID);
 
 	source.addFeature(linefeat);
-	console.log("linestring features");
-	console.log(source.getFeatures());
-	console.log("linestringID");
-	console.log(linefeat.getId());
-
 }
 
 function handlePolygon(polygon){
@@ -652,7 +635,6 @@ function sendShapeCoord(){
 	if(text=="Circle"){
 		
 		var circle = new CircleGeom(circleCenter,circleRadius);
-		console.log("center "+circleCenter + " " + "radius "+circleRadius);
 		//circle.setCenterAndRadius(circleCenter,circleRadius);
 		var circlefeat = new Feature();
 		circlefeat.setStyle(new Style({
@@ -997,11 +979,9 @@ function handleLogin(e){
 	//----
 	
 	removeMapCover();
-	console.log("Kirjauduttu käyttäjänimellä: " + username);
 }
 	
 function onLogin(msg) {
-	console.log(msg.getUsername() + " / " + msg.getKey());
 	window.sessionStorage.setItem("username", msg.getUsername());
 	window.sessionStorage.setItem("key", msg.getKey());
 }
@@ -1143,17 +1123,13 @@ var colorPicker = new iro.ColorPicker('#color-picker-container',{
 	});
 
 function onColorChange(color,changes){
-	console.log(color.rgbaString);
 	var col = color.rgba;
-	console.log(col["r"]);
 	PickerFillred = col["r"];
 	PickerFillgreen = col["g"];
 	PickerFillBlue = col["b"];
 }
 function onColorChangeStroke(color,changes){
-	console.log(color.rgbaString);
 	var col = color.rgba;
-	console.log(col["r"]);
 	PickerStrokered = col["r"];
 	PickerStrokegreen = col["g"];
 	PickerStrokeBlue = col["b"];
