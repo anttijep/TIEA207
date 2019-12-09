@@ -770,6 +770,7 @@ document.getElementById("drawtools").style.display = "none"; //piirtotyökalut k
 document.getElementById("toolstoggle").addEventListener("click", openTools)
 
 function openTools(){
+	openHamburger();
 	var x = document.getElementById("drawtools");
 	if (x.style.display === "flex") {
 		x.style.display = "none";
@@ -812,6 +813,7 @@ document.getElementById("debugmenu").style.display = "none";
 document.getElementById("settings").addEventListener("click", openDebugmenu)
 
 function openDebugmenu(){
+	openHamburger();
 	var x = document.getElementById("debugmenu");
 	if (x.style.display === "block") {
 		x.style.display = "none";
@@ -971,21 +973,18 @@ function teamName(){
 }
 
 //login ikkunan avaus/sulku
-document.getElementById("flexLR").style.display = "none";
+document.getElementById("flexLR").style.display = "block";
 document.getElementById("teamSelect").style.display = "none";
 document.getElementById("roomwindow").style.display = "none";
-
+document.getElementById("loginButton").addEventListener("click", handleLogin)
 document.getElementById("selectusername").addEventListener("click", openLogin)
 
 function openLogin(){
-	var loginButton = document.getElementById("loginButton");
 	openHamburger();
 	document.getElementById("roomwindow").style.display = "none";
 	document.getElementById("loginwindow").style.display = "block";
 	document.getElementById("teamSelect").style.display = "none";
 	applyMapCover();
-	
-	loginButton.onclick = handleLogin;
 }
 
 function handleLogin(e){
