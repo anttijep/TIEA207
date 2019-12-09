@@ -1055,7 +1055,6 @@ wsh.addLoginResultListener(onLogin);
 document.getElementById("openroomlogin").addEventListener("click", openRoomLogin);
 
 function openRoomLogin(){
-	document.getElementById("roomnameInput").focus();
 	var roomLoginButton = document.getElementById("roomLoginButton");
 	var exitRoomLogin = document.getElementById("exitRoomLogin");
 	var checkbox = document.querySelector("input[name=createroomToggle]");
