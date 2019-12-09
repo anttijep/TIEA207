@@ -1150,16 +1150,20 @@ function openEditMap() {
 		var option = document.createElement("input");
 		var opacitybox = document.createElement("input");
 		var zindexbox = document.createElement("input");
+
 		option.type = "checkbox";
 		option.className = "mapcboxes";
-		tr.id = key;
 		option.value = key;
 		option.checked = mapLayers[key].getVisible();
-		option.id = "cb"+cid;
+		option.id = "cb"+cid++;
 		label.appendChild(document.createTextNode(key));
 		label.htmlFor = option.id;
-		tr.appendChild(option);
-		tr.appendChild(label);
+
+		var td = document.createElement("td");
+		td.id = key;
+		td.appendChild(option);
+		td.appendChild(label);
+		tr.appendChild(td);
 
 		opacitybox.type = "number";
 		opacitybox.className = "opacity";
@@ -1167,8 +1171,8 @@ function openEditMap() {
 		opacitybox.step = "0.1";
 		opacitybox.max = "1";
 		opacitybox.min = "0";
-		opacitybox.id = "op"+cid;
 		var td = document.createElement("td");
+		td.id = key;
 		td.appendChild(opacitybox);
 		tr.appendChild(td);
 
@@ -1177,18 +1181,16 @@ function openEditMap() {
 		zindexbox.valueAsNumber = mapLayers[key].getZIndex();
 		zindexbox.min = "0";
 		zindexbox.max = Number.MAX_SAFE_INTEGER;
-		zindexbox.id = "zi"+cid;
 		td = document.createElement("td");
+		td.id = key;
 		td.appendChild(zindexbox);
 		tr.appendChild(td);
 		listtable.appendChild(tr);
-		++cid;
 	});
 
 	function onaccept() {
-		var elements = listtable.getElementsByTagName("li");
+		var elements = listtable.getElementsByTagName("td");
 		for (var elem of elements) {
-			console.log(elem);
 			for (var child of elem.childNodes) {
 				if (child.className === "mapcboxes") {
 					mapLayers[elem.id].setVisible(child.checked);
