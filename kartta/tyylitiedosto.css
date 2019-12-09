@@ -236,7 +236,35 @@ html, body{
 	padding-right: 10px;
 }
 
+/*editmap-ikkuna*/
+#editmapdiv{
+	background-color: #333;
+	color: white;
+	position: relative;
+	left: 25%;
+	max-width: 50%;
+	max-height: 60%;
+	min-width: 240px;
+	display: flex;
+	flex-direction: column;
+	border-style: outset;
+	border-color: #444;
+}
 
+
+#maplist ul {
+	display: flex;
+	align-items: center;
+}
+
+#maplist li {
+	list-style-type: none;
+}
+
+
+#maplist input[type=number] {
+	width: 2em;
+}
 
 /*debugmenu*/
 #debugmenu {
