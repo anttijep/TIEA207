@@ -902,7 +902,7 @@ wsh.addChatMessageListener(addToChatFromServer);
 function textBoxClick(e) {
 	e.preventDefault();
 	var user = window.sessionStorage.getItem("username");
-	if (user == undefined) return;
+	if (user === undefined) return;
 	var textbox = document.getElementById("messagefield");
 	var bytes = textbox.value;
 	wsh.sendChatMessage(bytes);
@@ -917,12 +917,12 @@ function openChat(){
 
 	y.style.display = "none";
 	
-	var i;
+	/*var i;
 	for (i = 0; i < 25; i++) {
 	  addToChat2("käyttäjä2", i, "#96e27d");
 	}
 	addToChat("user", "testiviesti", "#96e27d", "user", "Group");
-	addToChat2("käyttäjä2", "testiviesti", "#96e27d");
+	addToChat2("käyttäjä2", "testiviesti", "#96e27d"); */
 	if (x.style.display === "block") {
 		x.style.display = "none";
 		colorpickers.style.bottom = "21px";

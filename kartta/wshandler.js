@@ -104,7 +104,7 @@ export class WSHandler {
 		this.ws.send(msg.serializeBinary());
 	}
 
-	sendChatMessage(msg, user) {
+	sendChatMessage(msg) {
 		var resp = new proto.testi.ToServer();
 		resp.setChatmsg(msg);
 		this.ws.send(resp.serializeBinary());
