@@ -135,8 +135,8 @@ if (navigator.geolocation) {
 		var debuginfo = document.getElementById("debuginfo");
 		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		
+		//accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+ 	
 		if (myPosition[0] !== lastPosition[0] || myPosition[1] !== lastPosition[1] || myAccuracy !== lastAccuracy) scheduleUpdate();
 	});
 } else {
@@ -155,10 +155,24 @@ var mousePositionControl = new MousePosition({
 	undefinedHTML: '&nbsp;'
 });
 
+var geolocation = new Geolocation({
+  trackingOptions: {
+    enableHighAccuracy: true
+  },
+  projection: view.getProjection()
+});
+
+geolocation.setTracking(true);
+
+var accuracyFeature = new Feature();
+geolocation.on('change:accuracyGeometry', function() {
+  accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
+});
+
 var markerLayer = new Collection();
 var accuracyLayer = new Collection();
 markerLayer.push(positionMarker);
-accuracyLayer.push(accuracyMarker);
+accuracyLayer.push(accuracyFeature);
 
 var map = new Map({
 		controls: defaultControls().extend([mousePositionControl]),
@@ -170,7 +184,6 @@ var map = new Map({
 				zIndex: 5
 			}),
 			new VectorLayer({
-				opacity: 0.3,
 				source: new VectorSource({
 					features: accuracyLayer
 				}),
@@ -181,7 +194,8 @@ var map = new Map({
 		view: view
 	});
 
-map.on('moveend', changeAccuracy);
+
+/* map.on('moveend', changeAccuracy);
 
 function changeAccuracy() {
 	var scaleIndex = parseInt(view.getZoom());
@@ -198,7 +212,7 @@ function changeAccuracy() {
 			accuracyCircle.setRadius(0);
 		}
 	}
-};
+}; */
 
 // esim. chat eventtien lukeminen
 function test(msg) {
@@ -212,8 +226,7 @@ wsh.addChatMessageListener(test);
 // end
 
 function updateLocation(msg) {
-	if (msg.getSenderid() === myId) return;
-	//var s = msg.getSenderid() + ": " + msg.getLatitude()+ ", " + msg.getLongitude();
+	if (msg.getSenderid() === myId || window.sessionStorage.key !== undefined) return;
 	var lonlat = transform([msg.getLongitude(), msg.getLatitude()], "EPSG:4326", "EPSG:3067");
 	if (msg.getSenderid() in markerDict) {
 		markerDict[msg.getSenderid()].setGeometry(lonlat ? new Point(lonlat) : null);
