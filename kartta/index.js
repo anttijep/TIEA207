@@ -88,7 +88,8 @@ var vector = new VectorLayer({
       color: 'yellow',
       width: 7
     })
-  })
+  }),
+  zIndex: 8
 });
 
 // https://openlayers.org/en/latest/doc/faq.html#why-is-the-order-of-a-coordinate-lon-lat-and-not-lat-lon-
@@ -115,11 +116,19 @@ var view = new View({
 			projection: projection,
 			center: myPosition,
 			zoom: 10,
+			minZoom: 6,
 			maxZoom:18
 		});
 
 var scales = [];
 var lastLocationUpdate = Date.now();
+
+var geolocation = new Geolocation({
+  trackingOptions: {
+    enableHighAccuracy: true
+  },
+  projection: view.getProjection()
+});
 
 if (navigator.geolocation) {
 	var firstCenter = true;
@@ -133,8 +142,9 @@ if (navigator.geolocation) {
 			firstCenter = false;
 			view.setCenter(myPosition);
 		}
-		var debuginfo = document.getElementById("debuginfo");
-		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+		tbAccuracy = geolocation.getAccuracy();
+		updateTopBar();
+
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		//accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
  	
@@ -195,7 +205,6 @@ var map = new Map({
 		view: view
 	});
 
-
 /* map.on('moveend', changeAccuracy);
 
 function changeAccuracy() {
@@ -227,7 +236,7 @@ wsh.addChatMessageListener(test);
 // end
 
 function updateLocation(msg) {
-	if (msg.getSenderid() === myId || window.sessionStorage.key !== undefined) return;
+	if (msg.getSenderid() === myId) return;
 	var lonlat = transform([msg.getLongitude(), msg.getLatitude()], "EPSG:4326", "EPSG:3067");
 	if (msg.getSenderid() in markerDict) {
 		markerDict[msg.getSenderid()].setGeometry(lonlat ? new Point(lonlat) : null);
@@ -252,11 +261,12 @@ function updateLocation(msg) {
 }
 wsh.addLocationChangeListener(updateLocation);
 
-// käyttäjän siirtäminen ryhmästä toiseen ja disconnectaamisen händläys?
+// käyttäjän siirtyminen ryhmästä toiseen ja disconnectaamisen händläys?
 function userMove(msg) {
 	if (msg.getDisconnected() == true) {
-		markerLayer.remove(markerDict[msg.getUserid()]);
-    /** TODO: poista käyttäjä vielä markerDictistä? **/
+		var uid = msg.getUserid();
+		markerLayer.remove(markerDict[uid]);
+		delete markerDict.uid; // Toimiiko ja onko tarpeellinen?
 	}
 }
 wsh.addUserMovedListener(userMove);
@@ -395,7 +405,8 @@ var changeInteraction = function() {
   }
   var value = selectElement.value;
   if (value == 'remove') {
-    select = selectSingleclick;
+  	selectSingleclick = new Select();
+    select = selectSingleclick
   }
   else {
     select = null;
@@ -403,8 +414,12 @@ var changeInteraction = function() {
   if (select !== null) {
     map.addInteraction(select);
     select.on('select', function(e) {
+
+    	debugger;
 		if (selectSingleclick.getLayer(e.selected[0]) == vector){
-			source.removeFeature(e.selected[0]);	
+			wsh.sendDeleteDrawing(e.selected[0].getId());
+			//source.removeFeature(e.selected[0]);
+			//selectSingleclick.getFeatures().clear();
 		} 
 		else {
 			selectSingleclick.getFeatures().clear();
@@ -448,12 +463,12 @@ function drawTest(){
     source.addFeature(feature);
 }
 
-var PickerFillred = 255;
+var PickerFillred = 240;
 var PickerFillgreen = 255;
 var PickerFillBlue = 255;
-var	PickerStrokered = 255;
-var	PickerStrokegreen = 255;
-var	PickerStrokeBlue = 255;
+var	PickerStrokered = 0;
+var	PickerStrokegreen = 0;
+var	PickerStrokeBlue = 0;
 
 function transformAndSendCoord(points){
 	//debugger;
@@ -490,7 +505,6 @@ function transformAndSendCoord(points){
 
 
 function handleCircle(circle){
-	//circleCenter = [circle.getCenter().getLongitude(),circle.getCenter().getLatitude()];
 	var center = transform([circle.getCenter().getLongitude(),circle.getCenter().getLatitude()],"EPSG:4326","EPSG:3067");
 	var radius = circle.getRadius();
 	var fillColorInt = circle.getFill().getColor();
@@ -498,8 +512,10 @@ function handleCircle(circle){
 	var strokeColorInt = circle.getStroke().getColor();
 	var strokeColor = intToRgba(strokeColorInt);
 	var width = circle.getStroke().getWidth();
-	var circle = new CircleGeom(center,radius);
+	var id = circle.getId();
+	var circlenew = new CircleGeom(center,radius);
 	var circlefeat = new Feature();
+	
 
 	circlefeat.setStyle(new Style({
    		fill: new Fill({
@@ -511,8 +527,8 @@ function handleCircle(circle){
     		})
   	}));
   		featureID++;
-  		circlefeat.setId(featureID);
-  		circlefeat.setGeometry(circle);
+  		circlefeat.setId(id);
+  		circlefeat.setGeometry(circlenew);
 		source.addFeature(circlefeat);
 }
 
@@ -522,6 +538,7 @@ function handleLinestring(linestring){
 	var strokeColorInt = linestring.getStroke().getColor();
 	var width = linestring.getStroke().getWidth();
 	var strokeColor = intToRgba(strokeColorInt);
+	var id = linestring.getId();
 	var linestring = new LineString(linestringCoord);
 	var linefeat = new Feature({
 		geometry: linestring
@@ -533,7 +550,7 @@ function handleLinestring(linestring){
     		})
   	}));
 	featureID++;
-	linefeat.setId(featureID);
+	linefeat.setId(id);
 
 	source.addFeature(linefeat);
 }
@@ -546,6 +563,7 @@ function handlePolygon(polygon){
 	var strokeColor = intToRgba(strokeColorInt);
 	var width = polygon.getStroke().getWidth();
     var parrlist = polygon.getPointarrayList();
+    var id = polygon.getId();
     for (var i = 0; i < parrlist.length; ++i) {
         parrlist[i].getPointsList().forEach(e=>{
             var p = [e.getLongitude(), e.getLatitude()];
@@ -566,7 +584,7 @@ function handlePolygon(polygon){
     		width: setWidth(width)
     		})
   	}));
-	featureID++;
+	polyfeat.setId(id);
 	source.addFeature(polyfeat);
 }
 
@@ -580,10 +598,24 @@ function transformLinestring(coord,array){
 
 function drawReceivedDrawing(msg) {
 	msg.getLinestringsList().forEach(lstrings=> handleLinestring(lstrings));
-
 	msg.getCirclesList().forEach(circle =>handleCircle(circle));
     msg.getPolysList().forEach(poly=>handlePolygon(poly));
+    
+    msg.getDeleteidsList().forEach(id=>deleteDrawFeature(id));
+
 }
+
+
+function deleteDrawFeature(id){
+	var feats = source.getFeatures();
+	for(var i = 0; i<feats.length; i++){
+		if(feats[i].getId() == id){
+			source.removeFeature(feats[i]);
+			return;
+		}
+	}
+}
+
 
 wsh.addReceiveDrawingListener(drawReceivedDrawing);
 
@@ -739,6 +771,21 @@ function selectErase(){
 var defaultbackgroundColor = "#333";
 var selectedbackgroundColor = "#01ff00";
 
+
+//Yläpalkin päivitya
+var tbAccuracy;
+var tbTeam = "tbTeam";
+var tbUser = "tbUser";
+var tbRoom = "tbRoom";
+
+function updateTopBar(){
+	var title = document.getElementById("title");
+	var subtitle = document.getElementById("debuginfo");
+	title.textContent = "Team: " + tbTeam
+	subtitle.textContent = "User: " + tbUser + " | Room: " + tbRoom + " | Acc: " + tbAccuracy;
+}
+
+
 //hampurilaisvalikon avaus/sulku
 document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
 document.getElementById("hamburger").addEventListener("click", openHamburger);
@@ -878,6 +925,11 @@ document.getElementById("chatwindow").style.display = "none";
 document.getElementById("chattoggle").addEventListener("click", openChat);
 document.getElementById("chatminimize").addEventListener("click", chatMinimize);
 
+document.getElementById("sendmessage").onsubmit = function (e) {
+	e.preventDefault();
+	textBoxClick(e);
+};
+
 var sendButton = document.getElementById("messagesendbutton");
 sendButton.onclick = textBoxClick;
  
@@ -892,7 +944,7 @@ wsh.addChatMessageListener(addToChatFromServer);
 function textBoxClick(e) {
 	e.preventDefault();
 	var user = window.sessionStorage.getItem("username");
-	if (user == undefined) return;
+	if (user === undefined) return;
 	var textbox = document.getElementById("messagefield");
 	var bytes = textbox.value;
 	wsh.sendChatMessage(bytes);
@@ -901,18 +953,17 @@ function textBoxClick(e) {
  
 function openChat(){
 	openHamburger();
-	document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
+	document.getElementById("minimizeicon").innerHTML = " &#9660 Pienennä chat &#9660 ";
+	document.getElementById("minimizeicon").style.color = "#ffffff";
 	var x = document.getElementById("chatwindow");
 	var y = document.getElementById("messages");
-
-	y.style.display = "none";
 	
-	var i;
+	/*var i;
 	for (i = 0; i < 25; i++) {
 	  addToChat2("käyttäjä2", i, "#96e27d");
 	}
 	addToChat("user", "testiviesti", "#96e27d", "user", "Group");
-	addToChat2("käyttäjä2", "testiviesti", "#96e27d");
+	addToChat2("käyttäjä2", "testiviesti", "#96e27d"); */
 	if (x.style.display === "block") {
 		x.style.display = "none";
 		colorpickers.style.bottom = "21px";
@@ -921,15 +972,18 @@ function openChat(){
 		colorpickers.style.bottom = "85px";
   }
 }
-
+var chatminimized = false;
 function chatMinimize(){
 	var x = document.getElementById("messages");
-	if (x.style.display === "block") {
-		x.style.display = "none";
-		document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
+	if (chatminimized == false) {
+		x.style.maxHeight = "20px";
+		chatminimized = true;
+		document.getElementById("minimizeicon").innerHTML = " &#9650 Laajenna chat &#9650 ";
+		x.scrollTop = x.scrollHeight;
   } else {
-		x.style.display = "block";
-		document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
+		x.style.maxHeight = "400px";
+		chatminimized = false;
+		document.getElementById("minimizeicon").innerHTML = " &#9660 Pienennä chat &#9660 ";
   }
 }
 
@@ -943,15 +997,7 @@ function addToChat(sender, messagetext, color, chat){
 		message.style = "background-color: " + color + ";";
 	}
 	x.appendChild(message);
-	x.scrollTop = x.scrollHeight; //MUISTA TÄMÄ
-}
-
-function addToChat2(sender, messagetext, color){
-	var x = document.getElementById("messages");
-	var message = document.createElement("li");
-	message.textContent = sender + ": " + messagetext;
-	message.className = "chatmessage";
-	x.appendChild(message);
+	x.scrollTop = x.scrollHeight; //MUISTA TÄMÄ - scrollaa viimeisimmän viestin näkyviin
 }
 
 
@@ -963,12 +1009,14 @@ function teamName(){
 }
 
 //login ikkunan avaus/sulku
-document.getElementById("flexLR").style.display = "none";
+document.getElementById("flexLR").style.display = "block";
 document.getElementById("teamSelect").style.display = "none";
 document.getElementById("roomwindow").style.display = "none";
 document.getElementById("editmapdiv").style.display = "none";
 
+document.getElementById("loginButton").addEventListener("click", handleLogin)
 document.getElementById("selectusername").addEventListener("click", openLogin)
+document.getElementById("usernameInput").focus();
 
 function openLogin(){
 	var loginButton = document.getElementById("loginButton");
@@ -976,8 +1024,6 @@ function openLogin(){
 	openHamburger();
 	document.getElementById("loginwindow").style.display = "block";
 	applyMapCover();
-	
-	loginButton.onclick = handleLogin;
 }
 
 function handleLogin(e){
@@ -985,24 +1031,30 @@ function handleLogin(e){
 	var key = window.sessionStorage.getItem("key");
 	wsh.login(username, key);
 	
-	//---- ensin huoneeseen liittyminen, sitten sijainti palvelimelle
-	wsh.joinRoom("testi");
-	sendPositionDataToServer();
-	//----
-	
 	removeMapCover();
 }
 	
 function onLogin(msg) {
+	if (msg.getSuccess() === false) {
+		/** TODO **/
+		return;
+	}
+	wsh.joinRoom("testi");
+	sendPositionDataToServer();
 	window.sessionStorage.setItem("username", msg.getUsername());
 	window.sessionStorage.setItem("key", msg.getKey());
+	tbUser = msg.getUsername();
+	updateTopBar();
 }
 
 wsh.addLoginResultListener(onLogin);
 
 
 //huoneenvalintaikkunan avaus/sulku
-document.getElementById("openroomlogin").addEventListener("click", openRoomLogin)
+document.getElementById("openroomlogin").addEventListener("click", function(e) {
+	openRoomLogin();
+	document.getElementById("roomnameInput").focus();
+	});
 
 function openRoomLogin(){
 	var roomLoginButton = document.getElementById("roomLoginButton");
@@ -1032,6 +1084,29 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").checked;
 		wsh.joinRoom(roomname, roompass, createroom);
+		tbRoom = roomname;
+		updateTopBar();
+	}
+//document.getElementById("roomLoginButton").addEventListener("click",handleRoomLogin);
+//wsh.addJoinResultListener(handleLoginResult);
+
+var roomDict = [];
+var userDict = [];
+
+function handleLoginResult(msg){
+	if (window.sessionStorage.getItem("username") == undefined) return;
+	if(msg.getCreateroom() == false){
+		if (roomDict.includes([msg.getRoomname(),msg.getPassword()]))
+				userDict[roomDict.indexOf(msg.getRoomname())].push([window.sessionStorage.getItem("username"),window.sessionStorage,getItem("key")]);		
+		else {
+			console.log("väärä salasana tai huonetta ei olemassa");
+			return;
+			}
+		}
+		else if (msg.getJoinroom().getCreateroom()==true){
+		roomDict.push([msg.getRoomname(),msg.getPassword()]);
+		userDict[roomDict.indexOf([msg.getRoomname(),msg.getPassword()])].push([window.sessionStorage.getItem("username"),window.sessionStorage,getItem("key")]);
+	}
 }
 
 // kartan muokkaus ikkuna
@@ -1203,12 +1278,12 @@ var x = document.getElementById("flexLR");
 
 var colorPickerStroke = new iro.ColorPicker("#color-picker-stroke",{
 	width: 1,
-	color: "#f00",
+	color: "#000000",
 	});
 
 var colorPicker = new iro.ColorPicker('#color-picker-container',{
 	width: 1,
-	color: "#f00",
+	color: "#f0ffff",
 	});
 
 function onColorChange(color,changes){
