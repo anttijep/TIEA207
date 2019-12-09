@@ -919,18 +919,12 @@ function textBoxClick(e) {
  
 function openChat(){
 	openHamburger();
-	document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
+	document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
 	var x = document.getElementById("chatwindow");
 	var y = document.getElementById("messages");
-
-	y.style.display = "none";
 	
-	var i;
-	for (i = 0; i < 25; i++) {
-	  addToChat2("käyttäjä2", i, "#96e27d");
-	}
 	addToChat("user", "testiviesti", "#96e27d", "user", "Group");
-	addToChat2("käyttäjä2", "testiviesti", "#96e27d");
+
 	if (x.style.display === "block") {
 		x.style.display = "none";
 		colorpickers.style.bottom = "21px";
@@ -939,14 +933,16 @@ function openChat(){
 		colorpickers.style.bottom = "85px";
   }
 }
-
+var chatminimized = false;
 function chatMinimize(){
 	var x = document.getElementById("messages");
-	if (x.style.display === "block") {
-		x.style.display = "none";
+	if (chatminimized == false) {
+		x.style.maxHeight = "20px";
+		chatminimized = true;
 		document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
   } else {
-		x.style.display = "block";
+		x.style.maxHeight = "400px";
+		chatminimized = false;
 		document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
   }
 }
@@ -962,14 +958,6 @@ function addToChat(sender, messagetext, color, chat){
 	}
 	x.appendChild(message);
 	x.scrollTop = x.scrollHeight; //MUISTA TÄMÄ
-}
-
-function addToChat2(sender, messagetext, color){
-	var x = document.getElementById("messages");
-	var message = document.createElement("li");
-	message.textContent = sender + ": " + messagetext;
-	message.className = "chatmessage";
-	x.appendChild(message);
 }
 
 
