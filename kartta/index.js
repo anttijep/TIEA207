@@ -139,8 +139,9 @@ if (navigator.geolocation) {
 			firstCenter = false;
 			view.setCenter(myPosition);
 		}
-		var debuginfo = document.getElementById("debuginfo");
-		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + geolocation.getAccuracy(); // käytä tarkkuudelle geolocation.getAccuracy
+		tbAccuracy = geolocation.getAccuracy();
+		updateTopBar();
+
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		//accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
  	
@@ -750,6 +751,21 @@ function selectErase(){
 var defaultbackgroundColor = "#333";
 var selectedbackgroundColor = "#01ff00";
 
+
+//Yläpalkin päivitya
+var tbAccuracy;
+var tbTeam = "tbTeam";
+var tbUser = "tbUser";
+var tbRoom = "tbRoom";
+
+function updateTopBar(){
+	var title = document.getElementById("title");
+	var subtitle = document.getElementById("debuginfo");
+	title.textContent = "Team: " + tbTeam
+	subtitle.textContent = "User: " + tbUser + " | Room: " + tbRoom + " | Acc: " + tbAccuracy;
+}
+
+
 //hampurilaisvalikon avaus/sulku
 document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
 document.getElementById("hamburger").addEventListener("click", openHamburger);
@@ -911,11 +927,9 @@ function textBoxClick(e) {
  
 function openChat(){
 	openHamburger();
-	document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
+	document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
 	var x = document.getElementById("chatwindow");
 	var y = document.getElementById("messages");
-
-	y.style.display = "none";
 	
 	/*var i;
 	for (i = 0; i < 25; i++) {
@@ -931,14 +945,16 @@ function openChat(){
 		colorpickers.style.bottom = "85px";
   }
 }
-
+var chatminimized = false;
 function chatMinimize(){
 	var x = document.getElementById("messages");
-	if (x.style.display === "block") {
-		x.style.display = "none";
+	if (chatminimized == false) {
+		x.style.maxHeight = "20px";
+		chatminimized = true;
 		document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
   } else {
-		x.style.display = "block";
+		x.style.maxHeight = "400px";
+		chatminimized = false;
 		document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
   }
 }
@@ -953,15 +969,7 @@ function addToChat(sender, messagetext, color, chat){
 		message.style = "background-color: " + color + ";";
 	}
 	x.appendChild(message);
-	x.scrollTop = x.scrollHeight; //MUISTA TÄMÄ
-}
-
-function addToChat2(sender, messagetext, color){
-	var x = document.getElementById("messages");
-	var message = document.createElement("li");
-	message.textContent = sender + ": " + messagetext;
-	message.className = "chatmessage";
-	x.appendChild(message);
+	x.scrollTop = x.scrollHeight; //MUISTA TÄMÄ - scrollaa viimeisimmän viestin näkyviin
 }
 
 
@@ -1004,6 +1012,8 @@ function onLogin(msg) {
 	sendPositionDataToServer();
 	window.sessionStorage.setItem("username", msg.getUsername());
 	window.sessionStorage.setItem("key", msg.getKey());
+	tbUser = msg.getUsername();
+	updateTopBar();
 }
 
 wsh.addLoginResultListener(onLogin);
@@ -1040,6 +1050,8 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").checked;
 		wsh.joinRoom(roomname, roompass, createroom);
+		tbRoom = roomname;
+		updateTopBar();
 	}
 
 //ryhmänvalintaikkunan avaus/sulku
