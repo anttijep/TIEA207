@@ -1123,58 +1123,80 @@ function openEditMap() {
 	document.getElementById("editmapdiv").style.display = "flex";
 	applyMapCover();
 
-	var listbox = document.getElementById("maplist");
-	listbox.innerHTML = '';
+	var listtable = document.getElementById("maplist");
+	listtable.innerHTML = '';
+
+	var tr = document.createElement("tr");
+	var th = document.createElement("th");
+	th.appendChild(document.createTextNode("Name"));
+	tr.appendChild(th);
+
+	th = document.createElement("th");
+	th.appendChild(document.createTextNode("opacity"));
+	tr.appendChild(th);
+
+	th = document.createElement("th");
+	th.appendChild(document.createTextNode("z-index"));
+	tr.appendChild(th);
+
+	listtable.appendChild(tr);
+
 	var keys = Object.keys(mapLayers);
 	keys.sort();
 	var cid = 0;
 	keys.forEach(key=> {
-		var li = document.createElement("li");
+		var tr = document.createElement("tr");
+		var label = document.createElement("label");
 		var option = document.createElement("input");
+		var opacitybox = document.createElement("input");
+		var zindexbox = document.createElement("input");
 		option.type = "checkbox";
 		option.className = "mapcboxes";
-		li.id = key;
+		tr.id = key;
 		option.value = key;
 		option.checked = mapLayers[key].getVisible();
-		option.id = cid++;
-		var label = document.createElement("label");
+		option.id = "cb"+cid;
 		label.appendChild(document.createTextNode(key));
 		label.htmlFor = option.id;
-		li.appendChild(label);
-		li.appendChild(option);
-		li.appendChild(document.createTextNode("opacity:"));
-		var opacitybox = document.createElement("input");
+		tr.appendChild(option);
+		tr.appendChild(label);
+
 		opacitybox.type = "number";
 		opacitybox.className = "opacity";
 		opacitybox.valueAsNumber = mapLayers[key].getOpacity();
 		opacitybox.step = "0.1";
 		opacitybox.max = "1";
 		opacitybox.min = "0";
-		li.appendChild(opacitybox);
+		opacitybox.id = "op"+cid;
+		var td = document.createElement("td");
+		td.appendChild(opacitybox);
+		tr.appendChild(td);
 
-		li.appendChild(document.createTextNode("zindex:"));
-		var zindexbox = document.createElement("input");
 		zindexbox.type = "number";
 		zindexbox.className = "zindex";
 		zindexbox.valueAsNumber = mapLayers[key].getZIndex();
 		zindexbox.min = "0";
 		zindexbox.max = Number.MAX_SAFE_INTEGER;
-		li.appendChild(zindexbox);
-		listbox.appendChild(li);
+		zindexbox.id = "zi"+cid;
+		td = document.createElement("td");
+		td.appendChild(zindexbox);
+		tr.appendChild(td);
+		listtable.appendChild(tr);
+		++cid;
 	});
 
 	function onaccept() {
-		var elements = listbox.getElementsByTagName("li");
+		var elements = listtable.getElementsByTagName("li");
 		for (var elem of elements) {
 			console.log(elem);
 			for (var child of elem.childNodes) {
 				if (child.className === "mapcboxes") {
 					mapLayers[elem.id].setVisible(child.checked);
 				}
-				if (child.className === "opacity") {
+				else if (child.className === "opacity") {
 					mapLayers[elem.id].setOpacity(child.valueAsNumber);
 				}
-				if (child.className === "zindex") {
+				else if (child.className === "zindex") {
 					mapLayers[elem.id].setZIndex(child.valueAsNumber);
 				}
 			}

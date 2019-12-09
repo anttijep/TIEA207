@@ -252,18 +252,9 @@ html, body{
 }
 
 
-#maplist ul {
-	display: flex;
-	align-items: center;
-}
-
-#maplist li {
-	list-style-type: none;
-}
-
 
 #maplist input[type=number] {
-	width: 2em;
+	width: 4em;
 }
 
 /*debugmenu*/
