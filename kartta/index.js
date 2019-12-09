@@ -86,7 +86,8 @@ var vector = new VectorLayer({
       color: 'yellow',
       width: 7
     })
-  })
+  }),
+  zIndex: 8
 });
 
 // https://openlayers.org/en/latest/doc/faq.html#why-is-the-order-of-a-coordinate-lon-lat-and-not-lat-lon-
