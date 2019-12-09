@@ -120,6 +120,13 @@ var parser = new WMTSCapabilities();
 var scales = [];
 var lastLocationUpdate = Date.now();
 
+var geolocation = new Geolocation({
+  trackingOptions: {
+    enableHighAccuracy: true
+  },
+  projection: view.getProjection()
+});
+
 if (navigator.geolocation) {
 	var firstCenter = true;
 	navigator.geolocation.watchPosition(function(position) {
@@ -133,7 +140,7 @@ if (navigator.geolocation) {
 			view.setCenter(myPosition);
 		}
 		var debuginfo = document.getElementById("debuginfo");
-		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + position.coords.accuracy;
+		debuginfo.innerHTML = "longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude + ", accuracy: " + geolocation.getAccuracy(); // käytä tarkkuudelle geolocation.getAccuracy
 		positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		//accuracyMarker.setGeometry(myPosition ? new Point(myPosition) : null);
  	
