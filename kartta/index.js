@@ -412,7 +412,8 @@ var changeInteraction = function() {
   }
   var value = selectElement.value;
   if (value == 'remove') {
-    select = selectSingleclick;
+  	selectSingleclick = new Select();
+    select = selectSingleclick
   }
   else {
     select = null;
@@ -420,8 +421,12 @@ var changeInteraction = function() {
   if (select !== null) {
     map.addInteraction(select);
     select.on('select', function(e) {
+
+    	debugger;
 		if (selectSingleclick.getLayer(e.selected[0]) == vector){
-			source.removeFeature(e.selected[0]);	
+			wsh.sendDeleteDrawing(e.selected[0].getId());
+			//source.removeFeature(e.selected[0]);
+			//selectSingleclick.getFeatures().clear();
 		} 
 		else {
 			selectSingleclick.getFeatures().clear();
@@ -465,12 +470,12 @@ function drawTest(){
     source.addFeature(feature);
 }
 
-var PickerFillred = 255;
+var PickerFillred = 240;
 var PickerFillgreen = 255;
 var PickerFillBlue = 255;
-var	PickerStrokered = 255;
-var	PickerStrokegreen = 255;
-var	PickerStrokeBlue = 255;
+var	PickerStrokered = 0;
+var	PickerStrokegreen = 0;
+var	PickerStrokeBlue = 0;
 
 function transformAndSendCoord(points){
 	//debugger;
@@ -507,7 +512,6 @@ function transformAndSendCoord(points){
 
 
 function handleCircle(circle){
-	//circleCenter = [circle.getCenter().getLongitude(),circle.getCenter().getLatitude()];
 	var center = transform([circle.getCenter().getLongitude(),circle.getCenter().getLatitude()],"EPSG:4326","EPSG:3067");
 	var radius = circle.getRadius();
 	var fillColorInt = circle.getFill().getColor();
@@ -515,8 +519,10 @@ function handleCircle(circle){
 	var strokeColorInt = circle.getStroke().getColor();
 	var strokeColor = intToRgba(strokeColorInt);
 	var width = circle.getStroke().getWidth();
-	var circle = new CircleGeom(center,radius);
+	var id = circle.getId();
+	var circlenew = new CircleGeom(center,radius);
 	var circlefeat = new Feature();
+	
 
 	circlefeat.setStyle(new Style({
    		fill: new Fill({
@@ -528,8 +534,8 @@ function handleCircle(circle){
     		})
   	}));
   		featureID++;
-  		circlefeat.setId(featureID);
-  		circlefeat.setGeometry(circle);
+  		circlefeat.setId(id);
+  		circlefeat.setGeometry(circlenew);
 		source.addFeature(circlefeat);
 }
 
@@ -539,6 +545,7 @@ function handleLinestring(linestring){
 	var strokeColorInt = linestring.getStroke().getColor();
 	var width = linestring.getStroke().getWidth();
 	var strokeColor = intToRgba(strokeColorInt);
+	var id = linestring.getId();
 	var linestring = new LineString(linestringCoord);
 	var linefeat = new Feature({
 		geometry: linestring
@@ -550,7 +557,7 @@ function handleLinestring(linestring){
     		})
   	}));
 	featureID++;
-	linefeat.setId(featureID);
+	linefeat.setId(id);
 
 	source.addFeature(linefeat);
 }
@@ -563,6 +570,7 @@ function handlePolygon(polygon){
 	var strokeColor = intToRgba(strokeColorInt);
 	var width = polygon.getStroke().getWidth();
     var parrlist = polygon.getPointarrayList();
+    var id = polygon.getId();
     for (var i = 0; i < parrlist.length; ++i) {
         parrlist[i].getPointsList().forEach(e=>{
             var p = [e.getLongitude(), e.getLatitude()];
@@ -583,7 +591,7 @@ function handlePolygon(polygon){
     		width: setWidth(width)
     		})
   	}));
-	featureID++;
+	polyfeat.setId(id);
 	source.addFeature(polyfeat);
 }
 
@@ -597,10 +605,24 @@ function transformLinestring(coord,array){
 
 function drawReceivedDrawing(msg) {
 	msg.getLinestringsList().forEach(lstrings=> handleLinestring(lstrings));
-
 	msg.getCirclesList().forEach(circle =>handleCircle(circle));
     msg.getPolysList().forEach(poly=>handlePolygon(poly));
+    
+    msg.getDeleteidsList().forEach(id=>deleteDrawFeature(id));
+
 }
+
+
+function deleteDrawFeature(id){
+	var feats = source.getFeatures();
+	for(var i = 0; i<feats.length; i++){
+		if(feats[i].getId() == id){
+			source.removeFeature(feats[i]);
+			return;
+		}
+	}
+}
+
 
 wsh.addReceiveDrawingListener(drawReceivedDrawing);
 
@@ -1060,6 +1082,28 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		tbRoom = roomname;
 		updateTopBar();
 	}
+//document.getElementById("roomLoginButton").addEventListener("click",handleRoomLogin);
+//wsh.addJoinResultListener(handleLoginResult);
+
+var roomDict = [];
+var userDict = [];
+
+function handleLoginResult(msg){
+	if (window.sessionStorage.getItem("username") == undefined) return;
+	if(msg.getCreateroom() == false){
+		if (roomDict.includes([msg.getRoomname(),msg.getPassword()]))
+				userDict[roomDict.indexOf(msg.getRoomname())].push([window.sessionStorage.getItem("username"),window.sessionStorage,getItem("key")]);		
+		else {
+			console.log("väärä salasana tai huonetta ei olemassa");
+			return;
+			}
+		}
+		else if (msg.getJoinroom().getCreateroom()==true){
+		roomDict.push([msg.getRoomname(),msg.getPassword()]);
+		userDict[roomDict.indexOf([msg.getRoomname(),msg.getPassword()])].push([window.sessionStorage.getItem("username"),window.sessionStorage,getItem("key")]);
+	}
+}
+
 
 //ryhmänvalintaikkunan avaus/sulku
 document.getElementById("openteams").addEventListener("click", openTeamList)
@@ -1153,12 +1197,12 @@ var x = document.getElementById("flexLR");
 
 var colorPickerStroke = new iro.ColorPicker("#color-picker-stroke",{
 	width: 1,
-	color: "#f00",
+	color: "#000000",
 	});
 
 var colorPicker = new iro.ColorPicker('#color-picker-container',{
 	width: 1,
-	color: "#f00",
+	color: "#f0ffff",
 	});
 
 function onColorChange(color,changes){

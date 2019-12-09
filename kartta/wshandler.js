@@ -104,6 +104,16 @@ export class WSHandler {
 		this.ws.send(msg.serializeBinary());
 	}
 
+
+	sendDeleteDrawing(ids){
+		var msg = new proto.testi.ToServer();
+		var shape = new proto.testi.DrawShape();
+		shape.getDeleteidsList().push(ids);
+		msg.setShape(shape);
+		this.ws.send(msg.serializeBinary());
+	}
+
+
 	sendChatMessage(msg) {
 		var resp = new proto.testi.ToServer();
 		resp.setChatmsg(msg);
@@ -183,6 +193,8 @@ export class WSHandler {
 		msg.getLocationsList().forEach(e=>that.onLocationChange.forEach(f=>f(e)));
 		msg.getShapesList().forEach(e=>that.onReceiveDrawing.forEach(f=>f(e)));
 	}
+
+
 	addLocationChangeListener(func) {
 		this.onLocationChange.add(func);
 	}
