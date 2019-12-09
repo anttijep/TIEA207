@@ -233,7 +233,7 @@ wsh.addChatMessageListener(test);
 // end
 
 function updateLocation(msg) {
-	if (msg.getSenderid() === myId || window.sessionStorage.key !== undefined) return;
+	if (msg.getSenderid() === myId) return;
 	var lonlat = transform([msg.getLongitude(), msg.getLatitude()], "EPSG:4326", "EPSG:3067");
 	if (msg.getSenderid() in markerDict) {
 		markerDict[msg.getSenderid()].setGeometry(lonlat ? new Point(lonlat) : null);
@@ -258,7 +258,7 @@ function updateLocation(msg) {
 }
 wsh.addLocationChangeListener(updateLocation);
 
-// käyttäjän siirtäminen ryhmästä toiseen ja disconnectaamisen händläys?
+// käyttäjän siirtyminen ryhmästä toiseen ja disconnectaamisen händläys?
 function userMove(msg) {
 	if (msg.getDisconnected() == true) {
 		markerLayer.remove(markerDict[msg.getUserid()]);
@@ -992,15 +992,16 @@ function handleLogin(e){
 	var key = window.sessionStorage.getItem("key");
 	wsh.login(username, key);
 	
-	//---- ensin huoneeseen liittyminen, sitten sijainti palvelimelle
-	wsh.joinRoom("testi");
-	sendPositionDataToServer();
-	//----
-	
 	removeMapCover();
 }
 	
 function onLogin(msg) {
+	if (msg.getSuccess() === false) {
+		/** TODO **/
+		return;
+	}
+	wsh.joinRoom("testi");
+	sendPositionDataToServer();
 	window.sessionStorage.setItem("username", msg.getUsername());
 	window.sessionStorage.setItem("key", msg.getKey());
 }
