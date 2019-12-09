@@ -114,6 +114,7 @@ var view = new View({
 			projection: projection,
 			center: myPosition,
 			zoom: 10,
+			minZoom: 6,
 			maxZoom:18
 		});
 
@@ -203,6 +204,9 @@ var map = new Map({
 		view: view
 	});
 
+var ext = view.calculateExtent(map.getSize());
+console.log(ext);
+view.fit(ext);
 
 /* map.on('moveend', changeAccuracy);
 
