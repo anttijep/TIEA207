@@ -263,8 +263,9 @@ wsh.addLocationChangeListener(updateLocation);
 // käyttäjän siirtyminen ryhmästä toiseen ja disconnectaamisen händläys?
 function userMove(msg) {
 	if (msg.getDisconnected() == true) {
-		markerLayer.remove(markerDict[msg.getUserid()]);
-    /** TODO: poista käyttäjä vielä markerDictistä? **/
+		var uid = msg.getUserid();
+		markerLayer.remove(markerDict[uid]);
+		delete markerDict.uid; // Toimiiko ja onko tarpeellinen?
 	}
 }
 wsh.addUserMovedListener(userMove);
@@ -1016,6 +1017,7 @@ document.getElementById("teamSelect").style.display = "none";
 document.getElementById("roomwindow").style.display = "none";
 document.getElementById("loginButton").addEventListener("click", handleLogin)
 document.getElementById("selectusername").addEventListener("click", openLogin)
+document.getElementById("usernameInput").focus();
 
 function openLogin(){
 	openHamburger();
@@ -1050,9 +1052,10 @@ wsh.addLoginResultListener(onLogin);
 
 
 //huoneenvalintaikkunan avaus/sulku
-document.getElementById("openroomlogin").addEventListener("click", openRoomLogin)
+document.getElementById("openroomlogin").addEventListener("click", openRoomLogin);
 
 function openRoomLogin(){
+	document.getElementById("roomnameInput").focus();
 	var roomLoginButton = document.getElementById("roomLoginButton");
 	var exitRoomLogin = document.getElementById("exitRoomLogin");
 	var checkbox = document.querySelector("input[name=createroomToggle]");
