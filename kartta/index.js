@@ -436,12 +436,12 @@ function drawTest(){
     source.addFeature(feature);
 }
 
-var PickerFillred = 255;
+var PickerFillred = 240;
 var PickerFillgreen = 255;
 var PickerFillBlue = 255;
-var	PickerStrokered = 255;
-var	PickerStrokegreen = 255;
-var	PickerStrokeBlue = 255;
+var	PickerStrokered = 0;
+var	PickerStrokegreen = 0;
+var	PickerStrokeBlue = 0;
 
 function transformAndSendCoord(points){
 	//debugger;
@@ -963,7 +963,7 @@ function handleLogin(e){
 	wsh.login(username, key);
 	
 	//---- ensin huoneeseen liittyminen, sitten sijainti palvelimelle
-	wsh.joinRoom("testi");
+	//wsh.joinRoom("testi");
 	sendPositionDataToServer();
 	//----
 	
@@ -1012,6 +1012,28 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var createroom = document.getElementById("createroomToggle").checked;
 		wsh.joinRoom(roomname, roompass, createroom);
 	}
+document.getElementById("roomLoginButton").addEventListener("click",handleRoomLogin);
+wsh.addJoinResultListener(handleLoginResult);
+
+var roomDict = [];
+var userDict = [];
+
+function handleLoginResult(msg){
+	if (window.sessionStorage.getItem("username") == undefined) return;
+	if(msg.getCreateroom() == false){
+		if (roomDict.includes([msg.getRoomname(),msg.getPassword()]))
+				userDict[roomDict.indexOf(msg.getRoomname())].push([window.sessionStorage.getItem("username"),window.sessionStorage,getItem("key")]);		
+		else {
+			console.log("väärä salasana tai huonetta ei olemassa");
+			return;
+			}
+		}
+		else if (msg.getJoinroom().getCreateroom()==true){
+		roomDict.push([msg.getRoomname(),msg.getPassword()]);
+		userDict[roomDict.indexOf([msg.getRoomname(),msg.getPassword()])].push([window.sessionStorage.getItem("username"),window.sessionStorage,getItem("key")]);
+	}
+}
+
 
 //ryhmänvalintaikkunan avaus/sulku
 document.getElementById("openteams").addEventListener("click", openTeamList)
@@ -1105,12 +1127,12 @@ var x = document.getElementById("flexLR");
 
 var colorPickerStroke = new iro.ColorPicker("#color-picker-stroke",{
 	width: 1,
-	color: "#f00",
+	color: "#000000",
 	});
 
 var colorPicker = new iro.ColorPicker('#color-picker-container',{
 	width: 1,
-	color: "#f00",
+	color: "#f0ffff",
 	});
 
 function onColorChange(color,changes){
