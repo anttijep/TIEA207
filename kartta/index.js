@@ -927,7 +927,8 @@ function textBoxClick(e) {
  
 function openChat(){
 	openHamburger();
-	document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
+	document.getElementById("minimizeicon").innerHTML = " &#9660 Pienennä chat &#9660 ";
+	document.getElementById("minimizeicon").style.color = "#ffffff";
 	var x = document.getElementById("chatwindow");
 	var y = document.getElementById("messages");
 	
@@ -951,11 +952,12 @@ function chatMinimize(){
 	if (chatminimized == false) {
 		x.style.maxHeight = "20px";
 		chatminimized = true;
-		document.getElementById("minimizeicon").innerHTML = " &#9650 &#9650 &#9650 &#9650 ";
+		document.getElementById("minimizeicon").innerHTML = " &#9650 Laajenna chat &#9650 ";
+		x.scrollTop = x.scrollHeight;
   } else {
 		x.style.maxHeight = "400px";
 		chatminimized = false;
-		document.getElementById("minimizeicon").innerHTML = " &#9660 &#9660 &#9660 &#9660 ";
+		document.getElementById("minimizeicon").innerHTML = " &#9660 Pienennä chat &#9660 ";
   }
 }
 
