@@ -966,21 +966,18 @@ function teamName(){
 }
 
 //login ikkunan avaus/sulku
-document.getElementById("flexLR").style.display = "none";
+document.getElementById("flexLR").style.display = "block";
 document.getElementById("teamSelect").style.display = "none";
 document.getElementById("roomwindow").style.display = "none";
-
+document.getElementById("loginButton").addEventListener("click", handleLogin)
 document.getElementById("selectusername").addEventListener("click", openLogin)
 
 function openLogin(){
-	var loginButton = document.getElementById("loginButton");
 	openHamburger();
 	document.getElementById("roomwindow").style.display = "none";
 	document.getElementById("loginwindow").style.display = "block";
 	document.getElementById("teamSelect").style.display = "none";
 	applyMapCover();
-	
-	loginButton.onclick = handleLogin;
 }
 
 function handleLogin(e){
