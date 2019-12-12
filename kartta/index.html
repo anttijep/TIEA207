@@ -17,6 +17,7 @@
 			<a id="selectusername">Valitse käyttäjätunnus</a>
 			<a id="openroomlogin">Luo/Liity huoneeseen</a>
 			<a id="openteams">Ryhmät</a>
+			<a id="editmap">Muokkaa karttaa</a>
 			<a id="settings">Debug</a>
 			<a id="toolstoggle">Piirtotyökalut</a>
 			<a id="chattoggle">Chat</a>
@@ -35,7 +36,7 @@
 					<div class="loginwindowContent">
 						<form id="formUsername" onSubmit="return false;">
 						  <label for="usernameInput">Käyttäjänimi:</label>
-							<input type="text" id="usernameInput" name="usernameInput" value=""><br>
+							<input type="text" id="usernameInput" name="usernameInput" value="" maxlength="16"><br>
 						  <button type="button" id="loginButton">Kirjaudu</button> 
 						</form>
 					</div>
@@ -45,7 +46,7 @@
 					<div class="loginwindowContent">
 						<form id="formRoom" onSubmit="return false;">
 							<label for="roomnameInput">Huonetunnus:</label>
-							<input type="text" id="roomnameInput" name="roomnameInput" value=""><br>
+							<input type="text" id="roomnameInput" name="roomnameInput" value="" maxlength="16"><br>
 							<label for="passwordInput">Salasana:</label>
 							<input type="text" id="passwordInput" name="passwordInput" value=""><br>
 							<label for="createroomToggle">Luo uusi huone</label>
@@ -63,13 +64,21 @@
 						<div class="teamlistElement" id="modelTeamElement">Luo uusi ryhmä,
 								<button id="createTeamButton" type="button">Luo Ryhmä</button><br>
 								<label for="teamnameInput">Ryhmän nimi:</label>
-								<input type="text" id="teamnameInput" name="teamnameInput" value="">
+								<input type="text" id="teamnameInput" name="teamnameInput" value="" maxlength="16">
 							</div>
 						<div id="teamlist">
 							
 						</div>
 					</div>
 					<button type="button" id="exitTeamWindow">Peruuta</button> 
+				</div>
+				<div id="editmapdiv">
+					<div class="loginwindowTop">Muokkaa karttaa</div>
+					<div id="editmapwindowContent">
+						<table id="maplist"></table>
+					</div>
+					<button type="button" id="acceptEditButton">Hyväksy</button> 
+					<button type="button" id="cancelEditButton">Peruuta</button> 
 				</div>
 			</div>
 		</div>

@@ -52,6 +52,8 @@ function onNewGroup(msg){
 	grouplist[msg.getId()] = msg.getName();
 }
 
+var mapLayers = {};
+
 var featureID = 0;
 proj4.defs("EPSG:3067", "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs");
 register(proj4);
@@ -114,10 +116,10 @@ var view = new View({
 			projection: projection,
 			center: myPosition,
 			zoom: 10,
+			minZoom: 6,
 			maxZoom:18
 		});
 
-var parser = new WMTSCapabilities();
 var scales = [];
 var lastLocationUpdate = Date.now();
 
@@ -203,7 +205,6 @@ var map = new Map({
 		view: view
 	});
 
-
 /* map.on('moveend', changeAccuracy);
 
 function changeAccuracy() {
@@ -263,8 +264,9 @@ wsh.addLocationChangeListener(updateLocation);
 // käyttäjän siirtyminen ryhmästä toiseen ja disconnectaamisen händläys?
 function userMove(msg) {
 	if (msg.getDisconnected() == true) {
-		markerLayer.remove(markerDict[msg.getUserid()]);
-    /** TODO: poista käyttäjä vielä markerDictistä? **/
+		var uid = msg.getUserid();
+		markerLayer.remove(markerDict[uid]);
+		delete markerDict.uid; // Toimiiko ja onko tarpeellinen?
 	}
 }
 wsh.addUserMovedListener(userMove);
@@ -273,35 +275,30 @@ wsh.addUserMovedListener(userMove);
 fetch(capabilitiesUrl).then(function(response) {
 	return response.text();
 }).then(function(text) {
+	var parser = new WMTSCapabilities();
 	var result = parser.read(text);
-	var options = optionsFromCapabilities(result, {
-		layer: 'maastokartta',
-		matrixSet: 'EPSG:3067'
+	result.Contents.Layer.forEach(e=> {
+		var ident = e.Identifier;
+//		if (ident === "kiinteistojaotus" || ident === "kiinteistotunnukset")
+//			return;
+		var options = optionsFromCapabilities(result, {
+			layer: ident,
+			matrixSet: 'EPSG:3067'
+		});
+		var tl = new TileLayer({
+			opacity: 1,
+			source: new WMTS(options),
+			zIndex: 0
+		})
+		map.addLayer(tl);
+		tl.setVisible(false);
+		mapLayers[ident] = tl;
 	});
+	mapLayers["maastokartta"].setVisible(true);
 	scales = result.Contents.TileMatrixSet[1].TileMatrix;	// xml:stä saadut arvot (EPSG:3067)
-	var tl = new TileLayer({
-				opacity: 1,
-				source: new WMTS(options),
-				zIndex: 0
-			});
-	map.addLayer(tl);
+
 	map.removeLayer(vector);
   	map.addLayer(vector);
-	/* map = new Map({
-		controls: defaultControls().extend([mousePositionControl]),
-		layers: [
-			new TileLayer({
-				opacity: 1,
-				source: new WMTS(options)
-			})
-		],
-		target: 'map',
-		view: new View({
-			projection: projection,
-			center: myPosition,
-			zoom: 10
-		})
-	}); */
 });
 
 var locationUpdating = false;
@@ -840,6 +837,7 @@ document.getElementById("drawtools").style.display = "none"; //piirtotyökalut k
 document.getElementById("toolstoggle").addEventListener("click", openTools)
 
 function openTools(){
+	removeMapCover();
 	openHamburger();
 	var x = document.getElementById("drawtools");
 	if (x.style.display === "flex") {
@@ -958,6 +956,11 @@ document.getElementById("chatwindow").style.display = "none";
 document.getElementById("chattoggle").addEventListener("click", openChat);
 document.getElementById("chatminimize").addEventListener("click", chatMinimize);
 
+document.getElementById("sendmessage").onsubmit = function (e) {
+	e.preventDefault();
+	textBoxClick(e);
+};
+
 var sendButton = document.getElementById("messagesendbutton");
 sendButton.onclick = textBoxClick;
  
@@ -1040,14 +1043,17 @@ function teamName(){
 document.getElementById("flexLR").style.display = "block";
 document.getElementById("teamSelect").style.display = "none";
 document.getElementById("roomwindow").style.display = "none";
+document.getElementById("editmapdiv").style.display = "none";
+
 document.getElementById("loginButton").addEventListener("click", handleLogin)
 document.getElementById("selectusername").addEventListener("click", openLogin)
+document.getElementById("usernameInput").focus();
 
 function openLogin(){
+	var loginButton = document.getElementById("loginButton");
+	removeMapCover();
 	openHamburger();
-	document.getElementById("roomwindow").style.display = "none";
 	document.getElementById("loginwindow").style.display = "block";
-	document.getElementById("teamSelect").style.display = "none";
 	applyMapCover();
 }
 
@@ -1076,17 +1082,19 @@ wsh.addLoginResultListener(onLogin);
 
 
 //huoneenvalintaikkunan avaus/sulku
-document.getElementById("openroomlogin").addEventListener("click", openRoomLogin)
+document.getElementById("openroomlogin").addEventListener("click", function(e) {
+	openRoomLogin();
+	document.getElementById("roomnameInput").focus();
+	});
 
 function openRoomLogin(){
 	var roomLoginButton = document.getElementById("roomLoginButton");
 	var exitRoomLogin = document.getElementById("exitRoomLogin");
 	var checkbox = document.querySelector("input[name=createroomToggle]");
 	
+	removeMapCover();
 	openHamburger();
-	document.getElementById("loginwindow").style.display = "none";
 	document.getElementById("roomwindow").style.display = "block";
-	document.getElementById("teamSelect").style.display = "none";
 	applyMapCover();
 	
 	checkbox.addEventListener( 'change', function() {
@@ -1100,6 +1108,7 @@ function openRoomLogin(){
 	roomLoginButton.onclick = handleRoomLogin;
 	exitRoomLogin.onclick = removeMapCover;
 }
+
 
 function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var roomname = document.getElementById("roomnameInput").value;
@@ -1131,17 +1140,113 @@ function handleLoginResult(msg){
 	}
 }
 
+// kartan muokkaus ikkuna
+document.getElementById("editmap").addEventListener("click", openEditMap);
+
+function openEditMap() {
+	removeMapCover();
+	var cancel = document.getElementById("cancelEditButton");
+	var accept = document.getElementById("acceptEditButton");
+	cancel.onclick = removeMapCover;
+	accept.onclick = onaccept;
+
+	openHamburger();
+	document.getElementById("editmapdiv").style.display = "flex";
+	applyMapCover();
+
+	var listtable = document.getElementById("maplist");
+	listtable.innerHTML = '';
+
+	var tr = document.createElement("tr");
+	var th = document.createElement("th");
+	th.appendChild(document.createTextNode("Name"));
+	tr.appendChild(th);
+
+	th = document.createElement("th");
+	th.appendChild(document.createTextNode("opacity"));
+	tr.appendChild(th);
+
+	th = document.createElement("th");
+	th.appendChild(document.createTextNode("z-index"));
+	tr.appendChild(th);
+
+	listtable.appendChild(tr);
+
+	var keys = Object.keys(mapLayers);
+	keys.sort();
+	var cid = 0;
+	keys.forEach(key=> {
+		var tr = document.createElement("tr");
+		var label = document.createElement("label");
+		var option = document.createElement("input");
+		var opacitybox = document.createElement("input");
+		var zindexbox = document.createElement("input");
+
+		option.type = "checkbox";
+		option.className = "mapcboxes";
+		option.value = key;
+		option.checked = mapLayers[key].getVisible();
+		option.id = "cb"+cid++;
+		label.appendChild(document.createTextNode(key));
+		label.htmlFor = option.id;
+
+		var td = document.createElement("td");
+		td.id = key;
+		td.appendChild(option);
+		td.appendChild(label);
+		tr.appendChild(td);
+
+		opacitybox.type = "number";
+		opacitybox.className = "opacity";
+		opacitybox.valueAsNumber = mapLayers[key].getOpacity();
+		opacitybox.step = "0.1";
+		opacitybox.max = "1";
+		opacitybox.min = "0";
+		var td = document.createElement("td");
+		td.id = key;
+		td.appendChild(opacitybox);
+		tr.appendChild(td);
+
+		zindexbox.type = "number";
+		zindexbox.className = "zindex";
+		zindexbox.valueAsNumber = mapLayers[key].getZIndex();
+		zindexbox.min = "0";
+		zindexbox.max = Number.MAX_SAFE_INTEGER;
+		td = document.createElement("td");
+		td.id = key;
+		td.appendChild(zindexbox);
+		tr.appendChild(td);
+		listtable.appendChild(tr);
+	});
+
+	function onaccept() {
+		var elements = listtable.getElementsByTagName("td");
+		for (var elem of elements) {
+			for (var child of elem.childNodes) {
+				if (child.className === "mapcboxes") {
+					mapLayers[elem.id].setVisible(child.checked);
+				}
+				else if (child.className === "opacity") {
+					mapLayers[elem.id].setOpacity(child.valueAsNumber);
+				}
+				else if (child.className === "zindex") {
+					mapLayers[elem.id].setZIndex(child.valueAsNumber);
+				}
+			}
+		}
+		removeMapCover();
+	}
+}
 
 //ryhmänvalintaikkunan avaus/sulku
-document.getElementById("openteams").addEventListener("click", openTeamList)
+document.getElementById("openteams").addEventListener("click", openTeamList);
 
 function openTeamList(){
+	removeMapCover();
 	var exitTeamWindow = document.getElementById("exitTeamWindow");
 	var editTeams = document.getElementById("teamEditButton");
 	
 	openHamburger();
-	document.getElementById("roomwindow").style.display = "none";
-	document.getElementById("loginwindow").style.display = "none";
 	document.getElementById("teamSelect").style.display = "flex";
 	applyMapCover();
 	fetchTeamNames();
@@ -1208,6 +1313,10 @@ function applyMapCover(){
 	}
 }
 function removeMapCover(){
+	document.getElementById("roomwindow").style.display = "none";
+	document.getElementById("loginwindow").style.display = "none";
+	document.getElementById("teamSelect").style.display = "none";
+	document.getElementById("editmapdiv").style.display = "none";
 	var x = document.getElementById("flexLR");
 	if (x.style.display === "block") {
 		x.style.display = "none";
