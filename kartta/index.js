@@ -451,7 +451,14 @@ typeSelect.onchange = function() {
 
 function clearAll(event){
   event.preventDefault();
-  vectorLayerSource.clear();
+  debugger;
+  var feats = source.getFeatures();
+  var idarray = [];
+  for(var i = 0; i<feats.length;i++){
+  	idarray.push(feats[i].getId());
+  }
+  wsh.sendDeleteDrawing(idarray);
+  //vectorLayerSource.clear();
  // vector.setVisible(false);
  // vector.setVisible(true);
 };
@@ -464,6 +471,30 @@ function drawTest(){
             geometry: new Polygon(points)
         });
     source.addFeature(feature);
+}
+
+function setDrawingVisibility(){
+	if (vector.getVisible() == true) vector.setVisible(false);
+	else vector.setVisible(true);
+}
+
+
+function setAccuracyVisibility(){
+	debugger;
+	var layers = map.getLayers().getArray();
+	for(var i = 0; i<layers.length;i++){
+		if(layers[i].getZIndex() == 4 && layers[i].getVisible()== true) layers[i].setVisible(false);
+		else if(layers[i].getZIndex() == 4 && layers[i].getVisible()== false) layers[i].setVisible(true);
+	}
+}
+
+
+document.getElementById("hideAll").onclick = function(){
+	setDrawingVisibility();
+}
+
+document.getElementById("hideAccuracy").onclick = function(){
+	setAccuracyVisibility();
 }
 
 var PickerFillred = 240;

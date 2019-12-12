@@ -108,7 +108,13 @@ export class WSHandler {
 	sendDeleteDrawing(ids){
 		var msg = new proto.testi.ToServer();
 		var shape = new proto.testi.DrawShape();
-		shape.getDeleteidsList().push(ids);
+		
+		if(ids.constructor == Array){
+			shape.setDeleteidsList(ids);	
+		} 
+		else{
+			shape.getDeleteidsList().push(ids);
+		}
 		msg.setShape(shape);
 		this.ws.send(msg.serializeBinary());
 	}
