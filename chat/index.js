@@ -30,6 +30,10 @@ function joinRoom(e) {
 	e.preventDefault();
 }
 
+function joinGroup(e) {
+    wsh.joinGroup(0);
+}
+
 function loginresult(result) {
 	if (result.getSuccess()) {
 		if (usekeybox.checked) {
@@ -154,14 +158,14 @@ function creategroup(e) {
 var joingroupb = document.getElementById("joingroup");
 joingroupb.onclick = joingroup;
 
-function joingroup(e) {
+function joingroup(id) {
 	wsh.joinGroup(1);
 }
 var editgroupb = document.getElementById("editgroup");
 editgroupb.onclick = editgroup;
 
 function editgroup(e) {
-	wsh.editGroup(1, "edit", 0xff0000ff);
+	wsh.deleteGroup(0);
 }
 
 function onGroupEdit(msg) {
