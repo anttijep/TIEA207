@@ -43,14 +43,13 @@ function debugLogin(e) {
 	//wsh.joinRoom("testi");
 }
 
-var grouplist = {
-	0:"-Unassigned-",
-	1:"testitiimi2",
-	2:"testitiimi3"
-};
+var grouplist = {};
 function onNewGroup(msg){
-	grouplist[msg.getId()] = msg.getName();
+	var id = msg.getId();
+	grouplist[id] = msg.getName();
 }
+
+wsh.addNewGroupListener(onNewGroup);
 
 var mapLayers = {};
 
@@ -268,6 +267,7 @@ function userMove(msg) {
 		markerLayer.remove(markerDict[uid]);
 		delete markerDict.uid; // Toimiiko ja onko tarpeellinen?
 	}
+	
 }
 wsh.addUserMovedListener(userMove);
 
@@ -446,7 +446,6 @@ typeSelect.onchange = function() {
 
 function clearAll(event){
   event.preventDefault();
-  debugger;
   var feats = source.getFeatures();
   var idarray = [];
   for(var i = 0; i<feats.length;i++){
@@ -475,7 +474,6 @@ function setDrawingVisibility(){
 
 
 function setAccuracyVisibility(){
-	debugger;
 	var layers = map.getLayers().getArray();
 	for(var i = 0; i<layers.length;i++){
 		if(layers[i].getZIndex() == 4 && layers[i].getVisible()== true) layers[i].setVisible(false);
@@ -1119,6 +1117,12 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 //document.getElementById("roomLoginButton").addEventListener("click",handleRoomLogin);
 //wsh.addJoinResultListener(handleLoginResult);
 
+function handleGroupLogin() {
+	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
+	console.log("Yritettiin liittyä ryhmään " + groupId);
+	wsh.joinGroup(groupId);
+}
+
 var roomDict = [];
 var userDict = [];
 
@@ -1286,8 +1290,9 @@ function openTeamList(){
 			teamelement.textContent = grouplist[key];
 			var teambutton = document.createElement("button");
 			teambutton.className = "teamButton";
-			teambutton.id = "teamButton" + key;
+			teambutton.id = "teambutton" + key;
 			teambutton.textContent = "Liity";
+			teambutton.addEventListener ("click", handleGroupLogin);
 			var delteambutton = document.createElement("button");
 			delteambutton.className = "delteamButton";
 			delteambutton.id = "delteamButton" + key;
@@ -1301,8 +1306,15 @@ function openTeamList(){
 	}
 }
 
+var createTeamButton = document.getElementById("createTeamButton");
+var newGroupName = document.getElementById("teamnameInput");
+createTeamButton.addEventListener("click", function() {handleNewGroup(newGroupName.value)});
 
-
+function handleNewGroup(name) {
+	wsh.createGroup(name);
+	newGroupName.value="";
+	removeMapCover();
+}
 
 function applyMapCover(){
 	var x = document.getElementById("flexLR");
