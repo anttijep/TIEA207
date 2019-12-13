@@ -1123,6 +1123,13 @@ function handleGroupLogin() {
 	wsh.joinGroup(groupId);
 }
 
+function handleGroupDelete() {
+	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
+	console.log("Poistetaan ryhmä " + groupId);
+	delete grouplist[groupId];
+	wsh.deleteGroup(groupId);
+}
+
 var roomDict = [];
 var userDict = [];
 
@@ -1298,6 +1305,7 @@ function openTeamList(){
 			delteambutton.id = "delteamButton" + key;
 			delteambutton.textContent = "Poista";
 			delteambutton.style.display = "none";
+			delteambutton.addEventListener ("click", handleGroupDelete);
 			
 			teamelement.appendChild(teambutton);
 			teamelement.appendChild(delteambutton);
