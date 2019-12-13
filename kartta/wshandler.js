@@ -164,6 +164,15 @@ export class WSHandler {
 		msg.setJoingroup(group);
 		this.ws.send(msg.serializeBinary());
 	}
+    
+    deleteGroup(groupid) {
+        var msg = new proto.testi.ToServer();
+		var group = new proto.testi.EditGroup();
+		group.setId(groupid);
+        group.setDelete(true);
+        msg.setEditgroup(group);
+		this.ws.send(msg.serializeBinary());
+    }
 
 	editGroup(groupid, name = null, usercolor = null) {
 		var msg = new proto.testi.ToServer();

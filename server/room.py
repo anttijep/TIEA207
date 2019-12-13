@@ -153,6 +153,12 @@ class Room:
     def editgroup(self, user : User, msg):
         edit = False
         if msg.id in self.groups:
+            if msg.delete:
+                if msg.id == 0:
+                    return None
+                del self.groups[msg.id]
+                edit = True
+                return msg
             if msg.name:
                 self.groups[msg.id].setname(msg.name)
                 edit = True

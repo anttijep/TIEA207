@@ -116,6 +116,7 @@ message EditGroup {
   int32 id = 1;
   string name = 2;
   uint32 usercolor = 3;
+  bool delete = 4;
 }
 
 // LOGIN&&JOIN
