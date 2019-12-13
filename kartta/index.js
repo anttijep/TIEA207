@@ -418,8 +418,6 @@ var changeInteraction = function() {
   if (select !== null) {
     map.addInteraction(select);
     select.on('select', function(e) {
-
-    	debugger;
 		if (selectSingleclick.getLayer(e.selected[0]) == vector){
 			wsh.sendDeleteDrawing(e.selected[0].getId());
 			//source.removeFeature(e.selected[0]);
