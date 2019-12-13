@@ -17,6 +17,7 @@
 			<a id="selectusername">Valitse käyttäjätunnus</a>
 			<a id="openroomlogin">Luo/Liity huoneeseen</a>
 			<a id="openteams">Ryhmät</a>
+			<a id="editmap">Muokkaa karttaa</a>
 			<a id="settings">Debug</a>
 			<a id="toolstoggle">Piirtotyökalut</a>
 			<a id="chattoggle">Chat</a>
@@ -70,6 +71,14 @@
 						</div>
 					</div>
 					<button type="button" id="exitTeamWindow">Peruuta</button> 
+				</div>
+				<div id="editmapdiv">
+					<div class="loginwindowTop">Muokkaa karttaa</div>
+					<div id="editmapwindowContent">
+						<table id="maplist"></table>
+					</div>
+					<button type="button" id="acceptEditButton">Hyväksy</button> 
+					<button type="button" id="cancelEditButton">Peruuta</button> 
 				</div>
 			</div>
 		</div>
@@ -168,6 +177,8 @@
 				<a id="drawcircle">Ympyrä</a>
 				<a id="erase">Pyyhi</a>
 				<a id="clearAll">Pyyhi kaikki</a>
+				<a id="hideAll"> Piilota/näytä piirrokset </a>
+				<a id="hideAccuracy"> Piilota/näytä Tarkkuusympyrä </a>
 			</div>
 			<div id="chatwindow">
 				<div id="chatminimize">
