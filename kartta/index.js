@@ -25,6 +25,7 @@ import LineString from "ol/geom/LineString";
 import CircleGeom from "ol/geom/Circle";
 import Select from 'ol/interaction/Select';
 import iro from '@jaames/iro';
+import {click} from 'ol/events/condition';
 
 
 var types = require('./testprotocol_pb');
@@ -395,7 +396,7 @@ function addInteraction() {
  }
 
 var select = null;
-var selectSingleclick = new Select();
+var selectSingleclick = new Select({condition: click});
 var selectElement = document.getElementById('remove');
 selectElement.value = "none";
 
@@ -408,8 +409,8 @@ var changeInteraction = function() {
   }
   var value = selectElement.value;
   if (value == 'remove') {
-  	selectSingleclick = new Select();
-    select = selectSingleclick;
+  	selectSingleclick = new Select({condition: click});
+    select = selectSingleclick
   }
   else {
     select = null;
@@ -417,7 +418,7 @@ var changeInteraction = function() {
   if (select !== null) {
     map.addInteraction(select);
     select.on('select', function(e) {
-		if (selectSingleclick.getLayer(e.selected[0]) == vector){
+		if (e.selected.length > 0 && selectSingleclick.getLayer(e.selected[0]) == vector && vector != undefined){
 			wsh.sendDeleteDrawing(e.selected[0].getId());
 			//source.removeFeature(e.selected[0]);
 			//selectSingleclick.getFeatures().clear();
@@ -737,6 +738,7 @@ document.getElementById("drawcircle").onclick = function(){
 }
 
 function selectPolygonElement(){
+    selectElement.value = "none";
 	openPoly();
 	if (typeSelect.value =="Polygon") {
 		typeSelect.value ="None";
@@ -748,6 +750,7 @@ function selectPolygonElement(){
 }
 
 function selectLineStringElement(){
+    selectElement.value = "none";
 	openLinestringColor();
 	if (typeSelect.value =="LineString") {
 		typeSelect.value ="None";
@@ -760,6 +763,7 @@ function selectLineStringElement(){
 }
 
 function selectCircleElement(){
+    selectElement.value = "none";
 	openCircle();
 	if (typeSelect.value =="Circle") {
 		typeSelect.value ="None";
@@ -771,6 +775,7 @@ function selectCircleElement(){
 }
 
 function selectErase(){
+    typeSelect.value = "None";
 	if (selectElement.value == "remove"){
 		selectElement.value = "none";
 		selectElement.onchange();
