@@ -265,13 +265,12 @@ function userMove(msg) {
 	if (msg.getDisconnected() == true) {
 		var uid = msg.getUserid();
 		markerLayer.remove(markerDict[uid]);
-		delete markerDict.uid; // Toimiiko ja onko tarpeellinen?
+		delete markerDict.uid;
 	}
 
 	if (msg.getName() !== "") {
 		userslist[msg.getUserid()] = msg.getName();
 	}
-	
 }
 wsh.addUserMovedListener(userMove);
 
@@ -803,9 +802,9 @@ var defaultbackgroundColor = "#333";
 var selectedbackgroundColor = "#01ff00";
 
 
-//Yläpalkin päivitya
+//Yläpalkin päivitys
 var tbAccuracy;
-var tbTeam = "tbTeam";
+var tbTeam = "unassigned";
 var tbUser = "tbUser";
 var tbRoom = "tbRoom";
 
@@ -842,7 +841,7 @@ function openTools(){
 	var x = document.getElementById("drawtools");
 	if (x.style.display === "flex") {
 		x.style.display = "none";
-		colorpickers.style.display = "inline-block"
+		colorpickers.style.display = "None"
 		typeSelect.value ="None";
   } else {
 		x.style.display = "flex";
@@ -1076,6 +1075,7 @@ function onLogin(msg) {
 	window.sessionStorage.setItem("key", msg.getKey());
 	tbUser = msg.getUsername();
 	updateTopBar();
+	updateLicense();
 }
 
 wsh.addLoginResultListener(onLogin);
@@ -1115,6 +1115,10 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").checked;
 		wsh.joinRoom(roomname, roompass, createroom);
+    markerLayer.clear()
+    markerLayer.push(positionMarker);
+    sendPositionDataToServer();
+    positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		tbRoom = roomname;
 		updateTopBar();
 	}
@@ -1124,10 +1128,16 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 function handleGroupLogin() {
 	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
 	wsh.joinGroup(groupId);
+  console.log(teamlist);
+  tbTeam = grouplist[groupId];
 }
 
 function handleGroupDelete() {
 	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
+  if (groupId == 0) { // unassignedia ei voi poistaa listasta
+    return;
+  }
+	console.log("Poistetaan ryhmä " + groupId);
 	delete grouplist[groupId];
 	wsh.deleteGroup(groupId);
 }
@@ -1376,5 +1386,14 @@ function onColorChangeStroke(color,changes){
 
 colorPicker.on("color:change",onColorChange);
 colorPickerStroke.on("color:change",onColorChangeStroke);
+
+var license = document.getElementById("licenseinfo")
+function updateLicense(){
+	var pvm = new Date();
+	var y = pvm.getYear() + 1900;
+	var m = pvm.getMonth();
+	license.textContent = "Sisältää Maanmittauslaitoksen Maastotietokannan " + m + "/" + y + " aineistoa"
+}
+
 
 
