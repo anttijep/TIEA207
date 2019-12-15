@@ -980,10 +980,14 @@ function textBoxClick(e) {
 	wsh.sendChatMessage(bytes);
 	textbox.value = "";
 }
- 
+var chatminimized = false;
 function openChat(){
 	openHamburger();
-	document.getElementById("minimizeicon").innerHTML = " &#9660 Pienennä chat &#9660 ";
+	if (chatminimized == false){
+		document.getElementById("minimizeicon").innerHTML = " &#9660 Pienennä chat &#9660 ";
+	} else {
+		document.getElementById("minimizeicon").innerHTML = " &#9650 Laajenna chat &#9650 ";
+	}
 	document.getElementById("minimizeicon").style.color = "#ffffff";
 	var x = document.getElementById("chatwindow");
 	var y = document.getElementById("messages");
@@ -997,12 +1001,12 @@ function openChat(){
 	if (x.style.display === "block") {
 		x.style.display = "none";
 		colorpickers.style.bottom = "21px";
-  } else {
+	} else {
 		x.style.display = "block";
 		colorpickers.style.bottom = "85px";
-  }
+	}
 }
-var chatminimized = false;
+
 function chatMinimize(){
 	var x = document.getElementById("messages");
 	if (chatminimized == false) {
