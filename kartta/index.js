@@ -1122,8 +1122,11 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var roomname = document.getElementById("roomnameInput").value;
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").checked;
+		tbRoom = roomname;
+		updateTopBar();
 		wsh.joinRoom(roomname, roompass, createroom);
 		removeMapCover();
+		
 
 }
 
@@ -1134,7 +1137,7 @@ function handleJoinRoom(msg) {
   markerLayer.clear();
   markerLayer.push(positionMarker);
   sendPositionDataToServer();
-  tbRoom = msg.getRoomname();
+  //tbRoom = msg.getRoomname();
   userDict = [];
   for (var marker in markerDict) {
     delete markerDict[marker];
