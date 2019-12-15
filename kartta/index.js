@@ -811,8 +811,8 @@ var tbRoom = "tbRoom";
 function updateTopBar(){
 	var title = document.getElementById("title");
 	var subtitle = document.getElementById("debuginfo");
-	title.textContent = "Team: " + tbTeam
-	subtitle.textContent = "User: " + tbUser + " | Room: " + tbRoom + " | Acc: " + tbAccuracy;
+	title.textContent = "Ryhmä: " + tbTeam
+	subtitle.textContent = "Käyttäjä: " + tbUser + " | Huone: " + tbRoom + " | Tarkkuus.: " + tbAccuracy + "m";
 }
 
 
