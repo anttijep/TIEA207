@@ -422,5 +422,12 @@ html, body{
 	margin-top: 0px;
 	width: 50%;
 }
+
+#hideAll{
+	display: none;
+}
+#hideAccuracy{
+	display: none;
+}
 }
 
