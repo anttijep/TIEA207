@@ -265,9 +265,8 @@ function userMove(msg) {
 	if (msg.getDisconnected() == true) {
 		var uid = msg.getUserid();
 		markerLayer.remove(markerDict[uid]);
-		delete markerDict.uid; // Toimiiko ja onko tarpeellinen?
-	}
-	
+		delete markerDict.uid;
+	}	
 }
 wsh.addUserMovedListener(userMove);
 
@@ -799,9 +798,9 @@ var defaultbackgroundColor = "#333";
 var selectedbackgroundColor = "#01ff00";
 
 
-//Yläpalkin päivitya
+//Yläpalkin päivitys
 var tbAccuracy;
-var tbTeam = "tbTeam";
+var tbTeam = "unassigned";
 var tbUser = "tbUser";
 var tbRoom = "tbRoom";
 
@@ -962,6 +961,7 @@ sendButton.onclick = textBoxClick;
  
 function addToChatFromServer(msg) {	/** TODO **/
 	var s = msg.getSenderid();
+  
 	var m = msg.getMsg();
 	addToChat(s, m, "#96e27d", "Group");
 }
@@ -1112,6 +1112,10 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").checked;
 		wsh.joinRoom(roomname, roompass, createroom);
+    markerLayer.clear()
+    markerLayer.push(positionMarker);
+    sendPositionDataToServer();
+    positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		tbRoom = roomname;
 		updateTopBar();
 	}
@@ -1120,12 +1124,16 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 
 function handleGroupLogin() {
 	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
-	console.log("Yritettiin liittyä ryhmään " + groupId);
 	wsh.joinGroup(groupId);
+  console.log(teamlist);
+  tbTeam = grouplist[groupId];
 }
 
 function handleGroupDelete() {
 	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
+  if (groupId == 0) { // unassignedia ei voi poistaa listasta
+    return;
+  }
 	console.log("Poistetaan ryhmä " + groupId);
 	delete grouplist[groupId];
 	wsh.deleteGroup(groupId);
