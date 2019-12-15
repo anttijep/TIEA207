@@ -417,7 +417,7 @@ var changeInteraction = function() {
   if (select !== null) {
     map.addInteraction(select);
     select.on('select', function(e) {
-		if (selectSingleclick.getLayer(e.selected[0]) == vector){
+		if (selectSingleclick.getLayer(e.selected[0]) == vector && vector != undefined){
 			wsh.sendDeleteDrawing(e.selected[0].getId());
 			//source.removeFeature(e.selected[0]);
 			//selectSingleclick.getFeatures().clear();
