@@ -1119,7 +1119,6 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 
 function handleGroupLogin() {
 	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
-	console.log("Yritettiin liittyä ryhmään " + groupId);
 	wsh.joinGroup(groupId);
   console.log(teamlist);
   tbTeam = grouplist[groupId];
