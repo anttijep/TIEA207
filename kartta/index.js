@@ -266,8 +266,7 @@ function userMove(msg) {
 		var uid = msg.getUserid();
 		markerLayer.remove(markerDict[uid]);
 		delete markerDict.uid;
-	}
-	
+	}	
 }
 wsh.addUserMovedListener(userMove);
 
@@ -962,6 +961,7 @@ sendButton.onclick = textBoxClick;
  
 function addToChatFromServer(msg) {	/** TODO **/
 	var s = msg.getSenderid();
+  
 	var m = msg.getMsg();
 	addToChat(s, m, "#96e27d", "Group");
 }
@@ -1111,6 +1111,10 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").checked;
 		wsh.joinRoom(roomname, roompass, createroom);
+    markerLayer.clear()
+    markerLayer.push(positionMarker);
+    sendPositionDataToServer();
+    positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
 		tbRoom = roomname;
 		updateTopBar();
 	}
