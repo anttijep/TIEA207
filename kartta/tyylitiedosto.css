@@ -131,6 +131,10 @@ html, body{
 	right: 10px;
 }
 
+.hide{
+	display: none;
+}
+
 /*ryhmänvalinta-ikkuna*/
 #teamSelect{
 	background-color: #333;

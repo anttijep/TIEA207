@@ -1123,6 +1123,7 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").checked;
 		wsh.joinRoom(roomname, roompass, createroom);
+		removeMapCover();
 
 }
 
@@ -1203,15 +1204,15 @@ function openEditMap() {
 
 	var tr = document.createElement("tr");
 	var th = document.createElement("th");
-	th.appendChild(document.createTextNode("Name"));
+	th.appendChild(document.createTextNode("Nimi"));
 	tr.appendChild(th);
 
 	th = document.createElement("th");
-	th.appendChild(document.createTextNode("opacity"));
+	th.appendChild(document.createTextNode("Sameus"));
 	tr.appendChild(th);
 
 	th = document.createElement("th");
-	th.appendChild(document.createTextNode("z-index"));
+	th.appendChild(document.createTextNode("z-indeksi"));
 	tr.appendChild(th);
 
 	listtable.appendChild(tr);
