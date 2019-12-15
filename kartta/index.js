@@ -3,7 +3,6 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import WMTSCapabilities from 'ol/format/WMTSCapabilities';
 import TileLayer from 'ol/layer/Tile';
-import OSM from 'ol/source/OSM';
 import WMTS, {optionsFromCapabilities} from 'ol/source/WMTS';
 import proj4 from 'proj4';
 import {register} from 'ol/proj/proj4';
@@ -44,6 +43,7 @@ function debugLogin(e) {
 }
 
 var grouplist = {};
+var userslist = {};
 function onNewGroup(msg){
 	var id = msg.getId();
 	grouplist[id] = msg.getName();
@@ -266,6 +266,10 @@ function userMove(msg) {
 		var uid = msg.getUserid();
 		markerLayer.remove(markerDict[uid]);
 		delete markerDict.uid; // Toimiiko ja onko tarpeellinen?
+	}
+
+	if (msg.getName() !== "") {
+		userslist[msg.getUserid()] = msg.getName();
 	}
 	
 }
@@ -961,7 +965,7 @@ var sendButton = document.getElementById("messagesendbutton");
 sendButton.onclick = textBoxClick;
  
 function addToChatFromServer(msg) {	/** TODO **/
-	var s = msg.getSenderid();
+	var s = userslist[msg.getSenderid()];
 	var m = msg.getMsg();
 	addToChat(s, m, "#96e27d", "Group");
 }
@@ -1372,3 +1376,5 @@ function onColorChangeStroke(color,changes){
 
 colorPicker.on("color:change",onColorChange);
 colorPickerStroke.on("color:change",onColorChangeStroke);
+
+

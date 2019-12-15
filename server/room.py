@@ -190,6 +190,7 @@ class Room:
         usermoved = testprotocol_pb2.UserMoved()
         usermoved.userid = self.clients[user]
         usermoved.groupid = self.usergroup[user]
+        usermoved.name = user.getusername()
         msgout.usermoved.append(usermoved)
         await self.sendmessage(user, msgout)
     
