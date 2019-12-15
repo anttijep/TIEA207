@@ -409,7 +409,7 @@ var changeInteraction = function() {
   var value = selectElement.value;
   if (value == 'remove') {
   	selectSingleclick = new Select();
-    select = selectSingleclick
+    select = selectSingleclick;
   }
   else {
     select = null;
@@ -417,7 +417,7 @@ var changeInteraction = function() {
   if (select !== null) {
     map.addInteraction(select);
     select.on('select', function(e) {
-		if (selectSingleclick.getLayer(e.selected[0]) == vector && vector != undefined){
+		if (selectSingleclick.getLayer(e.selected[0]) == vector){
 			wsh.sendDeleteDrawing(e.selected[0].getId());
 			//source.removeFeature(e.selected[0]);
 			//selectSingleclick.getFeatures().clear();
@@ -1146,6 +1146,8 @@ function handleGroupLogin() {
 	wsh.joinGroup(groupId);
   console.log(teamlist);
   tbTeam = grouplist[groupId];
+  updateTopBar();
+  removeMapCover();
 }
 
 function handleGroupDelete() {
@@ -1411,5 +1413,10 @@ function updateLicense(){
 	license.textContent = "Sisältää Maanmittauslaitoksen Maastotietokannan " + m + "/" + y + " aineistoa"
 }
 
+// Ryhmiin liittyvien elementtien piilotus
+// Ota pois kun/jos ryhmät toteutetaan
+document.getElementById("title").style.display="none";
+document.getElementById("chatselect").style.display="none";
+document.getElementById("openteams").style.display="none";
 
 
