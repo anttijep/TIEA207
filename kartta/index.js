@@ -265,7 +265,7 @@ function userMove(msg) {
 	if (msg.getDisconnected() == true) {
 		var uid = msg.getUserid();
 		markerLayer.remove(markerDict[uid]);
-		delete markerDict.uid; // Toimiiko ja onko tarpeellinen?
+		delete markerDict.uid;
 	}
 	
 }
@@ -799,9 +799,9 @@ var defaultbackgroundColor = "#333";
 var selectedbackgroundColor = "#01ff00";
 
 
-//Yläpalkin päivitya
+//Yläpalkin päivitys
 var tbAccuracy;
-var tbTeam = "tbTeam";
+var tbTeam = "unassigned";
 var tbUser = "tbUser";
 var tbRoom = "tbRoom";
 
@@ -1121,10 +1121,15 @@ function handleGroupLogin() {
 	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
 	console.log("Yritettiin liittyä ryhmään " + groupId);
 	wsh.joinGroup(groupId);
+  console.log(teamlist);
+  tbTeam = grouplist[groupId];
 }
 
 function handleGroupDelete() {
 	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
+  if (groupId == 0) { // unassignedia ei voi poistaa listasta
+    return;
+  }
 	console.log("Poistetaan ryhmä " + groupId);
 	delete grouplist[groupId];
 	wsh.deleteGroup(groupId);
