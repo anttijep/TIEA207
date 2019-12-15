@@ -838,7 +838,7 @@ function openTools(){
 	var x = document.getElementById("drawtools");
 	if (x.style.display === "flex") {
 		x.style.display = "none";
-		colorpickers.style.display = "inline-block"
+		colorpickers.style.display = "None"
 		typeSelect.value ="None";
   } else {
 		x.style.display = "flex";
@@ -1072,6 +1072,7 @@ function onLogin(msg) {
 	window.sessionStorage.setItem("key", msg.getKey());
 	tbUser = msg.getUsername();
 	updateTopBar();
+	updateLicense();
 }
 
 wsh.addLoginResultListener(onLogin);
@@ -1374,3 +1375,11 @@ function onColorChangeStroke(color,changes){
 
 colorPicker.on("color:change",onColorChange);
 colorPickerStroke.on("color:change",onColorChangeStroke);
+
+var license = document.getElementById("licenseinfo")
+function updateLicense(){
+	var pvm = new Date();
+	var y = pvm.getYear() + 1900;
+	var m = pvm.getMonth();
+	license.textContent = "Sisältää Maanmittauslaitoksen Maastotietokannan " + m + "/" + y + " aineistoa"
+}
