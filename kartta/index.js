@@ -816,8 +816,8 @@ var tbRoom = "tbRoom";
 function updateTopBar(){
 	var title = document.getElementById("title");
 	var subtitle = document.getElementById("debuginfo");
-	title.textContent = "Ryhmä: " + tbTeam
-	subtitle.textContent = "Käyttäjä: " + tbUser + " | Huone: " + tbRoom + " | Tarkkuus.: " + tbAccuracy + "m";
+	title.textContent = "Käyttäjä: " + tbUser + " | Huone: " + tbRoom //"Ryhmä: " + tbTeam
+	subtitle.textContent = "Tarkkuus.: " + tbAccuracy + "m";
 }
 
 
@@ -1420,7 +1420,7 @@ function updateLicense(){
 
 // Ryhmiin liittyvien elementtien piilotus
 // Ota pois kun/jos ryhmät toteutetaan
-document.getElementById("title").style.display="none";
+
 document.getElementById("chatselect").style.display="none";
 document.getElementById("openteams").style.display="none";
 
