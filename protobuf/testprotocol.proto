@@ -146,6 +146,7 @@ message JoinRoomAnswer {
   bool roomexist = 3;
   string errmsg = 4;
   int32 id = 5;
+  string roomname = 6;
 }
 // LOGIN&&JOIN END
 

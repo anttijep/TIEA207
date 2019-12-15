@@ -1115,15 +1115,22 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 		var roompass = document.getElementById("passwordInput").value;
 		var createroom = document.getElementById("createroomToggle").checked;
 		wsh.joinRoom(roomname, roompass, createroom);
+
+}
+
+function handleJoinRoom(msg) {
+    if (!msg.getSuccess())
+        return;
+    myId = msg.getId();
     markerLayer.clear()
     markerLayer.push(positionMarker);
     sendPositionDataToServer();
     positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
-		tbRoom = roomname;
-		updateTopBar();
-	}
+	tbRoom = msg.getRoomname();
+	updateTopBar();
+}
 //document.getElementById("roomLoginButton").addEventListener("click",handleRoomLogin);
-//wsh.addJoinResultListener(handleLoginResult);
+wsh.addJoinResultListener(handleJoinRoom);
 
 function handleGroupLogin() {
 	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
