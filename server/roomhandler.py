@@ -60,6 +60,7 @@ class RoomHandler:
         user.room = msg.roomname
         uid = room.adduser(user)
         answer.joinanswer.id = uid
+        answer.joinanswer.roomname = msg.roomname
         room.getallinfo(answer)
         tasks.append(user.send(answer))
         tasks.append(room.notifyjoin(user))
