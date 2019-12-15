@@ -1119,13 +1119,11 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 
 function handleGroupLogin() {
 	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
-	console.log("Yritettiin liittyä ryhmään " + groupId);
 	wsh.joinGroup(groupId);
 }
 
 function handleGroupDelete() {
 	var groupId = parseInt(this.id.replace( /[^\d.]/g, '' ));
-	console.log("Poistetaan ryhmä " + groupId);
 	delete grouplist[groupId];
 	wsh.deleteGroup(groupId);
 }

@@ -58,8 +58,7 @@ async def serv(websocket, path):
             await roomhandler.messagehandler(user, msg)
 
     except Exception as e:
-        print(e)
-        raise
+        pass
     finally:
         await loginhandler.handleLogout(roomhandler, user)
         logger.info("%s closed connection", addr)
