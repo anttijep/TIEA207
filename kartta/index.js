@@ -843,6 +843,8 @@ function openTools(){
 		x.style.display = "none";
 		colorpickers.style.display = "None"
 		typeSelect.value ="None";
+		trueFill.style.display = "none";
+		trueStroke.style.display = "none";
   } else {
 		x.style.display = "flex";
 		colorpickers.style.display = "block"
@@ -870,9 +872,6 @@ document.getElementById("fillColorPalette").style.display = "none";
 document.getElementById("strokeColorPalette").style.backgroundColor = "rgb("+strokeRed.value+", "+ strokeGreen.value+", "+ strokeBlue.value+")";
 document.getElementById("fillColorPalette").style.backgroundColor = "rgb("+fillRed.value+", "+ fillGreen.value+", "+ fillBlue.value+")";
 //työkalupalkin tapahtumankuuntelijat
-//document.getElementById("drawline").addEventListener("click", );
-//document.getElementById("drawpoly").addEventListener("click", );
-//document.getElementById("drawcircle").addEventListener("click", );
 document.getElementById("erase").addEventListener("click", selectErase);
 
 //debug menun avaus/sulku
@@ -1395,7 +1394,7 @@ var license = document.getElementById("licenseinfo")
 function updateLicense(){
 	var pvm = new Date();
 	var y = pvm.getYear() + 1900;
-	var m = pvm.getMonth();
+	var m = pvm.getMonth() + 1;
 	license.textContent = "Sisältää Maanmittauslaitoksen Maastotietokannan " + m + "/" + y + " aineistoa"
 }
 
