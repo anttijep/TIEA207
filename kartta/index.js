@@ -1123,13 +1123,19 @@ function handleRoomLogin(e){//kutsutaan kun login nappia painetaan
 }
 
 function handleJoinRoom(msg) {
-    if (!msg.getSuccess())
-        return;
-    myId = msg.getId();
-    markerLayer.clear()
-    markerLayer.push(positionMarker);
-    sendPositionDataToServer();
-    positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+  if (!msg.getSuccess())
+      return;
+  myId = msg.getId();
+  markerLayer.clear();
+  markerLayer.push(positionMarker);
+  sendPositionDataToServer();
+  tbRoom = msg.getRoomname();
+  userDict = [];
+  for (var marker in markerDict) {
+    delete markerDict[marker];
+  }
+  positionMarker.setGeometry(myPosition ? new Point(myPosition) : null);
+    
 	tbRoom = msg.getRoomname();
 	updateTopBar();
 }
