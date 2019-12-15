@@ -824,7 +824,7 @@ function updateTopBar(){
 //hampurilaisvalikon avaus/sulku
 document.getElementById("links").style.display = "none"; //hampurilaisvalikko kiinni alussa
 document.getElementById("hamburger").addEventListener("click", openHamburger);
-
+document.getElementById("topbar").addEventListener("click", openHamburger);
 function openHamburger(){
 	var x = document.getElementById("links");
 	if (x.style.display === "block") {
@@ -1418,9 +1418,9 @@ function updateLicense(){
 	license.textContent = "Sisältää Maanmittauslaitoksen Maastotietokannan " + m + "/" + y + " aineistoa"
 }
 
-// Ryhmiin liittyvien elementtien piilotus
-// Ota pois kun/jos ryhmät toteutetaan
-
+// toimimattomien ja turhien elementtien piilotus
+document.getElementById("selectusername").style.display="none";
+document.getElementById("settings").style.display="none";
 document.getElementById("chatselect").style.display="none";
 document.getElementById("openteams").style.display="none";
 
